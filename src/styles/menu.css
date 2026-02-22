@@ -1,0 +1,131 @@
+.menu-drawer {
+  position: fixed;
+  top: 80px; /* justo debajo del header */
+  right: 0;
+  width: 280px;
+  background: rgb(34, 54, 235);
+  height: 100%;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+  padding: 10px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.menu-container {
+  margin-bottom: 5px;
+}
+
+.menu-item {
+  padding: 12px 10px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.arrow {
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+.submenu .menu-container.nested {
+  margin-bottom: 0;
+  padding-left: 10px;
+}
+
+.submenu .menu-item.sub-module-item {
+  background-color: rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+}
+
+.submenu {
+  padding-left: 15px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 5px 5px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: 2px;
+}
+
+.submenu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  color: black;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.submenu-item:hover {
+  background-color: white;
+  transform: translateX(5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.submenu-item:active {
+  transform: translateX(3px);
+}
+
+.menu-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  right: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 10px;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.menu-footer span {
+  display: block;
+  font-weight: bold;
+}
+
+.menu-footer small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.btn-logout img {
+  color: rgb(201, 28, 28);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin-top: 8px;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  width: 50px;
+  height: 40px;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.8);
+}

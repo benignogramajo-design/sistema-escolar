@@ -1,0 +1,20 @@
+.boton-modulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px;
+  text-align: center;
+}
+
+.boton-modulo img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 5px;
+}

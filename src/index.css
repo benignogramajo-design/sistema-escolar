@@ -1,0 +1,140 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body general */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5; /* fondo neutro por defecto */
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Encabezados */
+h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff; /* pensado para encabezados sobre fondos oscuros */
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Párrafos y texto pequeño */
+p {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+small {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Botones circulares tipo módulos */
+.boton-modulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.boton-modulo img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 5px;
+}
+
+.boton-modulo:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Botones de logout y menú en header */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Enlaces generales */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Scrollbar opcional */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+/* --- Estilos para Menú Desplegable (Dropdown) --- */
+
+/* Contenedor del dropdown (usar en el header) */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0; /* Alineado a la derecha para el borde superior derecho */
+  top: 100%;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  z-index: 1000;
+  padding: 5px 0;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: block;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
