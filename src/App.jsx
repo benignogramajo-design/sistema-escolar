@@ -3,16 +3,8 @@ import Header from "./components.css/Header";
 import LoginModal from "./components.css/LoginModal";
 import { supabase } from "./components.css/supabaseClient";
 import { roleAccess, publicSections } from "./components.css/authConfig";
-// import { pageMap } from "./navigationMap";
+import { pageMap } from "./navigationMap";
 import { menuConfig } from "./menuConfig";
-
-import Home from "./pages.css/Home";
-import DocentesUsuarios from "./pages.css/submenu/DocentesUsuarios";
-import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
-import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
-// import PlanillasCompendios from "./pages.css/submenu/PlanillasCompendios";
-// import CompendiosHabilitar from "./pages.css/submenu/CompendiosHabilitar";
-// import CompendiosCargados from "./pages.css/submenu/CompendiosCargados";
 
 // Función auxiliar para encontrar la ruta jerárquica de una página
 const getPath = (targetAction, items, currentPath) => {
@@ -20,7 +12,7 @@ const getPath = (targetAction, items, currentPath) => {
     if (item.action === targetAction) {
       return [...currentPath, item.action];
     }
-    
+
     if (item.subModules) {
       const found = getPath(targetAction, item.subModules, [...currentPath, item.action]);
       if (found) return found;
@@ -46,7 +38,7 @@ function App() {
   // Función para iniciar sesión consultando Supabase
   const handleLogin = async (apellido, dni) => {
     setLoginError(null);
-    
+
     if (!supabase) {
       setLoginError("Error de configuración: No se ha conectado con la base de datos (Supabase).");
       return;
@@ -66,9 +58,9 @@ function App() {
         let roles = [];
         if (Array.isArray(docente.cargos)) roles = docente.cargos;
         else if (typeof docente.cargos === 'string') {
-          try { roles = JSON.parse(docente.cargos); } catch(e) { roles = []; }
+          try { roles = JSON.parse(docente.cargos); } catch (e) { roles = []; }
         }
-        
+
         setUser({ ...docente, roles: roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
         if (pendingPage) {
@@ -79,7 +71,6 @@ function App() {
       }
 
       // 2. Si no es docente, buscar en Alumnos (Lógica futura o tabla existente)
-      // Por ahora simulamos o agregamos la consulta si tienes la tabla 'datos_de_legajo_alumnos'
       /*
       let { data: alumno } = await supabase.from('datos_de_legajo_alumnos')...
       if (alumno) { setUser({ ...alumno, roles: ['ALUMNO'], tipo: 'ALUMNO' }); ... return; }
@@ -148,28 +139,14 @@ function App() {
   };
 
   const renderPage = () => {
-    // Extendemos el mapa de navegación con las nuevas páginas
-    const fullPageMap = {
-      // ...(pageMap || {}),
-      Home: { component: Home, needsNavigate: true },
-      DocentesUsuarios: { component: DocentesUsuarios, needsNavigate: true },
-      DocentesCodigos: { component: DocentesCodigos },
-      DocentesDatosLegajo: { component: DocentesDatosLegajo },
-      // PlanillasCompendios: { component: PlanillasCompendios, needsNavigate: true },
-      // CompendiosHabilitar: { component: CompendiosHabilitar },
-      // CompendiosCargados: { component: CompendiosCargados },
-    };
-
-    const pageData = fullPageMap[currentPageName];
+    const pageData = pageMap[currentPageName];
     if (!pageData) {
-      // Opcional: mostrar una página de error 404 si la ruta no existe
-      return <div>Página no encontrada</div>;
+      return <div>Página no encontrada: {currentPageName}</div>;
     }
 
     const PageComponent = pageData.component;
     const pageProps = { goBack, goHome };
 
-    // Las páginas que pueden navegar a subpáginas necesitan la función `navigate`
     if (pageData.needsNavigate) {
       pageProps.navigate = navigate;
     }
@@ -179,19 +156,19 @@ function App() {
 
   return (
     <div style={{ paddingTop: "80px" }}>
-      <Header 
-        user={user} 
-        navigate={navigate} 
+      <Header
+        user={user}
+        navigate={navigate}
         onLoginClick={() => setShowLoginModal(true)}
         onLogout={handleLogout}
       />
       {renderPage()}
-      
+
       {showLoginModal && (
-        <LoginModal 
-          onLogin={handleLogin} 
-          onClose={() => { setShowLoginModal(false); setPendingPage(null); }} 
-          error={loginError} 
+        <LoginModal
+          onLogin={handleLogin}
+          onClose={() => { setShowLoginModal(false); setPendingPage(null); }}
+          error={loginError}
         />
       )}
     </div>
