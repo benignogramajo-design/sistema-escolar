@@ -2,6 +2,7 @@
 
 // Definimos a qué secciones principales (del menú) tiene acceso cada rol
 export const roleAccess = {
+  "ADMINISTRADOR": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
   "DIRECTOR/A": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
   "SECRETARIO": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
   "AYUDANTE DE SECRETARIA": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
@@ -10,7 +11,7 @@ export const roleAccess = {
   
   "ASESOR PED.": ["NuestraInstitucion", "Gabinete", "DocentesPortal"],
   
-  "DOCENTE": ["NuestraInstitucion", "DocentesPortal"],
+  "DOCENTE": ["NuestraInstitucion", "Administracion", "DocentesPortal"],
   
   "BIBLIOTECARIO/A": ["NuestraInstitucion", "DocentesPortal", "Biblioteca"],
   
