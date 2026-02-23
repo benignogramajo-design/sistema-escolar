@@ -78,7 +78,6 @@ function App() {
             roles = ["ADMINISTRADOR", ...roles];
           }
         }
-
         setUser({ ...docente, roles: roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
         if (pendingPage) {
@@ -126,8 +125,16 @@ function App() {
       return;
     }
 
-    // 4. Acceso total: Cualquier usuario logueado puede acceder a todo
-    setPageHistory(prev => [...prev, newPage]);
+    // 4. Verificar permisos del rol
+    const userRoles = user?.roles || [];
+    // Verificamos si ALGUNO de los roles del usuario tiene permiso para esta sección
+    const hasAccess = userRoles.some(rol => roleAccess[rol]?.includes(rootSection));
+
+    if (hasAccess || force) {
+      setPageHistory(prev => [...prev, newPage]);
+    } else {
+      alert("No tiene permisos para acceder a esta sección.");
+    }
   };
 
   const goBack = () => {
