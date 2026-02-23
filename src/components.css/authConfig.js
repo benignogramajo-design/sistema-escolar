@@ -2,16 +2,16 @@
 
 // Definimos a qué secciones principales (del menú) tiene acceso cada rol
 export const roleAccess = {
-  "ADMINISTRADOR": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
-  "DIRECTOR/A": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
-  "SECRETARIO": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
-  "AYUDANTE DE SECRETARIA": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca"],
+  "ADMINISTRADOR": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca", "DocentesUsuarios", "UsuariosPersonal", "UsuariosAlumnos"],
+  "DIRECTOR/A": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca", "DocentesUsuarios", "UsuariosPersonal", "UsuariosAlumnos"],
+  "SECRETARIO": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca", "DocentesUsuarios", "UsuariosPersonal", "UsuariosAlumnos"],
+  "AYUDANTE DE SECRETARIA": ["NuestraInstitucion", "Administracion", "Preceptoria", "Gabinete", "Alumnos", "DocentesPortal", "Biblioteca", "DocentesUsuarios", "UsuariosPersonal", "UsuariosAlumnos"],
   
   "PRECEPTOR": ["NuestraInstitucion", "Preceptoria"],
   
   "ASESOR PED.": ["NuestraInstitucion", "Gabinete", "DocentesPortal"],
   
-  "DOCENTE": ["NuestraInstitucion", "Administracion", "DocentesPortal"],
+  "DOCENTE": ["NuestraInstitucion", "DocentesPortal"],
   
   "BIBLIOTECARIO/A": ["NuestraInstitucion", "DocentesPortal", "Biblioteca"],
   

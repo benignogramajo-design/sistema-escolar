@@ -13,6 +13,7 @@ const getPath = (targetAction, items, currentPath) => {
       return [...currentPath, item.action];
     }
 
+
     if (item.subModules) {
       const found = getPath(targetAction, item.subModules, [...currentPath, item.action]);
       if (found) return found;
@@ -39,6 +40,7 @@ function App() {
   const handleLogin = async (apellido, dni) => {
     setLoginError(null);
 
+
     if (!supabase) {
       setLoginError("Error de configuración: No se ha conectado con la base de datos (Supabase).");
       return;
@@ -60,6 +62,7 @@ function App() {
         else if (typeof docente.cargos === 'string') {
           try { roles = JSON.parse(docente.cargos); } catch (e) { roles = []; }
         }
+
         setUser({ ...docente, roles: roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
         if (pendingPage) {
@@ -162,6 +165,7 @@ function App() {
         onLogout={handleLogout}
       />
       {renderPage()}
+
 
       {showLoginModal && (
         <LoginModal
