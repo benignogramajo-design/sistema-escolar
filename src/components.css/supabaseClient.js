@@ -5,4 +5,10 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Verificamos si las credenciales existen antes de crear el cliente
+// Esto evita que la pantalla se ponga en blanco si falta el archivo .env
+export const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey) 
+  : null;
+
+if (!supabase) console.warn("Supabase no está configurado. Faltan las variables de entorno VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.");

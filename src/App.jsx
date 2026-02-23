@@ -7,9 +7,9 @@ import { roleAccess, publicSections } from "./components.css/authConfig";
 import { menuConfig } from "./menuConfig";
 
 import Home from "./pages.css/Home";
-// import DocentesUsuarios from "./pages.css/submenu/DocentesUsuarios";
-// import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
-// import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
+import DocentesUsuarios from "./pages.css/submenu/DocentesUsuarios";
+import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
+import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
 // import PlanillasCompendios from "./pages.css/submenu/PlanillasCompendios";
 // import CompendiosHabilitar from "./pages.css/submenu/CompendiosHabilitar";
 // import CompendiosCargados from "./pages.css/submenu/CompendiosCargados";
@@ -46,6 +46,12 @@ function App() {
   // Función para iniciar sesión consultando Supabase
   const handleLogin = async (apellido, dni) => {
     setLoginError(null);
+    
+    if (!supabase) {
+      setLoginError("Error de configuración: No se ha conectado con la base de datos (Supabase).");
+      return;
+    }
+
     try {
       // 1. Buscar en Docentes
       let { data: docente, error: errorDocente } = await supabase
@@ -146,9 +152,9 @@ function App() {
     const fullPageMap = {
       // ...(pageMap || {}),
       Home: { component: Home, needsNavigate: true },
-      // DocentesUsuarios: { component: DocentesUsuarios, needsNavigate: true },
-      // DocentesCodigos: { component: DocentesCodigos },
-      // DocentesDatosLegajo: { component: DocentesDatosLegajo },
+      DocentesUsuarios: { component: DocentesUsuarios, needsNavigate: true },
+      DocentesCodigos: { component: DocentesCodigos },
+      DocentesDatosLegajo: { component: DocentesDatosLegajo },
       // PlanillasCompendios: { component: PlanillasCompendios, needsNavigate: true },
       // CompendiosHabilitar: { component: CompendiosHabilitar },
       // CompendiosCargados: { component: CompendiosCargados },
