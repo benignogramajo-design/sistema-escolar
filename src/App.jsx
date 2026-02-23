@@ -53,30 +53,12 @@ function App() {
         .eq('dni', dni)
         .maybeSingle(); // Usamos maybeSingle para no lanzar error si hay 0 resultados, sino null
 
-      // Acceso especial para el Administrador (GRAMAJO)
-      if (!docente && apellido.toUpperCase() === "GRAMAJO" && dni === "37528143") {
-        docente = {
-          id: "admin-master",
-          apellido: "GRAMAJO",
-          nombre: "Administrador",
-          dni: "37528143",
-          cargos: ["ADMINISTRADOR", "SECRETARIO"]
-        };
-      }
-
       if (docente) {
         // Parsear cargos si vienen como string JSON o array
         let roles = [];
         if (Array.isArray(docente.cargos)) roles = docente.cargos;
         else if (typeof docente.cargos === 'string') {
           try { roles = JSON.parse(docente.cargos); } catch (e) { roles = []; }
-        }
-
-        // Asegurar rol de ADMINISTRADOR si coincide con las credenciales maestras
-        if (String(docente.dni) === "37528143" && docente.apellido.toUpperCase() === "GRAMAJO") {
-          if (!roles.includes("ADMINISTRADOR")) {
-            roles = ["ADMINISTRADOR", ...roles];
-          }
         }
         setUser({ ...docente, roles: roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
