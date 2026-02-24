@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo PRECEPTORIA.png"; // Asumiendo fondo de preceptoría
+import fondo from "../../assets.css/fondos/Fondo PRECEPTORIA1.jpg";
 import { supabase } from "../../components.css/supabaseClient";
 import logo from "../../assets.css/logos/Logo.png";
 
