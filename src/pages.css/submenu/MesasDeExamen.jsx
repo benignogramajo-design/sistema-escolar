@@ -12,7 +12,7 @@ const MesasDeExamen = ({ goBack, goHome }) => {
   const [mode, setMode] = useState("view"); // 'view', 'create', 'edit'
   const [selectedId, setSelectedId] = useState(null);
 
-  // Estado del formulario
+  // Estado del formulario 
   const initialFormState = {
     fecha: "",
     curso: "",
