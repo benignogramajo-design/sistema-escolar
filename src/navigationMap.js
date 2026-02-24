@@ -70,6 +70,8 @@ import DocentesLegajo from "./pages.css/submenu/DocentesLegajo";
 import DocentesUsuarios from "./pages.css/submenu/DocentesUsuarios";
 import UsuariosPersonal from "./pages.css/submenu/UsuariosPersonal";
 import UsuariosAlumnos from "./pages.css/submenu/UsuariosAlumnos";
+import NumeroDeBoletas from "./pages.css/submenu/NumeroDeBoletas";
+import PersonalPorDia from "./pages.css/submenu/DocentesPorDia";
 
 // Sub pages Biblioteca
 import BibliotecaLibros from "./pages.css/submenu/BibliotecaLibros";
@@ -256,4 +258,6 @@ export const pageMap = {
   DocentesUsuarios: { component: DocentesUsuarios, needsNavigate: true },
   UsuariosPersonal: { component: UsuariosPersonal },
   UsuariosAlumnos: { component: UsuariosAlumnos },
+  NumeroDeBoletas: { component: NumeroDeBoletas },
+  PersonalPorDia: { component: PersonalPorDia },
 };
