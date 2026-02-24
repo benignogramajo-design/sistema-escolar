@@ -108,6 +108,7 @@ import PlanillasBachillerInformatica from "./pages.css/submenu/PlanillasBachille
 import PlanillasLibreta from "./pages.css/submenu/PlanillasLibreta";
 import PlanillasRAC from "./pages.css/submenu/PlanillasRAC";
 import PlanillasATACAAR from "./pages.css/submenu/PlanillasATACAAR";
+import PlanillasMesasExamen from "./pages.css/submenu/PlanillasMesasExamen";
 
 // Sub pages Gabinete
 import GabineteAlumnos from "./pages.css/submenu/GabineteAlumnos";
@@ -230,6 +231,7 @@ export const pageMap = {
   PlanillasLibreta: { component: PlanillasLibreta },
   PlanillasRAC: { component: PlanillasRAC },
   PlanillasATACAAR: { component: PlanillasATACAAR },
+  PlanillasMesasExamen: { component: PlanillasMesasExamen },
   GabineteAlumnos: { component: GabineteAlumnos },
   GabineteDocentes: { component: GabineteDocentes },
   GabinetePlanificaciones: { component: GabinetePlanificaciones },

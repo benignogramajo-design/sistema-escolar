@@ -104,6 +104,7 @@ export const menuConfig = [
           { name: "LIBRETA", action: "PlanillasLibreta" },
           { name: "RAC", action: "PlanillasRAC" },
           { name: "ATACALAR", action: "PlanillasATACAAR" },
+          { name: "MESAS DE EXAMEN", action: "PlanillasMesasExamen" },
           {
             name: "COMPENDIOS",
             action: "PlanillasCompendios",
