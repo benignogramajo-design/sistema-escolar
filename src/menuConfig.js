@@ -51,6 +51,8 @@ export const menuConfig = [
           { name: "HORARIOS POR DÍA", action: "DocentesHorariosDia" },
           { name: "HORARIOS PARA IMPRIMIR", action: "DocentesHorariosImprimir" },
           { name: "DATOS DE LEGAJO", action: "DocentesDatosLegajo" },
+          { name: "N° DE BOLETAS", action: "NumeroDeBoletas" },
+          { name: "PERSONAL POR DIA", action: "PersonalPorDia" },
           { name: "LEGAJO PERSONAL", action: "DocentesLegajo" },
           { name: "USUARIOS", action: "DocentesUsuarios" },
         ],
