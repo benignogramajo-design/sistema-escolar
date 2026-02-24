@@ -32,7 +32,8 @@ const PlanillasMesasExamen = ({ goBack, goHome }) => {
     asignatura: "",
     condicion: "",
     mes: "",
-    anio: ""
+    anio: "",
+    fecha: ""
   });
 
   useEffect(() => {
@@ -141,7 +142,8 @@ const PlanillasMesasExamen = ({ goBack, goHome }) => {
       (!filters.asignatura || (item.asignatura && item.asignatura.toLowerCase().includes(filters.asignatura.toLowerCase()))) &&
       (!filters.condicion || item.condicion === filters.condicion) &&
       (!filters.mes || itemMes === filters.mes) &&
-      (!filters.anio || itemAnio === filters.anio)
+      (!filters.anio || itemAnio === filters.anio) &&
+      (!filters.fecha || item.fecha === filters.fecha)
     );
   });
 
@@ -303,6 +305,12 @@ const PlanillasMesasExamen = ({ goBack, goHome }) => {
           value={filters.anio} 
           onChange={e => setFilters({...filters, anio: e.target.value})} 
           style={{ padding: '5px', width: '80px' }} 
+        />
+        <input 
+          type="date"
+          value={filters.fecha}
+          onChange={e => setFilters({...filters, fecha: e.target.value})}
+          style={{ padding: '5px' }}
         />
       </div>
 

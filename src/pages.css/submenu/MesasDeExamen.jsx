@@ -32,7 +32,8 @@ const MesasDeExamen = ({ goBack, goHome }) => {
     asignatura: "",
     condicion: "",
     mes: "",
-    anio: ""
+    anio: "",
+    fecha: ""
   });
 
   // Cargar datos de Mesas y Asignaturas (desde códigos)
@@ -135,7 +136,8 @@ const MesasDeExamen = ({ goBack, goHome }) => {
       (!filters.asignatura || (item.asignatura && item.asignatura.toLowerCase().includes(filters.asignatura.toLowerCase()))) &&
       (!filters.condicion || item.condicion === filters.condicion) &&
       (!filters.mes || itemMes === filters.mes) &&
-      (!filters.anio || itemAnio === filters.anio)
+      (!filters.anio || itemAnio === filters.anio) &&
+      (!filters.fecha || item.fecha === filters.fecha)
     );
   });
 
@@ -292,6 +294,12 @@ const MesasDeExamen = ({ goBack, goHome }) => {
           value={filters.anio} 
           onChange={e => setFilters({...filters, anio: e.target.value})} 
           style={{ padding: '5px', width: '80px' }} 
+        />
+        <input 
+          type="date"
+          value={filters.fecha}
+          onChange={e => setFilters({...filters, fecha: e.target.value})}
+          style={{ padding: '5px' }}
         />
       </div>
 
