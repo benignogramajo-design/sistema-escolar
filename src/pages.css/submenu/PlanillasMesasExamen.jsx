@@ -139,7 +139,7 @@ const PlanillasMesasExamen = ({ goBack, goHome }) => {
     const itemAnio = itemDate.getFullYear().toString();
 
     return (
-      (!filters.asignatura || (item.asignatura && item.asignatura.toLowerCase().includes(filters.asignatura.toLowerCase()))) &&
+      (!filters.asignatura || (item.asignatura && item.asignatura.toLowerCase() === filters.asignatura.toLowerCase())) &&
       (!filters.condicion || item.condicion === filters.condicion) &&
       (!filters.mes || itemMes === filters.mes) &&
       (!filters.anio || itemAnio === filters.anio) &&
