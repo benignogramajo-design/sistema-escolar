@@ -282,7 +282,7 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
   const filteredDocentes = listaDocentes.filter((doc) => {
     const fullName = `${doc.apellido || ""} ${doc.nombre || ""}`.toLowerCase();
     const filterName = filters.apellidoNombre.toLowerCase().trim();
-    const matchName = !filterName || fullName === filterName;
+    const matchName = !filterName || fullName.includes(filterName);
 
     const localidad = (doc.localidad || "").toLowerCase();
     const filterLocalidad = filters.localidad.toLowerCase().trim();
@@ -307,7 +307,7 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
     const matchEstado = filters.estado === "" || (doc.estado || "") === filters.estado;
 
     const filterOtros = filters.otros.toLowerCase().trim();
-    const matchOtros = !filterOtros || [String(doc.dni || ""), String(doc.legajo || ""), String(doc.domicilio || "").toLowerCase(), String(doc.celular || ""), String(doc.mail || "").toLowerCase()].includes(filterOtros);
+    const matchOtros = !filterOtros || [String(doc.dni || ""), String(doc.legajo || ""), String(doc.domicilio || "").toLowerCase(), String(doc.celular || ""), String(doc.mail || "").toLowerCase()].some(val => val.includes(filterOtros));
 
     return matchName && matchLocalidad && matchTitulos && matchCargo && matchEstado && matchOtros;
   });
