@@ -143,6 +143,7 @@ export const menuConfig = [
       { name: "PLANILLAS DE SEGUIMIENTO CON NOTAS", action: "PreceptoriaSeguimientoNotas" },
       { name: "LEGAJO DE ALUMNO", action: "LegajoDeAlumno" },
       { name: "NOTIFICACIONES / DERIVACIONES", action: "PreceptoriaNotificacionesDerivaciones" },
+      { name: "MESAS DE EXAMEN", action: "MesasDeExamen" },
     ],
   },
   {

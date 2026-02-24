@@ -58,6 +58,7 @@ import PreceptoriaSeguimientoNotas from "./pages.css/submenu/PreceptoriaSeguimie
 import PreceptoriaNotificacionesDerivaciones from "./pages.css/submenu/PreceptoriaNotificacionesDerivaciones";
 import PreceptoriaNotificaciones from "./pages.css/submenu/PreceptoriaNotificaciones";
 import PreceptoriaDerivaciones from "./pages.css/submenu/PreceptoriaDerivaciones";
+import MesasDeExamen from "./pages.css/submenu/MesasDeExamen";
 
 // Sub pages Docentes
 import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
@@ -194,6 +195,7 @@ export const pageMap = {
   PreceptoriaNotificacionesDerivaciones: { component: PreceptoriaNotificacionesDerivaciones, needsNavigate: true },
   PreceptoriaNotificaciones: { component: PreceptoriaNotificaciones },
   PreceptoriaDerivaciones: { component: PreceptoriaDerivaciones },
+  MesasDeExamen: { component: MesasDeExamen },
   DocentesCodigos: { component: DocentesCodigos },
   DocentesEstructura: { component: DocentesEstructura },
   DocentesHorarios: { component: DocentesHorarios },
