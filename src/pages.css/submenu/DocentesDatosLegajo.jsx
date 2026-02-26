@@ -31,8 +31,6 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
   const [selectedId, setSelectedId] = useState(null);
   const [filters, setFilters] = useState({
     apellidoNombre: "",
-    localidad: "",
-    titulos: "",
     cargo: "",
     estado: "",
     otros: ""
@@ -284,18 +282,6 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
     const filterName = filters.apellidoNombre.toLowerCase().trim();
     const matchName = !filterName || fullName.includes(filterName);
 
-    const localidad = (doc.localidad || "").toLowerCase();
-    const filterLocalidad = filters.localidad.toLowerCase().trim();
-    const matchLocalidad = !filterLocalidad || localidad.includes(filterLocalidad);
-
-    let titulos = [];
-    if (Array.isArray(doc.titulos)) titulos = doc.titulos;
-    else if (typeof doc.titulos === 'string') {
-      try { titulos = JSON.parse(doc.titulos); } catch (e) { titulos = []; }
-    }
-    const filterTitulos = filters.titulos.toLowerCase().trim();
-    const matchTitulos = !filterTitulos || titulos.some(t => String(t).toLowerCase().includes(filterTitulos));
-
     let cargos = [];
     if (Array.isArray(doc.cargos)) cargos = doc.cargos;
     else if (typeof doc.cargos === 'string') {
@@ -307,9 +293,16 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
     const matchEstado = filters.estado === "" || (doc.estado || "") === filters.estado;
 
     const filterOtros = filters.otros.toLowerCase().trim();
-    const matchOtros = !filterOtros || [String(doc.dni || ""), String(doc.legajo || ""), String(doc.domicilio || "").toLowerCase(), String(doc.celular || ""), String(doc.mail || "").toLowerCase()].some(val => val.includes(filterOtros));
+    const matchOtros = !filterOtros || [
+      String(doc.apellido || ""), String(doc.nombre || ""), String(doc.dni || ""),
+      String(doc.legajo || ""), String(doc.fecha_nacimiento || ""), String(doc.edad || ""),
+      String(doc.localidad || ""), String(doc.domicilio || ""), String(doc.celular || ""),
+      String(doc.mail || ""), formatArrayData(doc.titulos), formatArrayData(doc.cargos),
+      String(doc.estado || ""), String(doc.motivo_inactivo || ""),
+      String(doc.documentacion_inactivo || ""), String(doc.institucion_destino || "")
+    ].some(field => String(field).toLowerCase().includes(filterOtros));
 
-    return matchName && matchLocalidad && matchTitulos && matchCargo && matchEstado && matchOtros;
+    return matchName && matchCargo && matchEstado && matchOtros;
   });
 
   const uniqueEstados = [...new Set(listaDocentes.map(d => d.estado).filter(Boolean))];
@@ -336,20 +329,6 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
             placeholder="Apellido y Nombre" 
             value={filters.apellidoNombre} 
             onChange={(e) => setFilters({...filters, apellidoNombre: e.target.value})} 
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-          />
-          <input 
-            type="text" 
-            placeholder="Localidad" 
-            value={filters.localidad} 
-            onChange={(e) => setFilters({...filters, localidad: e.target.value})} 
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-          />
-          <input 
-            type="text" 
-            placeholder="Títulos" 
-            value={filters.titulos} 
-            onChange={(e) => setFilters({...filters, titulos: e.target.value})} 
             style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
           />
           <select 
