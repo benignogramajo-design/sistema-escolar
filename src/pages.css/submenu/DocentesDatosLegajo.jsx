@@ -286,7 +286,7 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
 
     const localidad = (doc.localidad || "").toLowerCase();
     const filterLocalidad = filters.localidad.toLowerCase().trim();
-    const matchLocalidad = !filterLocalidad || localidad === filterLocalidad;
+    const matchLocalidad = !filterLocalidad || localidad.includes(filterLocalidad);
 
     let titulos = [];
     if (Array.isArray(doc.titulos)) titulos = doc.titulos;
@@ -294,7 +294,7 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
       try { titulos = JSON.parse(doc.titulos); } catch (e) { titulos = []; }
     }
     const filterTitulos = filters.titulos.toLowerCase().trim();
-    const matchTitulos = !filterTitulos || titulos.some(t => String(t).toLowerCase() === filterTitulos);
+    const matchTitulos = !filterTitulos || titulos.some(t => String(t).toLowerCase().includes(filterTitulos));
 
     let cargos = [];
     if (Array.isArray(doc.cargos)) cargos = doc.cargos;
@@ -317,7 +317,7 @@ const DocentesDatosLegajo = ({ goBack, goHome }) => {
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
-      <h2>DATOS DE LEGAJO DOCENTE</h2>
+      <h2>DATOS DE LEGAJO</h2>
       
       {/* Botones de Acción */}
       <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', margin: '20px 0' }}>
