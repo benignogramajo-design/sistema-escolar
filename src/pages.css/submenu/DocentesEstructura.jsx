@@ -48,12 +48,12 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   // --- Constantes de Horarios ---
   const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
   const horariosManana = [
-    "1° 07:30 A 08.10", "2° 08:10 A 08:50", "3° 08:55 A 09:35", "4° 09:35 A 10:15",
-    "5° 10:20 A 11:00", "6° 11:00 A 11:40", "7° 11:40 A 12:20", "8° 12:20 A 13:00"
+    "1° de 07:30 a 08:10", "2° de 08:10 a 08:50", "3° de 08:55 a 09:35", "4° de 09:35 a 10:15",
+    "5° de 10:20 a 11:00", "6° de 11:00 a 11:40", "7° de 11:40 a 12:20", "8° de 12:20 a 13:00"
   ];
   const horariosTarde = [
-    "1° 13:10 A 13:50", "2° 13:50 A 14:30", "3° 14:35 A 15:15", "4° 15:15 A 15:55",
-    "5° 16:00 A 16:40", "6° 16:40 A 17:20", "7° 17:20 A 18:00", "8° 18:00 A 18:40"
+    "1° de 13:10 a 13:50", "2° de 13:50 a 14:30", "3° de 14:35 a 15:15", "4° de 15:15 a 15:55",
+    "5° de 16:00 a 16:40", "6° de 16:40 a 17:20", "7° de 17:20 a 18:00", "8° de 18:00 a 18:40"
   ];
 
   // --- Carga de Datos ---
@@ -453,6 +453,29 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       (Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.some(s => s.estado === filters.estado));
 
     return matchCurso && matchDiv && matchTurno && matchAsig && matchDia && matchDocente && matchEstado;
+  }).sort((a, b) => {
+    // 1. Ordenar por cargo
+    const cargoA = a.cargo || "";
+    const cargoB = b.cargo || "";
+    const compareCargo = cargoA.localeCompare(cargoB);
+    if (compareCargo !== 0) return compareCargo;
+
+    // 2. Ordenar por curso (numéricamente)
+    const cursoA = a.curso || "";
+    const cursoB = b.curso || "";
+    const compareCurso = cursoA.localeCompare(cursoB, undefined, { numeric: true });
+    if (compareCurso !== 0) return compareCurso;
+
+    // 3. Ordenar por división
+    const divA = a.division || "";
+    const divB = b.division || "";
+    const compareDiv = divA.localeCompare(divB);
+    if (compareDiv !== 0) return compareDiv;
+
+    // 4. Ordenar por asignatura
+    const asigA = a.asignatura || "";
+    const asigB = b.asignatura || "";
+    return asigA.localeCompare(asigB);
   });
 
   // --- Imprimir ---
@@ -713,7 +736,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                           return (
                             <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
                               <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={isEFChecked} />
-                              <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora.split(" ")[0]}</label>
+                              <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora}</label>
                               {h.horas.includes(hora) && (
                                 <select
                                   value={currentPlazaForThisSlot || ""}
@@ -742,7 +765,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                         return (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
                             <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={hasRegularHours && h.horas.length > 0} />
-                            <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
+                            <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>EDUCACIÓN FÍSICA</label>
                             {h.horas.includes(hora) && (
                               <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
                                 {availablePlazas.length > 0 ? availablePlazas.join(" - ") : "Sin plazas"}
@@ -838,24 +861,34 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   })}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {item.docente_titular?.nombre} 
-                  {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
+                  {(!filters.estado || item.docente_titular?.estado === filters.estado) && (
+                    <>
+                      {item.docente_titular?.nombre} 
+                      {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
+                    </>
+                  )}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {item.docente_interino?.nombre}
-                  {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
+                  {(!filters.estado || item.docente_interino?.estado === filters.estado) && (
+                    <>
+                      {item.docente_interino?.nombre}
+                      {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
+                    </>
+                  )}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.map((s, i) => (
-                    <div key={i}>
-                      {s.nombre}
-                      {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
-                    </div>
+                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes
+                    .filter(s => !filters.estado || s.estado === filters.estado)
+                    .map((s, i) => (
+                      <div key={i}>
+                        {s.nombre}
+                        {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
+                      </div>
                   ))}
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan="7" style={{ padding: "15px", textAlign: "center" }}>No hay datos registrados.</td></tr>
+              <tr><td colSpan="8" style={{ padding: "15px", textAlign: "center" }}>No hay datos registrados.</td></tr>
             )}
           </tbody>
         </table>
