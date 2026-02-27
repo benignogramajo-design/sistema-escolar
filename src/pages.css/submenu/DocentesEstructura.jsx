@@ -759,6 +759,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                       const isSubjectEF = (formData.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA");
 
                       if (isSubjectEF || (formData.cargo && formData.cargo !== 'DOCENTE')) {
+                      if (isSubjectEF) {
                         const hasRegularHours = h.horas.some(hr => hr !== "EDUCACIÓN FÍSICA");
                         const hora = "EDUCACIÓN FÍSICA";
 
