@@ -18,9 +18,11 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
   const [availablePlazas, setAvailablePlazas] = useState([]);
   const [plazasEducacionFisica, setPlazasEducacionFisica] = useState([]);
+  const [availableTurnos, setAvailableTurnos] = useState([]);
 
   // --- Estado del Formulario ---
   const initialFormState = {
+    cargo: "",
     curso: "",
     division: "",
     turno: "",
@@ -102,7 +104,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   }, [formData.curso, codigos]);
 
   useEffect(() => {
-    if (formData.curso && formData.division) {
+    if (formData.cargo === "DOCENTE" && formData.curso && formData.division) {
       // 1. Determinar Turno
       const found = codigos.find(c => c.curso === formData.curso && c.division === formData.division);
       if (found) {
@@ -115,21 +117,41 @@ const DocentesEstructura = ({ goBack, goHome }) => {
         .map(c => c.asignatura)
       )].sort();
       setAvailableAsignaturas(asigs);
-    } else {
+    } else if (formData.cargo === "DOCENTE") {
       setAvailableAsignaturas([]);
     }
-  }, [formData.curso, formData.division, codigos]);
+  }, [formData.cargo, formData.curso, formData.division, codigos]);
+
+  // --- Lógica para Turnos (No Docente) ---
+  useEffect(() => {
+    if (formData.cargo && formData.cargo !== "DOCENTE") {
+      const turnos = [...new Set(codigos
+        .filter(c => c.cargo === formData.cargo)
+        .map(c => c.turno)
+        .filter(Boolean)
+      )].sort();
+      setAvailableTurnos(turnos);
+    } else {
+      setAvailableTurnos([]);
+    }
+  }, [formData.cargo, codigos]);
 
   // --- Lógica para Plazas ---
   useEffect(() => {
-    if (formData.curso && formData.division && formData.asignatura) {
-      const found = codigos.find(c => 
+    let found = null;
+    if (formData.cargo === "DOCENTE" && formData.curso && formData.division && formData.asignatura) {
+      found = codigos.find(c => 
         c.curso === formData.curso && 
         c.division === formData.division && 
         c.asignatura === formData.asignatura
       );
+    } else if (formData.cargo !== "DOCENTE" && formData.cargo && formData.turno) {
+      found = codigos.find(c => c.cargo === formData.cargo && c.turno === formData.turno);
+    }
+
+    if (found) {
       
-      if (found && found.plazas) {
+      if (found.plazas) {
         let p = found.plazas;
         if (typeof p === 'string') {
           try { p = JSON.parse(p); } catch (e) { p = [p]; }
@@ -141,11 +163,11 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     } else {
       setAvailablePlazas([]);
     }
-  }, [formData.curso, formData.division, formData.asignatura, codigos]);
+  }, [formData.cargo, formData.curso, formData.division, formData.asignatura, formData.turno, codigos]);
 
   // --- Lógica para Plazas de Educación Física ---
   useEffect(() => {
-    if (formData.curso && formData.division) {
+    if (formData.cargo === "DOCENTE" && formData.curso && formData.division) {
       const efCodigo = codigos.find(c =>
         c.curso === formData.curso &&
         c.division === formData.division &&
@@ -161,12 +183,22 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     } else {
       setPlazasEducacionFisica([]);
     }
-  }, [formData.curso, formData.division, codigos]);
+  }, [formData.cargo, formData.curso, formData.division, codigos]);
 
   // --- Manejadores del Formulario ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === "cargo") {
+      // Resetear campos dependientes al cambiar cargo
+      setFormData(prev => ({
+        ...prev,
+        cargo: value,
+        curso: "", division: "", turno: "", asignatura: "",
+        horarios: [], // Opcional: limpiar horarios si cambia la estructura
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Manejo de Horarios (Días y Horas)
@@ -309,6 +341,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       if (mode === "edit") {
         // Asegurar que los campos JSON se carguen correctamente
         setFormData({
+          cargo: item.cargo || "",
           curso: item.curso,
           division: item.division,
           turno: item.turno,
@@ -452,6 +485,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
     const rowsHtml = filteredData.map(item => `
       <tr>
+        <td>${item.cargo || ''}</td>
         <td>${item.curso || ''} ${item.division || ''}</td>
         <td>${item.turno || ''}</td>
         <td>${item.asignatura || ''}</td>
@@ -505,6 +539,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
               </th>
             </tr>
             <tr>
+              <th>Cargo</th>
               <th>Curso/Div</th><th>Turno</th><th>Asignatura</th><th>Días y Horarios</th>
               <th>Titular</th><th>Interino</th><th>Suplentes</th>
             </tr>
@@ -530,6 +565,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   // Listas únicas para filtros
   const uniqueCursos = [...new Set(codigos.map(c => c.curso))].sort();
   const uniqueDivisiones = [...new Set(codigos.map(c => c.division))].sort();
+  const uniqueCargos = [...new Set(codigos.map(c => c.cargo).filter(Boolean))].sort();
 
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
@@ -600,27 +636,49 @@ const DocentesEstructura = ({ goBack, goHome }) => {
             
             {/* Datos Académicos */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '15px' }}>
-              <label>Curso:
-                <select name="curso" value={formData.curso} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
+              <label style={{ gridColumn: '1 / -1' }}>Cargo:
+                <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
                   <option value="">Seleccione...</option>
-                  {uniqueCursos.map(c => <option key={c} value={c}>{c}</option>)}
+                  {uniqueCargos.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </label>
-              <label>División:
-                <select name="division" value={formData.division} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                  <option value="">Seleccione...</option>
-                  {availableDivisiones.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </label>
-              <label>Turno:
-                <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} />
-              </label>
-              <label>Asignatura:
-                <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                  <option value="">Seleccione...</option>
-                  {availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
-              </label>
+
+              {formData.cargo === "DOCENTE" ? (
+                <>
+                  <label>Curso:
+                    <select name="curso" value={formData.curso} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
+                      <option value="">Seleccione...</option>
+                      {uniqueCursos.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                  <label>División:
+                    <select name="division" value={formData.division} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
+                      <option value="">Seleccione...</option>
+                      {availableDivisiones.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </label>
+                  <label>Turno:
+                    <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} />
+                  </label>
+                  <label>Asignatura:
+                    <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
+                      <option value="">Seleccione...</option>
+                      {availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                  </label>
+                </>
+              ) : (
+                <>
+                  {formData.cargo && (
+                    <label>Turno:
+                      <select name="turno" value={formData.turno} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
+                        <option value="">Seleccione...</option>
+                        {availableTurnos.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </label>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Horarios */}
@@ -745,6 +803,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '12px' }}>
           <thead>
             <tr style={{ backgroundColor: "#333", color: "white" }}>
+              <th style={{ padding: "8px", border: "1px solid #ddd" }}>Cargo</th>
               <th style={{ padding: "8px", border: "1px solid #ddd" }}>Curso/Div</th>
               <th style={{ padding: "8px", border: "1px solid #ddd" }}>Turno</th>
               <th style={{ padding: "8px", border: "1px solid #ddd" }}>Asignatura</th>
@@ -764,6 +823,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   backgroundColor: (mode === "edit" || mode === "delete") && selectedId === item.id ? "#fffbe6" : "transparent"
                 }}
               >
+                <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.cargo}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>{item.curso} {item.division}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>{item.turno}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.asignatura}</td>
