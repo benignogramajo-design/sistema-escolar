@@ -201,7 +201,11 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     } else {
       // Toggle
       newHorarios[index].horas = [...currentHoras, hora];
-      currentPlazas[hora] = ""; // Add empty plaza assignment
+      if (hora === "EDUCACIÓN FÍSICA") {
+        currentPlazas[hora] = plazasEducacionFisica.join(" - ");
+      } else {
+        currentPlazas[hora] = ""; 
+      }
     }
     newHorarios[index].plazas = currentPlazas;
     setFormData(prev => ({ ...prev, horarios: newHorarios }));
@@ -311,14 +315,26 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   };
 
   // --- Helpers ---
-  const getUsedPlazas = () => {
-    const used = new Set();
+  const getOptionsForPlaza = (currentValue) => {
+    const counts = {};
+    availablePlazas.forEach(p => counts[p] = (counts[p] || 0) + 1);
+    
+    const used = {};
     formData.horarios.forEach(h => {
-      Object.values(h.plazas).forEach(p => {
-        if (p) used.add(p);
+      Object.entries(h.plazas).forEach(([hr, p]) => {
+        if (hr !== "EDUCACIÓN FÍSICA" && p) {
+          used[p] = (used[p] || 0) + 1;
+        }
       });
     });
-    return used;
+
+    const uniqueAvailable = [...new Set(availablePlazas)];
+    return uniqueAvailable.filter(p => {
+      const total = counts[p] || 0;
+      const u = used[p] || 0;
+      const adjustment = (p === currentValue) ? 1 : 0;
+      return (total - u + adjustment) > 0;
+    });
   };
 
   // --- Renderizado de Componentes Auxiliares ---
@@ -614,13 +630,12 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   {/* Selección de Horas */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
                     {(() => {
-                      const usedPlazas = getUsedPlazas();
                       const horasDelTurno = (formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : [])
                         .concat(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []);
 
                       return horasDelTurno.map(hora => {
                         const currentPlazaForThisSlot = h.plazas[hora];
-                        const finalOptions = availablePlazas.filter(p => !usedPlazas.has(p) || p === currentPlazaForThisSlot);
+                        const finalOptions = getOptionsForPlaza(currentPlazaForThisSlot);
 
                         return (
                           <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
@@ -643,24 +658,16 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
                     {/* Educación Física */}
                     {(() => {
-                      const usedPlazas = getUsedPlazas();
                       const hora = "EDUCACIÓN FÍSICA";
-                      const currentPlazaForThisSlot = h.plazas[hora];
-                      const finalOptions = plazasEducacionFisica.filter(p => !usedPlazas.has(p) || p === currentPlazaForThisSlot);
 
                       return (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
                           <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
                           <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
                           {h.horas.includes(hora) && (
-                            <select
-                              value={currentPlazaForThisSlot || ""}
-                              onChange={(e) => updateHoraPlaza(index, hora, e.target.value)}
-                              style={{ fontSize: '11px', padding: '2px' }}
-                            >
-                              <option value="">Plaza...</option>
-                              {finalOptions.map(p => <option key={p} value={p}>{p}</option>)}
-                            </select>
+                            <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
+                              {plazasEducacionFisica.length > 0 ? plazasEducacionFisica.join(" - ") : "Sin plazas"}
+                            </span>
                           )}
                         </div>
                       );
