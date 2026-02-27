@@ -483,9 +483,14 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     const fullLogoUrl = new URL(logo, window.location.href).href;
 
     // Helper para formatear los datos complejos para la tabla
-    const formatHorarios = (horarios) => {
+    const formatHorarios = (horarios, cargo) => {
       if (!Array.isArray(horarios)) return "";
       return horarios.map(h => {
+        if (cargo && cargo !== "DOCENTE") {
+          const texto = h.horario_texto || "";
+          const plaza = h.plaza ? ` [${h.plaza}]` : "";
+          if (texto || plaza) return `<div><strong>${h.dia}:</strong> ${texto}${plaza}</div>`;
+        }
         const horasConPlaza = (h.horas || []).map(hr => {
           const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
           const horaText = hr === "EDUCACIÓN FÍSICA" ? `EDUCACIÓN FÍSICA (${h.ef_horario || 'N/A'})` : hr;
@@ -512,7 +517,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
         <td>${item.curso || ''} ${item.division || ''}</td>
         <td>${item.turno || ''}</td>
         <td>${item.asignatura || ''}</td>
-        <td>${formatHorarios(item.horarios)}</td>
+        <td>${formatHorarios(item.horarios, item.cargo)}</td>
         <td>${formatDocente(item.docente_titular)}</td>
         <td>${formatDocente(item.docente_interino)}</td>
         <td>${formatSuplentes(item.docentes_suplentes)}</td>
@@ -720,8 +725,9 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   </div>
 
                   {/* Selección de Horas */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
-                    {(() => {
+                  {formData.cargo === "DOCENTE" ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
+                      {(() => {
                       const isSubjectEF = (formData.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA");
 
                       if (!isSubjectEF) {
@@ -776,7 +782,26 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                       }
                       return null;
                     })()}
-                  </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Ingrese horario (Ej: 08:00 a 12:00)" 
+                        value={h.horario_texto || ""}
+                        onChange={(e) => updateDiaHorario(index, 'horario_texto', e.target.value)}
+                        style={{ padding: '5px', flex: 1 }}
+                      />
+                      <select
+                        value={h.plaza || ""}
+                        onChange={(e) => updateDiaHorario(index, 'plaza', e.target.value)}
+                        style={{ padding: '5px', flex: 1 }}
+                      >
+                        <option value="">Seleccione Plaza...</option>
+                        {availablePlazas.map((p, i) => <option key={i} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                  )}
 
                   {h.horas.includes("EDUCACIÓN FÍSICA") && (
                     <div style={{ marginTop: '10px' }}>
@@ -852,6 +877,9 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.asignatura}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                   {Array.isArray(item.horarios) && item.horarios.map((h, i) => {
+                    if (item.cargo && item.cargo !== "DOCENTE") {
+                      return <div key={i}><strong>{h.dia}:</strong> {h.horario_texto || ""} {h.plaza ? `[${h.plaza}]` : ""}</div>;
+                    }
                     const horasConPlaza = (h.horas || []).map(hr => {
                       const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
                       const horaText = hr === "EDUCACIÓN FÍSICA" ? `EDUCACIÓN FÍSICA (${h.ef_horario || ''})` : hr;
