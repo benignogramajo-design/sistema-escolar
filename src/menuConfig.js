@@ -46,7 +46,7 @@ export const menuConfig = [
         icono: iconDocentes,
         subItems: [
           { name: "CÓDIGOS", action: "DocentesCodigos" },
-          { name: "ESTRUCTURA", action: "DocentesEstructura" },
+          { name: "ESTRUCTURA DE HORARIO", action: "DocentesEstructura" },
           { name: "DATOS DE LEGAJO", action: "DocentesDatosLegajo" },
           { name: "LEGAJO PERSONAL", action: "DocentesLegajo" },
           { name: "PERSONAL POR DIA", action: "PersonalPorDia" },

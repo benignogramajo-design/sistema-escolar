@@ -7,7 +7,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
-      <h2>ESTRUCTURA</h2>
+      <h2>ESTRUCTURA DE HORARIO</h2>
       <div className="contenido-submenu">
         <p>Módulo de estructura docente</p>
       </div>
