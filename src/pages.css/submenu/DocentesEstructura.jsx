@@ -149,7 +149,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       const efCodigo = codigos.find(c =>
         c.curso === formData.curso &&
         c.division === formData.division &&
-        c.asignatura.toUpperCase() === 'EDUCACIÓN FÍSICA'
+        (c.asignatura || '').toUpperCase() === 'EDUCACIÓN FÍSICA'
       );
       if (efCodigo && efCodigo.plazas) {
         let p = efCodigo.plazas;
