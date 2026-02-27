@@ -757,8 +757,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                     {/* Educación Física */}
                     {(() => {
                       const isSubjectEF = (formData.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA");
-                      
-                      if (isSubjectEF) {
+
+                      if (isSubjectEF || (formData.cargo && formData.cargo !== 'DOCENTE')) {
                         const hasRegularHours = h.horas.some(hr => hr !== "EDUCACIÓN FÍSICA");
                         const hora = "EDUCACIÓN FÍSICA";
 
@@ -766,7 +766,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
                             <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={hasRegularHours && h.horas.length > 0} />
                             <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>EDUCACIÓN FÍSICA</label>
-                            {h.horas.includes(hora) && (
+                            {h.horas.includes(hora) && isSubjectEF && (
                               <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
                                 {availablePlazas.length > 0 ? availablePlazas.join(" - ") : "Sin plazas"}
                               </span>
