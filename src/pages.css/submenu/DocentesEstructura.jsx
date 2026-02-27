@@ -16,6 +16,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   // --- Estados para Listas Desplegables Filtradas ---
   const [availableDivisiones, setAvailableDivisiones] = useState([]);
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
+  const [availablePlazas, setAvailablePlazas] = useState([]);
 
   // --- Estado del Formulario ---
   const initialFormState = {
@@ -23,10 +24,10 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     division: "",
     turno: "",
     asignatura: "",
-    horarios: [], // Array de objetos { dia, horas: [], ef_horario: '' }
-    docente_titular: { nombre: "VACANTE", estado: "" },
-    docente_interino: { nombre: "VACANTE", estado: "" },
-    docentes_suplentes: [] // Array de objetos { nombre: 'VACANTE', estado: '' }
+    horarios: [], // Array de objetos { dia, horas: [], ef_horario: '', plaza: '' }
+    docente_titular: { nombre: "---", estado: "" },
+    docente_interino: { nombre: "---", estado: "" },
+    docentes_suplentes: [] // Array de objetos { nombre: '---', estado: '' }
   };
   const [formData, setFormData] = useState(initialFormState);
 
@@ -77,7 +78,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           .order('apellido');
         
         const formattedDocentes = (docData || []).map(d => `${d.apellido}, ${d.nombre}`);
-        setDocentesList(["VACANTE", ...formattedDocentes]);
+        setDocentesList(formattedDocentes);
 
       } catch (error) {
         console.error("Error general:", error);
@@ -118,6 +119,29 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     }
   }, [formData.curso, formData.division, codigos]);
 
+  // --- Lógica para Plazas ---
+  useEffect(() => {
+    if (formData.curso && formData.division && formData.asignatura) {
+      const found = codigos.find(c => 
+        c.curso === formData.curso && 
+        c.division === formData.division && 
+        c.asignatura === formData.asignatura
+      );
+      
+      if (found && found.plazas) {
+        let p = found.plazas;
+        if (typeof p === 'string') {
+          try { p = JSON.parse(p); } catch (e) { p = [p]; }
+        }
+        setAvailablePlazas(Array.isArray(p) ? p : []);
+      } else {
+        setAvailablePlazas([]);
+      }
+    } else {
+      setAvailablePlazas([]);
+    }
+  }, [formData.curso, formData.division, formData.asignatura, codigos]);
+
   // --- Manejadores del Formulario ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -128,7 +152,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const addDiaHorario = () => {
     setFormData(prev => ({
       ...prev,
-      horarios: [...prev.horarios, { dia: "", horas: [], ef_horario: "" }]
+      horarios: [...prev.horarios, { dia: "", horas: [], ef_horario: "", plaza: "" }]
     }));
   };
 
@@ -174,7 +198,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const addSuplente = () => {
     setFormData(prev => ({
       ...prev,
-      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "VACANTE", estado: "" }]
+      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "---", estado: "" }]
     }));
   };
 
@@ -241,8 +265,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           turno: item.turno,
           asignatura: item.asignatura,
           horarios: Array.isArray(item.horarios) ? item.horarios : [],
-          docente_titular: item.docente_titular || { nombre: "VACANTE", estado: "" },
-          docente_interino: item.docente_interino || { nombre: "VACANTE", estado: "" },
+          docente_titular: item.docente_titular || { nombre: "---", estado: "" },
+          docente_interino: item.docente_interino || { nombre: "---", estado: "" },
           docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
         });
       }
@@ -258,10 +282,12 @@ const DocentesEstructura = ({ goBack, goHome }) => {
         onChange={(e) => updateDocenteField(type, 'nombre', e.target.value, index)}
         style={{ width: '100%', padding: '5px', marginBottom: '5px' }}
       >
+        <option value="---">---</option>
+        <option value="VACANTE">VACANTE</option>
         {docentesList.map((doc, i) => <option key={i} value={doc}>{doc}</option>)}
       </select>
       
-      {data.nombre !== "VACANTE" && (
+      {data.nombre !== "VACANTE" && data.nombre !== "---" && (
         <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
           <label style={{ cursor: 'pointer' }}>
             <input 
@@ -428,10 +454,20 @@ const DocentesEstructura = ({ goBack, goHome }) => {
               {formData.horarios.map((h, index) => (
                 <div key={index} style={{ border: '1px solid #ddd', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <select value={h.dia} onChange={(e) => updateDiaHorario(index, 'dia', e.target.value)} style={{ padding: '5px' }}>
-                      <option value="">Seleccione Día...</option>
-                      {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <div style={{ display: 'flex', gap: '10px', flex: 1 }}>
+                      <select value={h.dia} onChange={(e) => updateDiaHorario(index, 'dia', e.target.value)} style={{ padding: '5px' }}>
+                        <option value="">Seleccione Día...</option>
+                        {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                      <select 
+                        value={h.plaza || ""} 
+                        onChange={(e) => updateDiaHorario(index, 'plaza', e.target.value)}
+                        style={{ padding: '5px', flex: 1, maxWidth: '300px' }}
+                      >
+                        <option value="">Seleccione Plaza...</option>
+                        {availablePlazas.map((p, i) => <option key={i} value={p}>{p}</option>)}
+                      </select>
+                    </div>
                     <button type="button" onClick={() => removeDiaHorario(index)} style={{ backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}>X</button>
                   </div>
 
@@ -533,7 +569,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                   {Array.isArray(item.horarios) && item.horarios.map((h, i) => (
                     <div key={i}>
-                      <strong>{h.dia}:</strong> {h.horas.map(hr => hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario})` : hr.split(" ")[0]).join(", ")}
+                      <strong>{h.dia} {h.plaza ? `(Plaza: ${h.plaza})` : ""}:</strong> {h.horas.map(hr => hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario})` : hr.split(" ")[0]).join(", ")}
                     </div>
                   ))}
                 </td>
