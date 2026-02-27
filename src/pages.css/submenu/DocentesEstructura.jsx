@@ -17,6 +17,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const [availableDivisiones, setAvailableDivisiones] = useState([]);
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
   const [availablePlazas, setAvailablePlazas] = useState([]);
+  const [plazasEducacionFisica, setPlazasEducacionFisica] = useState([]);
 
   // --- Estado del Formulario ---
   const initialFormState = {
@@ -24,7 +25,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     division: "",
     turno: "",
     asignatura: "",
-    horarios: [], // Array de objetos { dia, horas: [], ef_horario: '', plaza: '' }
+    horarios: [], // Array de objetos { dia, horas: [], ef_horario: '', plazas: { [hora]: plaza } }
     docente_titular: { nombre: "---", estado: "" },
     docente_interino: { nombre: "---", estado: "" },
     docentes_suplentes: [] // Array de objetos { nombre: '---', estado: '' }
@@ -142,6 +143,26 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     }
   }, [formData.curso, formData.division, formData.asignatura, codigos]);
 
+  // --- Lógica para Plazas de Educación Física ---
+  useEffect(() => {
+    if (formData.curso && formData.division) {
+      const efCodigo = codigos.find(c =>
+        c.curso === formData.curso &&
+        c.division === formData.division &&
+        c.asignatura.toUpperCase() === 'EDUCACIÓN FÍSICA'
+      );
+      if (efCodigo && efCodigo.plazas) {
+        let p = efCodigo.plazas;
+        if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { p = [p]; } }
+        setPlazasEducacionFisica(Array.isArray(p) ? p : []);
+      } else {
+        setPlazasEducacionFisica([]);
+      }
+    } else {
+      setPlazasEducacionFisica([]);
+    }
+  }, [formData.curso, formData.division, codigos]);
+
   // --- Manejadores del Formulario ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -152,7 +173,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const addDiaHorario = () => {
     setFormData(prev => ({
       ...prev,
-      horarios: [...prev.horarios, { dia: "", horas: [], ef_horario: "", plaza: "" }]
+      horarios: [...prev.horarios, { dia: "", horas: [], ef_horario: "", plazas: {} }]
     }));
   };
 
@@ -171,11 +192,24 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const toggleHora = (index, hora) => {
     const newHorarios = [...formData.horarios];
     const currentHoras = newHorarios[index].horas;
+    const currentPlazas = newHorarios[index].plazas;
+
     if (currentHoras.includes(hora)) {
+      // Untoggle
       newHorarios[index].horas = currentHoras.filter(h => h !== hora);
+      delete currentPlazas[hora]; // Remove plaza assignment
     } else {
+      // Toggle
       newHorarios[index].horas = [...currentHoras, hora];
+      currentPlazas[hora] = ""; // Add empty plaza assignment
     }
+    newHorarios[index].plazas = currentPlazas;
+    setFormData(prev => ({ ...prev, horarios: newHorarios }));
+  };
+
+  const updateHoraPlaza = (index, hora, plaza) => {
+    const newHorarios = [...formData.horarios];
+    newHorarios[index].plazas[hora] = plaza;
     setFormData(prev => ({ ...prev, horarios: newHorarios }));
   };
 
@@ -264,13 +298,27 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           division: item.division,
           turno: item.turno,
           asignatura: item.asignatura,
-          horarios: Array.isArray(item.horarios) ? item.horarios : [],
+          horarios: (Array.isArray(item.horarios) ? item.horarios : []).map(h => ({
+            ...h,
+            plazas: h.plazas || {} // Asegurar que el objeto plazas exista
+          })),
           docente_titular: item.docente_titular || { nombre: "---", estado: "" },
           docente_interino: item.docente_interino || { nombre: "---", estado: "" },
           docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
         });
       }
     }
+  };
+
+  // --- Helpers ---
+  const getUsedPlazas = () => {
+    const used = new Set();
+    formData.horarios.forEach(h => {
+      Object.values(h.plazas).forEach(p => {
+        if (p) used.add(p);
+      });
+    });
+    return used;
   };
 
   // --- Renderizado de Componentes Auxiliares ---
@@ -355,9 +403,12 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     const formatHorarios = (horarios) => {
       if (!Array.isArray(horarios)) return "";
       return horarios.map(h => {
-        const plazaInfo = h.plaza ? `(Plaza: ${h.plaza})` : "";
-        const horasInfo = h.horas.map(hr => hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || 'N/A'})` : hr.split(" ")[0]).join(", ");
-        return `<div><strong>${h.dia} ${plazaInfo}:</strong> ${horasInfo}</div>`;
+        const horasConPlaza = (h.horas || []).map(hr => {
+          const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
+          const horaText = hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || 'N/A'})` : hr.split(" ")[0];
+          return `${horaText}${plazaInfo}`;
+        }).join(", ");
+        return `<div><strong>${h.dia}:</strong> ${horasConPlaza}</div>`;
       }).join('');
     };
 
@@ -556,45 +607,68 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                         <option value="">Seleccione Día...</option>
                         {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
-                      <select 
-                        value={h.plaza || ""} 
-                        onChange={(e) => updateDiaHorario(index, 'plaza', e.target.value)}
-                        style={{ padding: '5px', flex: 1, maxWidth: '300px' }}
-                      >
-                        <option value="">Seleccione Plaza...</option>
-                        {availablePlazas.map((p, i) => <option key={i} value={p}>{p}</option>)}
-                      </select>
                     </div>
                     <button type="button" onClick={() => removeDiaHorario(index)} style={{ backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '3px', padding: '5px 10px', cursor: 'pointer' }}>X</button>
                   </div>
 
                   {/* Selección de Horas */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {(formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : []).map(hora => (
-                      <label key={hora} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <input type="checkbox" checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
-                        {hora.split(" ")[0]} {/* Muestra solo 1°, 2°, etc para ahorrar espacio */}
-                      </label>
-                    ))}
-                    {(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []).map(hora => (
-                      <label key={hora} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <input type="checkbox" checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
-                        {hora.split(" ")[0]}
-                      </label>
-                    ))}
-                    
-                    <label style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 'bold' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={h.horas.includes("EDUCACIÓN FÍSICA")} 
-                        onChange={() => toggleHora(index, "EDUCACIÓN FÍSICA")} 
-                      />
-                      ED. FÍSICA
-                    </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
+                    {(() => {
+                      const usedPlazas = getUsedPlazas();
+                      const horasDelTurno = (formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : [])
+                        .concat(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []);
+
+                      return horasDelTurno.map(hora => {
+                        const currentPlazaForThisSlot = h.plazas[hora];
+                        const finalOptions = availablePlazas.filter(p => !usedPlazas.has(p) || p === currentPlazaForThisSlot);
+
+                        return (
+                          <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
+                            <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
+                            <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora.split(" ")[0]}</label>
+                            {h.horas.includes(hora) && (
+                              <select
+                                value={currentPlazaForThisSlot || ""}
+                                onChange={(e) => updateHoraPlaza(index, hora, e.target.value)}
+                                style={{ fontSize: '11px', padding: '2px' }}
+                              >
+                                <option value="">Plaza...</option>
+                                {finalOptions.map(p => <option key={p} value={p}>{p}</option>)}
+                              </select>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    {/* Educación Física */}
+                    {(() => {
+                      const usedPlazas = getUsedPlazas();
+                      const hora = "EDUCACIÓN FÍSICA";
+                      const currentPlazaForThisSlot = h.plazas[hora];
+                      const finalOptions = plazasEducacionFisica.filter(p => !usedPlazas.has(p) || p === currentPlazaForThisSlot);
+
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                          <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
+                          <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
+                          {h.horas.includes(hora) && (
+                            <select
+                              value={currentPlazaForThisSlot || ""}
+                              onChange={(e) => updateHoraPlaza(index, hora, e.target.value)}
+                              style={{ fontSize: '11px', padding: '2px' }}
+                            >
+                              <option value="">Plaza...</option>
+                              {finalOptions.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {h.horas.includes("EDUCACIÓN FÍSICA") && (
-                    <div style={{ marginTop: '5px' }}>
+                    <div style={{ marginTop: '10px' }}>
                       <input 
                         type="text" 
                         placeholder="Ingrese horario Ed. Física (Ej: 14:00 a 15:00)" 
@@ -664,11 +738,14 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                 <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>{item.turno}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.asignatura}</td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {Array.isArray(item.horarios) && item.horarios.map((h, i) => (
-                    <div key={i}>
-                      <strong>{h.dia} {h.plaza ? `(Plaza: ${h.plaza})` : ""}:</strong> {h.horas.map(hr => hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario})` : hr.split(" ")[0]).join(", ")}
-                    </div>
-                  ))}
+                  {Array.isArray(item.horarios) && item.horarios.map((h, i) => {
+                    const horasConPlaza = (h.horas || []).map(hr => {
+                      const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
+                      const horaText = hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || ''})` : hr.split(" ")[0];
+                      return `${horaText}${plazaInfo}`;
+                    }).join(", ");
+                    return <div key={i}><strong>{h.dia}:</strong> {horasConPlaza}</div>;
+                  })}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                   {item.docente_titular?.nombre} 
