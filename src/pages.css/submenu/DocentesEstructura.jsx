@@ -191,22 +191,33 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
   const toggleHora = (index, hora) => {
     const newHorarios = [...formData.horarios];
-    const currentHoras = newHorarios[index].horas;
-    const currentPlazas = newHorarios[index].plazas;
+    let currentHoras = [...newHorarios[index].horas];
+    let currentPlazas = {...newHorarios[index].plazas};
 
-    if (currentHoras.includes(hora)) {
-      // Untoggle
-      newHorarios[index].horas = currentHoras.filter(h => h !== hora);
-      delete currentPlazas[hora]; // Remove plaza assignment
-    } else {
-      // Toggle
-      newHorarios[index].horas = [...currentHoras, hora];
+    const isChecking = !currentHoras.includes(hora);
+
+    if (isChecking) {
       if (hora === "EDUCACIÓN FÍSICA") {
+        // Clear all regular hours and their plazas
+        Object.keys(currentPlazas).forEach(key => delete currentPlazas[key]);
+        currentHoras = [hora]; // Set EF as the only hour
         currentPlazas[hora] = plazasEducacionFisica.join(" - ");
-      } else {
-        currentPlazas[hora] = ""; 
+      } else { // Checking a regular hour
+        // If EF is present, we are switching, so clear EF
+        if (currentHoras.includes("EDUCACIÓN FÍSICA")) {
+          delete currentPlazas["EDUCACIÓN FÍSICA"];
+          currentHoras = []; // Start fresh
+        }
+        // Add the new regular hour
+        currentHoras.push(hora);
+        currentPlazas[hora] = "";
       }
+    } else { // Unchecking
+      currentHoras = currentHoras.filter(h => h !== hora);
+      delete currentPlazas[hora];
     }
+
+    newHorarios[index].horas = currentHoras;
     newHorarios[index].plazas = currentPlazas;
     setFormData(prev => ({ ...prev, horarios: newHorarios }));
   };
@@ -630,6 +641,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   {/* Selección de Horas */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
                     {(() => {
+                      const isEFChecked = h.horas.includes("EDUCACIÓN FÍSICA");
                       const horasDelTurno = (formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : [])
                         .concat(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []);
 
@@ -639,7 +651,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
                         return (
                           <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
-                            <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
+                            <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={isEFChecked} />
                             <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora.split(" ")[0]}</label>
                             {h.horas.includes(hora) && (
                               <select
@@ -658,11 +670,12 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
                     {/* Educación Física */}
                     {(() => {
+                      const hasRegularHours = h.horas.some(hr => hr !== "EDUCACIÓN FÍSICA");
                       const hora = "EDUCACIÓN FÍSICA";
 
                       return (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
-                          <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} />
+                          <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={hasRegularHours && h.horas.length > 0} />
                           <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
                           {h.horas.includes(hora) && (
                             <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
