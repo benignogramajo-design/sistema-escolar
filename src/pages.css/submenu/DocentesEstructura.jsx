@@ -488,7 +488,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       return horarios.map(h => {
         const horasConPlaza = (h.horas || []).map(hr => {
           const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
-          const horaText = hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || 'N/A'})` : hr.split(" ")[0];
+          const horaText = hr === "EDUCACIÓN FÍSICA" ? `EDUCACIÓN FÍSICA (${h.ef_horario || 'N/A'})` : hr;
           return `${horaText}${plazaInfo}`;
         }).join(", ");
         return `<div><strong>${h.dia}:</strong> ${horasConPlaza}</div>`;
@@ -854,7 +854,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   {Array.isArray(item.horarios) && item.horarios.map((h, i) => {
                     const horasConPlaza = (h.horas || []).map(hr => {
                       const plazaInfo = h.plazas && h.plazas[hr] ? ` [${h.plazas[hr]}]` : '';
-                      const horaText = hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || ''})` : hr.split(" ")[0];
+                      const horaText = hr === "EDUCACIÓN FÍSICA" ? `EDUCACIÓN FÍSICA (${h.ef_horario || ''})` : hr;
                       return `${horaText}${plazaInfo}`;
                     }).join(", ");
                     return <div key={i}><strong>{h.dia}:</strong> {horasConPlaza}</div>;
