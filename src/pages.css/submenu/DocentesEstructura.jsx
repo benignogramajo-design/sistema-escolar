@@ -349,7 +349,104 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
   // --- Imprimir ---
   const handlePrint = () => {
-    window.print(); // Simplificado para este ejemplo, idealmente generaría un HTML limpio
+    const fullLogoUrl = new URL(logo, window.location.href).href;
+
+    // Helper para formatear los datos complejos para la tabla
+    const formatHorarios = (horarios) => {
+      if (!Array.isArray(horarios)) return "";
+      return horarios.map(h => {
+        const plazaInfo = h.plaza ? `(Plaza: ${h.plaza})` : "";
+        const horasInfo = h.horas.map(hr => hr === "EDUCACIÓN FÍSICA" ? `EF (${h.ef_horario || 'N/A'})` : hr.split(" ")[0]).join(", ");
+        return `<div><strong>${h.dia} ${plazaInfo}:</strong> ${horasInfo}</div>`;
+      }).join('');
+    };
+
+    const formatDocente = (docente) => {
+      if (!docente || !docente.nombre || docente.nombre === '---') return "";
+      const estado = docente.estado ? ` (${docente.estado})` : "";
+      return `${docente.nombre}${estado}`;
+    };
+
+    const formatSuplentes = (suplentes) => {
+      if (!Array.isArray(suplentes) || suplentes.length === 0) return "";
+      return suplentes.map(s => `<div>${formatDocente(s)}</div>`).join('');
+    };
+
+    const rowsHtml = filteredData.map(item => `
+      <tr>
+        <td>${item.curso || ''} ${item.division || ''}</td>
+        <td>${item.turno || ''}</td>
+        <td>${item.asignatura || ''}</td>
+        <td>${formatHorarios(item.horarios)}</td>
+        <td>${formatDocente(item.docente_titular)}</td>
+        <td>${formatDocente(item.docente_interino)}</td>
+        <td>${formatSuplentes(item.docentes_suplentes)}</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Estructura de Horario</title>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          table { width: 100%; border-collapse: collapse; font-size: 10px; }
+          th, td { border: 1px solid #000; padding: 5px; text-align: left; vertical-align: top; }
+          th { background-color: #f2f2f2; }
+          .header-container { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .logo { width: 60px; height: auto; margin-right: 20px; }
+          .school-info h1 { font-size: 16px; margin: 0; }
+          .school-info p { font-size: 12px; margin: 2px 0; }
+          @media print {
+            .no-print { display: none !important; }
+            thead { display: table-header-group; } 
+            tr { page-break-inside: avoid; }
+            @page { size: landscape; margin: 15mm; }
+          }
+          .preview-controls { position: fixed; bottom: 0; left: 0; width: 100%; background: #333; padding: 15px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); z-index: 1000; }
+          .btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+          .btn-pdf { background-color: #007bff; color: white; }
+          .btn-print { background-color: #ffc107; color: black; }
+          .btn-cancel { background-color: #dc3545; color: white; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <thead>
+            <tr>
+              <th colspan="7" style="border: none; background: none; text-align: left; padding: 0 0 10px 0;">
+                <div class="header-container">
+                  <img src="${fullLogoUrl}" class="logo" alt="Logo" />
+                  <div class="school-info">
+                    <h1>Escuela Secundaria Gobernador Garmendia</h1>
+                    <p>CUE: 9001717/00 - Av. de la Soja S/N° - Gobernador Garmendia - Burruyacu</p>
+                    <p><strong>ESTRUCTURA DE HORARIO</strong></p>
+                  </div>
+                </div>
+              </th>
+            </tr>
+            <tr>
+              <th>Curso/Div</th><th>Turno</th><th>Asignatura</th><th>Días y Horarios</th>
+              <th>Titular</th><th>Interino</th><th>Suplentes</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="preview-controls no-print">
+          <button class="btn btn-pdf" onclick="window.print()">GUARDAR COMO PDF</button>
+          <button class="btn btn-print" onclick="window.print()">IMPRIMIR</button>
+          <button class="btn btn-cancel" onclick="window.close()">CANCELAR</button>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    }
   };
 
   // Listas únicas para filtros
