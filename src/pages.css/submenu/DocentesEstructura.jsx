@@ -149,7 +149,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       const efCodigo = codigos.find(c =>
         c.curso === formData.curso &&
         c.division === formData.division &&
-        (c.asignatura || '').toUpperCase() === 'EDUCACIÓN FÍSICA'
+        (c.asignatura || '').toUpperCase().includes('EDUCACIÓN FÍSICA')
       );
       if (efCodigo && efCodigo.plazas) {
         let p = efCodigo.plazas;
@@ -641,49 +641,59 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   {/* Selección de Horas */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
                     {(() => {
-                      const isEFChecked = h.horas.includes("EDUCACIÓN FÍSICA");
-                      const horasDelTurno = (formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : [])
-                        .concat(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []);
+                      const isSubjectEF = (formData.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA");
 
-                      return horasDelTurno.map(hora => {
-                        const currentPlazaForThisSlot = h.plazas[hora];
-                        const finalOptions = getOptionsForPlaza(currentPlazaForThisSlot);
+                      if (!isSubjectEF) {
+                        const isEFChecked = h.horas.includes("EDUCACIÓN FÍSICA");
+                        const horasDelTurno = (formData.turno === "Mañana" || formData.turno === "Mañana y Tarde" ? horariosManana : [])
+                          .concat(formData.turno === "Tarde" || formData.turno === "Mañana y Tarde" ? horariosTarde : []);
 
-                        return (
-                          <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
-                            <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={isEFChecked} />
-                            <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora.split(" ")[0]}</label>
-                            {h.horas.includes(hora) && (
-                              <select
-                                value={currentPlazaForThisSlot || ""}
-                                onChange={(e) => updateHoraPlaza(index, hora, e.target.value)}
-                                style={{ fontSize: '11px', padding: '2px' }}
-                              >
-                                <option value="">Plaza...</option>
-                                {finalOptions.map(p => <option key={p} value={p}>{p}</option>)}
-                              </select>
-                            )}
-                          </div>
-                        );
-                      });
+                        return horasDelTurno.map(hora => {
+                          const currentPlazaForThisSlot = h.plazas[hora];
+                          const finalOptions = getOptionsForPlaza(currentPlazaForThisSlot);
+
+                          return (
+                            <div key={hora} style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px' }}>
+                              <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={isEFChecked} />
+                              <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>{hora.split(" ")[0]}</label>
+                              {h.horas.includes(hora) && (
+                                <select
+                                  value={currentPlazaForThisSlot || ""}
+                                  onChange={(e) => updateHoraPlaza(index, hora, e.target.value)}
+                                  style={{ fontSize: '11px', padding: '2px' }}
+                                >
+                                  <option value="">Plaza...</option>
+                                  {finalOptions.map(p => <option key={p} value={p}>{p}</option>)}
+                                </select>
+                              )}
+                            </div>
+                          );
+                        });
+                      }
+                      return null;
                     })()}
 
                     {/* Educación Física */}
                     {(() => {
-                      const hasRegularHours = h.horas.some(hr => hr !== "EDUCACIÓN FÍSICA");
-                      const hora = "EDUCACIÓN FÍSICA";
+                      const isSubjectEF = (formData.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA");
+                      
+                      if (isSubjectEF) {
+                        const hasRegularHours = h.horas.some(hr => hr !== "EDUCACIÓN FÍSICA");
+                        const hora = "EDUCACIÓN FÍSICA";
 
-                      return (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
-                          <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={hasRegularHours && h.horas.length > 0} />
-                          <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
-                          {h.horas.includes(hora) && (
-                            <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
-                              {plazasEducacionFisica.length > 0 ? plazasEducacionFisica.join(" - ") : "Sin plazas"}
-                            </span>
-                          )}
-                        </div>
-                      );
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', border: '1px solid #eee', padding: '3px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                            <input type="checkbox" id={`cb-${index}-${hora}`} checked={h.horas.includes(hora)} onChange={() => toggleHora(index, hora)} disabled={hasRegularHours && h.horas.length > 0} />
+                            <label htmlFor={`cb-${index}-${hora}`} style={{ fontSize: '12px', cursor: 'pointer' }}>ED. FÍSICA</label>
+                            {h.horas.includes(hora) && (
+                              <span style={{ fontSize: '11px', padding: '2px', marginLeft: '5px', color: '#555' }}>
+                                {availablePlazas.length > 0 ? availablePlazas.join(" - ") : "Sin plazas"}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      }
+                      return null;
                     })()}
                   </div>
 
