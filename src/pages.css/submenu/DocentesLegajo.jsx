@@ -261,27 +261,28 @@ const DocentesLegajo = ({ goBack, goHome }) => {
   };
 
   // --- Renderizado del Contenido del Docente (Modal / Impresión) ---
-  const renderDocenteContent = (docente) => {
+  const renderDocenteContent = (docente, isPreview = false) => {
     if (!docente) return null;
 
     const gridManana = buildScheduleGrid(docente.assignments, horariosMananaLabels, "Mañana");
     const gridTarde = buildScheduleGrid(docente.assignments, horariosTardeLabels, "Tarde");
     const infoEF = getEducacionFisicaInfo(docente.assignments);
 
-    return (
-      <div className="docente-detail">
-        {/* Encabezado solo para impresión */}
-        <div className="print-header" style={{ display: showPrintPreview ? 'block' : 'none', borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px', color: 'black' }}>
-           <div style={{ display: 'flex', alignItems: 'center' }}>
-              <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
-              <div>
-                <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
-                <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
-                <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>LEGAJO DEL PERSONAL</p>
-              </div>
-           </div>
-        </div>
+    const Header = () => (
+      <div className="print-header" style={{ borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px', color: 'black' }}>
+         <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
+            <div>
+              <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
+              <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
+              <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>LEGAJO DEL PERSONAL</p>
+            </div>
+         </div>
+      </div>
+    );
 
+    const DatosPersonales = () => (
+      <>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
           <div style={{ border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
             <h4 style={{ borderBottom: '1px solid #eee', paddingBottom: '5px', marginTop: 0 }}>DATOS PERSONALES</h4>
@@ -304,7 +305,11 @@ const DocentesLegajo = ({ goBack, goHome }) => {
           <p><strong>CARGOS:</strong> {docente.cargos || '---'}</p>
           <p><strong>ESTADO:</strong> {docente.display.estados || '---'}</p>
         </div>
+      </>
+    );
 
+    const TablaManana = () => (
+      <>
         <h4 style={{ textAlign: 'center', backgroundColor: '#eee', padding: '5px' }}>HORARIOS - TURNO MAÑANA</h4>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', marginBottom: '10px' }}>
           <thead>
@@ -322,7 +327,11 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             ))}
           </tbody>
         </table>
+      </>
+    );
 
+    const TablaTarde = () => (
+      <>
         <h4 style={{ textAlign: 'center', backgroundColor: '#eee', padding: '5px' }}>HORARIOS - TURNO TARDE</h4>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', marginBottom: '20px' }}>
           <thead>
@@ -340,13 +349,39 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             ))}
           </tbody>
         </table>
+      </>
+    );
 
-        {infoEF && (
-          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f4f8', border: '1px solid #bce0fd', borderRadius: '5px' }}>
-            <strong>EDUCACIÓN FÍSICA:</strong>
-            <pre style={{ fontFamily: 'inherit', margin: '5px 0' }}>{infoEF}</pre>
+    const InfoEF = () => infoEF ? (
+      <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f4f8', border: '1px solid #bce0fd', borderRadius: '5px' }}>
+        <strong>EDUCACIÓN FÍSICA:</strong>
+        <pre style={{ fontFamily: 'inherit', margin: '5px 0' }}>{infoEF}</pre>
+      </div>
+    ) : null;
+
+    if (isPreview) {
+      return (
+        <div>
+          <div className="print-page">
+            <Header />
+            <DatosPersonales />
+            <TablaManana />
+            <InfoEF />
           </div>
-        )}
+          <div className="print-page">
+            <Header />
+            <TablaTarde />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="docente-detail">
+        <DatosPersonales />
+        <TablaManana />
+        <TablaTarde />
+        <InfoEF />
       </div>
     );
   };
@@ -473,9 +508,9 @@ const DocentesLegajo = ({ goBack, goHome }) => {
 
       {/* Vista Previa de Impresión */}
       {showPrintPreview && selectedDocente && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'white', zIndex: 2000, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, padding: '40px', maxWidth: '210mm', margin: '0 auto', backgroundColor: 'white' }}>
-            {renderDocenteContent(selectedDocente)}
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {renderDocenteContent(selectedDocente, true)}
           </div>
           
           <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', backgroundColor: '#333', padding: '15px', textAlign: 'center', boxShadow: '0 -2px 10px rgba(0,0,0,0.3)' }}>
@@ -499,10 +534,21 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             </button>
           </div>
           <style>{`
+            .print-page {
+              width: 210mm;
+              min-height: 297mm;
+              padding: 20mm;
+              margin-bottom: 20px;
+              background-color: white;
+              box-shadow: 0 0 10px rgba(0,0,0,0.5);
+              box-sizing: border-box;
+            }
             @media print {
               .no-print { display: none !important; }
               body { margin: 0; padding: 0; }
-              @page { size: A4; margin: 10mm; }
+              .print-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: always; }
+              .print-page:last-child { page-break-after: auto; }
+              @page { size: A4; margin: 0; }
             }
           `}</style>
         </div>
