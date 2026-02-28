@@ -164,23 +164,56 @@ const DocentesLegajo = ({ goBack, goHome }) => {
       if (Array.isArray(asig.horarios)) {
         asig.horarios.forEach(h => {
           const diaIndex = diasSemana.indexOf(h.dia);
-          if (diaIndex !== -1 && Array.isArray(h.horas)) {
+          if (diaIndex === -1) return; // Si el día no es válido, saltar
+
+          // Lógica para cargos DOCENTE con horas específicas
+          if (asig.cargo === 'DOCENTE' && Array.isArray(h.horas)) {
             h.horas.forEach(horaStr => {
-              // Buscar índice de la fila que coincide con la hora
               const rowIndex = turnoLabels.findIndex(l => l === horaStr);
-              if (rowIndex !== -1) {
-                // Obtener plaza específica para esa hora si existe
-                let plaza = "";
-                if (h.plazas && h.plazas[horaStr]) plaza = h.plazas[horaStr];
-                
-                const content = `${asig.asignatura || asig.cargo} ${plaza ? `(${plaza})` : ''}`.trim();
-                
-                // Si ya hay contenido, concatenar (caso raro de superposición)
-                if (grid[rowIndex][h.dia] !== "---") {
-                  grid[rowIndex][h.dia] += " / " + content;
-                } else {
-                  grid[rowIndex][h.dia] = content;
-                }
+              if (rowIndex === -1) return;
+
+              const plaza = (h.plazas && h.plazas[horaStr]) ? h.plazas[horaStr] : '';
+              // Formato: CURSO y DIVISIÓN - ASIGNATURA - PLAZA
+              let content = `${asig.curso} y ${asig.division} - ${asig.asignatura}`;
+              if (plaza) {
+                content += ` - ${plaza}`;
+              }
+              
+              if (grid[rowIndex][h.dia] !== "---") {
+                grid[rowIndex][h.dia] += " / " + content;
+              } else {
+                grid[rowIndex][h.dia] = content;
+              }
+            });
+          } 
+          // Lógica para cargos NO DOCENTE con rangos de texto (horario_texto)
+          else if (asig.cargo !== 'DOCENTE' && h.horario_texto) {
+            // Helper para parsear "HH:MM" a minutos y extraer rango de "HH:MM a HH:MM"
+            const getRange = text => {
+              const parseTime = timeStr => {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return hours * 60 + minutes;
+              };
+              const match = text.replace(/\s/g, '').match(/(\d{2}:\d{2})a|-/);
+              return match ? { start: parseTime(match[1]), end: parseTime(match[2]) } : null;
+            };
+
+            const nonDocenteRange = getRange(h.horario_texto);
+            if (!nonDocenteRange) return; // No se pudo parsear el rango
+
+            turnoLabels.forEach((label, rowIndex) => {
+              const labelRange = getRange(label);
+              if (!labelRange) return;
+
+              // Comprobar si los rangos se superponen
+              if (Math.max(labelRange.start, nonDocenteRange.start) < Math.min(labelRange.end, nonDocenteRange.end)) {
+                const plaza = h.plaza || '';
+                // Formato: CARGO - PLAZA
+                let content = `${asig.cargo}`;
+                if (plaza) content += ` - ${plaza}`;
+
+                if (grid[rowIndex][h.dia] !== "---") grid[rowIndex][h.dia] += " / " + content;
+                else grid[rowIndex][h.dia] = content;
               }
             });
           }
