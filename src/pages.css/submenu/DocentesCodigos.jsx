@@ -323,6 +323,12 @@ const DocentesCodigos = ({ goBack, goHome }) => {
     );
   });
 
+  // Calculo de horas totales
+  const totalHs = filteredData.reduce((sum, item) => {
+    const hs = parseFloat(item.carga_horaria);
+    return sum + (isNaN(hs) ? 0 : hs);
+  }, 0);
+
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
@@ -502,6 +508,15 @@ const DocentesCodigos = ({ goBack, goHome }) => {
                 </tr>
               )}
             </tbody>
+            {filteredData.length > 0 && (
+              <tfoot>
+                <tr style={{ backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
+                  <td colSpan="5" style={{ padding: "10px", border: "1px solid #ddd", textAlign: "right" }}>TOTAL HORAS:</td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>{totalHs}</td>
+                  <td style={{ padding: "10px", border: "1px solid #ddd" }}></td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         )}
       </div>
