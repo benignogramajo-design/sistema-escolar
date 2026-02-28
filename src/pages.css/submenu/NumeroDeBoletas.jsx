@@ -157,18 +157,23 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
 
   // --- Listas para Selects del Formulario ---
   // Docentes disponibles (desde datos de legajo)
-  const availableDocentes = [...new Set(docentesLegajo.map(d => `${d.apellido}, ${d.nombre}`))].sort();
+  const availableDocentes = [...new Set(
+    docentesLegajo
+      .filter(d => d.apellido && d.nombre)
+      .map(d => `${d.apellido}, ${d.nombre}`)
+  )].sort();
 
-  const availableCursos = [...new Set(codigos.map(c => c.curso).filter(Boolean))].sort();
+  // Convertimos a String para asegurar comparaciones correctas (ej: "1" vs 1)
+  const availableCursos = [...new Set(codigos.map(c => String(c.curso)).filter(c => c && c !== "null" && c !== "undefined"))].sort();
   
   // Divisiones filtradas por curso seleccionado
   const availableDivisiones = formData.curso 
-    ? [...new Set(codigos.filter(c => c.curso === formData.curso).map(c => c.division).filter(Boolean))].sort()
+    ? [...new Set(codigos.filter(c => String(c.curso) === String(formData.curso)).map(c => c.division).filter(Boolean))].sort()
     : [];
 
   // Asignaturas filtradas por curso y división
   const availableAsignaturas = (formData.curso && formData.division)
-    ? [...new Set(codigos.filter(c => c.curso === formData.curso && c.division === formData.division).map(c => c.asignatura).filter(Boolean))].sort()
+    ? [...new Set(codigos.filter(c => String(c.curso) === String(formData.curso) && String(c.division) === String(formData.division)).map(c => c.asignatura).filter(Boolean))].sort()
     : [];
 
   // --- Manejadores ---
