@@ -894,29 +894,19 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   })}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {(!filters.estado || item.docente_titular?.estado === filters.estado) && (
-                    <>
-                      {item.docente_titular?.nombre} 
-                      {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
-                    </>
-                  )}
+                  {item.docente_titular?.nombre} 
+                  {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {(!filters.estado || item.docente_interino?.estado === filters.estado) && (
-                    <>
-                      {item.docente_interino?.nombre}
-                      {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
-                    </>
-                  )}
+                  {item.docente_interino?.nombre}
+                  {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes
-                    .filter(s => !filters.estado || s.estado === filters.estado)
-                    .map((s, i) => (
-                      <div key={i}>
-                        {s.nombre}
-                        {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
-                      </div>
+                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.map((s, i) => (
+                    <div key={i}>
+                      {s.nombre}
+                      {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
+                    </div>
                   ))}
                 </td>
               </tr>
