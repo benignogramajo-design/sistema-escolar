@@ -71,6 +71,7 @@ const DocentesLegajo = ({ goBack, goHome }) => {
         });
 
         // Agregar información para la tabla principal
+        const cargos = [...new Set(assignments.map(a => a.cargo).filter(Boolean))].join(", ");
         const cursos = [...new Set(assignments.map(a => a.curso).filter(Boolean))].join(", ");
         const divisiones = [...new Set(assignments.map(a => a.division).filter(Boolean))].join(", ");
         const turnos = [...new Set(assignments.map(a => a.turno).filter(Boolean))].join(", ");
@@ -90,8 +91,23 @@ const DocentesLegajo = ({ goBack, goHome }) => {
         });
         const asigPlaza = [...new Set(asigPlazaList)].join("; ");
 
-        // Días
-        const dias = [...new Set(assignments.flatMap(a => Array.isArray(a.horarios) ? a.horarios.map(h => h.dia) : []))].join(", ");
+        // Días y Horarios
+        const diasHorariosList = {};
+        assignments.forEach(a => {
+            if (Array.isArray(a.horarios)) {
+                a.horarios.forEach(h => {
+                    if (!diasHorariosList[h.dia]) diasHorariosList[h.dia] = new Set();
+                    
+                    if (a.cargo !== 'DOCENTE' && h.horario_texto) {
+                        diasHorariosList[h.dia].add(h.horario_texto);
+                    } else if (Array.isArray(h.horas)) {
+                        h.horas.forEach(hora => diasHorariosList[h.dia].add(hora.split(' ')[0]));
+                    }
+                });
+            }
+        });
+        const diasHorarios = Object.entries(diasHorariosList)
+            .map(([dia, horasSet]) => `${dia} (${[...horasSet].join(', ')})`).join('; ');
 
         // Estado (buscar el estado específico del docente en esas asignaciones)
         const estados = [...new Set(assignments.map(a => {
@@ -122,7 +138,7 @@ const DocentesLegajo = ({ goBack, goHome }) => {
           nombreCompleto,
           edad,
           assignments, // Guardamos las asignaciones crudas para el modal
-          display: { cursos, divisiones, turnos, asigPlaza, dias, estados }
+          display: { cargos, cursos, divisiones, turnos, asigPlaza, diasHorarios, estados }
         };
       });
 
@@ -138,26 +154,45 @@ const DocentesLegajo = ({ goBack, goHome }) => {
   const filteredDocentes = docentes.filter(d => {
     const f = filters;
     const matchDocente = !f.docente || d.nombreCompleto.toLowerCase().includes(f.docente.toLowerCase());
-    const matchCargo = !f.cargo || (d.cargos && d.cargos.toLowerCase().includes(f.cargo.toLowerCase()));
+    const matchCargo = !f.cargo || (d.display.cargos && d.display.cargos.toLowerCase().includes(f.cargo.toLowerCase()));
     const matchCurso = !f.curso || d.display.cursos.includes(f.curso);
     const matchDivision = !f.division || d.display.divisiones.includes(f.division);
     const matchAsignatura = !f.asignatura || d.display.asigPlaza.toLowerCase().includes(f.asignatura.toLowerCase());
     const matchPlaza = !f.plaza || d.display.asigPlaza.includes(f.plaza);
     const matchTurno = !f.turno || d.display.turnos.includes(f.turno);
-    const matchDia = !f.dia || d.display.dias.includes(f.dia);
+    const matchDia = !f.dia || d.display.diasHorarios.includes(f.dia);
     const matchEstado = !f.estado || d.display.estados.includes(f.estado);
 
     return matchDocente && matchCargo && matchCurso && matchDivision && matchAsignatura && matchPlaza && matchTurno && matchDia && matchEstado;
   });
 
   // --- Lógica de Grillas de Horarios ---
-  const buildScheduleGrid = (assignments, turnoLabels) => {
+  const buildScheduleGrid = (allAssignments, turnoLabels, turno) => {
+    // Filter assignments for the specific turn
+    const assignments = allAssignments.filter(a => a.turno?.includes(turno));
+
     // Inicializar grilla vacía: filas = horas, columnas = días
     const grid = turnoLabels.map(label => {
       const row = { hora: label };
       diasSemana.forEach(dia => row[dia] = "---");
       return row;
     });
+
+    // Helper para parsear "HH:MM" a minutos y extraer rango de "HH:MM a HH:MM"
+    const getRange = text => {
+      if (!text) return null;
+      const parseTime = timeStr => {
+        if (!timeStr) return NaN;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + (minutes || 0);
+      };
+      // Regex to match HH:MM a HH:MM or HH:MM - HH:MM
+      const match = text.match(/(\d{1,2}:\d{2})\s*(?:a|-)\s*(\d{1,2}:\d{2})/);
+      if (match && match[1] && match[2]) {
+        return { start: parseTime(match[1]), end: parseTime(match[2]) };
+      }
+      return null;
+    };
 
     // Rellenar grilla
     assignments.forEach(asig => {
@@ -173,31 +208,18 @@ const DocentesLegajo = ({ goBack, goHome }) => {
               if (rowIndex === -1) return;
 
               const plaza = (h.plazas && h.plazas[horaStr]) ? h.plazas[horaStr] : '';
-              // Formato: CURSO y DIVISIÓN - ASIGNATURA - PLAZA
-              let content = `${asig.curso} y ${asig.division} - ${asig.asignatura}`;
+              // Formato: CURSODIV - ASIGNATURA - PLAZA
+              let content = `${asig.curso || ''}${asig.division || ''} - ${asig.asignatura}`;
               if (plaza) {
                 content += ` - ${plaza}`;
               }
               
-              if (grid[rowIndex][h.dia] !== "---") {
-                grid[rowIndex][h.dia] += " / " + content;
-              } else {
-                grid[rowIndex][h.dia] = content;
-              }
+              if (grid[rowIndex][h.dia] !== "---") grid[rowIndex][h.dia] += " / " + content;
+              else grid[rowIndex][h.dia] = content;
             });
           } 
           // Lógica para cargos NO DOCENTE con rangos de texto (horario_texto)
           else if (asig.cargo !== 'DOCENTE' && h.horario_texto) {
-            // Helper para parsear "HH:MM" a minutos y extraer rango de "HH:MM a HH:MM"
-            const getRange = text => {
-              const parseTime = timeStr => {
-                const [hours, minutes] = timeStr.split(':').map(Number);
-                return hours * 60 + minutes;
-              };
-              const match = text.replace(/\s/g, '').match(/(\d{2}:\d{2})a|-/);
-              return match ? { start: parseTime(match[1]), end: parseTime(match[2]) } : null;
-            };
-
             const nonDocenteRange = getRange(h.horario_texto);
             if (!nonDocenteRange) return; // No se pudo parsear el rango
 
@@ -242,8 +264,8 @@ const DocentesLegajo = ({ goBack, goHome }) => {
   const renderDocenteContent = (docente) => {
     if (!docente) return null;
 
-    const gridManana = buildScheduleGrid(docente.assignments, horariosMananaLabels);
-    const gridTarde = buildScheduleGrid(docente.assignments, horariosTardeLabels);
+    const gridManana = buildScheduleGrid(docente.assignments, horariosMananaLabels, "Mañana");
+    const gridTarde = buildScheduleGrid(docente.assignments, horariosTardeLabels, "Tarde");
     const infoEF = getEducacionFisicaInfo(docente.assignments);
 
     return (
@@ -377,12 +399,12 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '12px' }}>
               <thead>
                 <tr style={{ backgroundColor: "#333", color: "white" }}>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DOCENTE</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>CARGO</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>CURSO/DIV</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>ASIGNATURA - PLAZA</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>TURNO</th>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DÍAS</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DÍA / HORARIO</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>ESTADO</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>ACCIONES</th>
                 </tr>
@@ -394,11 +416,11 @@ const DocentesLegajo = ({ goBack, goHome }) => {
                   filteredDocentes.map((doc, i) => (
                     <tr key={i}>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.nombreCompleto}</td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.cargos}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.cargos}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.cursos} {doc.display.divisiones}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.asigPlaza}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.turnos}</td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.dias}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.diasHorarios}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{doc.display.estados}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>
                         <button 
