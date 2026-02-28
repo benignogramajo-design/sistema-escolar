@@ -58,14 +58,7 @@ const DocentesLegajo = ({ goBack, goHome }) => {
 
       if (estError && estError.code !== 'PGRST116') throw estError;
 
-      // 3. Obtener Códigos (Para turno dinámico)
-      const { data: codData, error: codError } = await supabase
-        .from('codigos')
-        .select('*');
-
-      if (codError) throw codError;
-
-      // 4. Procesar y combinar datos
+      // 3. Procesar y combinar datos
       const processedData = (docData || []).map(doc => {
         const nombreCompleto = `${doc.apellido}, ${doc.nombre}`;
         
@@ -77,14 +70,16 @@ const DocentesLegajo = ({ goBack, goHome }) => {
           return isTitular || isInterino || isSuplente;
         });
 
-        // Actualizar turno dinámicamente basado en códigos
+        // Normalizar turno (Mañana, MAÑANA -> Mañana)
         const assignments = rawAssignments.map(asig => {
-          let dynamicTurno = asig.turno;
-          if (asig.cargo === "DOCENTE" && asig.curso && asig.division) {
-            const found = (codData || []).find(c => c.curso === asig.curso && c.division === asig.division);
-            if (found) dynamicTurno = found.turno;
-          }
-          return { ...asig, turno: dynamicTurno };
+          let turnoNormalizado = asig.turno || "";
+          const upper = turnoNormalizado.toUpperCase();
+          
+          if (upper.includes("MAÑANA") && upper.includes("TARDE")) turnoNormalizado = "Mañana y Tarde";
+          else if (upper.includes("MAÑANA")) turnoNormalizado = "Mañana";
+          else if (upper.includes("TARDE")) turnoNormalizado = "Tarde";
+          
+          return { ...asig, turno: turnoNormalizado };
         });
 
         // Agregar información para la tabla principal
