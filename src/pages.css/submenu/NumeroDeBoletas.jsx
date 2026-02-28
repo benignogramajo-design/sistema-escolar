@@ -9,6 +9,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
   const [boletas, setBoletas] = useState([]);
   const [codigos, setCodigos] = useState([]);
   const [estructura, setEstructura] = useState([]);
+  const [docentesLegajo, setDocentesLegajo] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [mode, setMode] = useState("view"); // 'view', 'create', 'edit'
@@ -85,6 +86,13 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
       }));
       setEstructura(parsedEst);
 
+      // 4. Obtener Docentes de Legajo (para lista desplegable)
+      const { data: docData, error: docError } = await supabase
+        .from('datos_de_legajo_docentes')
+        .select('apellido, nombre')
+        .order('apellido');
+      if (docError) throw docError;
+      setDocentesLegajo(docData || []);
     } catch (error) {
       console.error("Error cargando datos:", error);
     } finally {
@@ -148,18 +156,8 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
   }, [formData.cargo, formData.apellido_nombre, formData.curso, formData.division, formData.asignatura, estructura]);
 
   // --- Listas para Selects del Formulario ---
-  // Docentes disponibles (extraídos de estructura_horario para asegurar consistencia)
-  const availableDocentes = [...new Set(estructura.flatMap(e => {
-    const docs = [];
-    if (e.docente_titular?.nombre && e.docente_titular.nombre !== "---" && e.docente_titular.nombre !== "VACANTE") docs.push(e.docente_titular.nombre);
-    if (e.docente_interino?.nombre && e.docente_interino.nombre !== "---" && e.docente_interino.nombre !== "VACANTE") docs.push(e.docente_interino.nombre);
-    if (Array.isArray(e.docentes_suplentes)) {
-      e.docentes_suplentes.forEach(s => {
-        if (s.nombre && s.nombre !== "---" && s.nombre !== "VACANTE") docs.push(s.nombre);
-      });
-    }
-    return docs;
-  }))].sort();
+  // Docentes disponibles (desde datos de legajo)
+  const availableDocentes = [...new Set(docentesLegajo.map(d => `${d.apellido}, ${d.nombre}`))].sort();
 
   const availableCursos = [...new Set(codigos.map(c => c.curso).filter(Boolean))].sort();
   
