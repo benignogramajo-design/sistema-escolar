@@ -336,42 +336,51 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedId) return;
-    if (window.confirm("¿Está seguro de eliminar este registro?")) {
-      try {
-        const { error } = await supabase.from('estructura_horario').delete().eq('id', selectedId);
-        if (error) throw error;
-        
-        const { data } = await supabase.from('estructura_horario').select('*').order('id', { ascending: false });
-        setEstructura(data || []);
-        setMode("view");
-        setSelectedId(null);
-      } catch (error) {
-        alert("Error al eliminar: " + error.message);
-      }
-    }
-  };
-
-  const handleRowClick = (item) => {
+  const handleRowClick = async (item) => {
     if (mode === "edit" || mode === "delete") {
       setSelectedId(item.id);
-      if (mode === "edit") {
-        // Asegurar que los campos JSON se carguen correctamente
-        setFormData({
-          cargo: item.cargo || "",
-          curso: item.curso,
-          division: item.division,
-          turno: item.turno,
-          asignatura: item.asignatura,
-          horarios: (Array.isArray(item.horarios) ? item.horarios : []).map(h => ({
-            ...h,
-            plazas: h.plazas || {} // Asegurar que el objeto plazas exista
-          })),
-          docente_titular: item.docente_titular || { nombre: "---", estado: "", fecha_toma: "" },
-          docente_interino: item.docente_interino || { nombre: "---", estado: "", fecha_toma: "" },
-          docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
-        });
+      // Asegurar que los campos JSON se carguen correctamente
+      setFormData({
+        cargo: item.cargo || "",
+        curso: item.curso,
+        division: item.division,
+        turno: item.turno,
+        asignatura: item.asignatura,
+        horarios: (Array.isArray(item.horarios) ? item.horarios : []).map(h => ({
+          ...h,
+          plazas: h.plazas || {} // Asegurar que el objeto plazas exista
+        })),
+        docente_titular: item.docente_titular || { nombre: "---", estado: "", fecha_toma: "" },
+        docente_interino: item.docente_interino || { nombre: "---", estado: "", fecha_toma: "" },
+        docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
+      });
+    } else if (mode === "delete") {
+      const description = `${item.cargo || ''} - ${item.curso || ''} ${item.division || ''} - ${item.asignatura || ''}`.replace(/ - $/g, "").trim();
+      if (window.confirm(`¿Está seguro de eliminar el registro?\n\n${description}`)) {
+        try {
+          const { error } = await supabase.from('estructura_horario').delete().eq('id', item.id);
+          if (error) throw error;
+          
+          // Recargar datos después de eliminar
+          const { data: estData } = await supabase.from('estructura_horario').select('*').order('id', { ascending: false });
+          const parsedData = (estData || []).map(d => {
+            const safeParse = (val, fallback) => {
+              if (typeof val === 'string') { try { return JSON.parse(val); } catch (e) { return fallback; } }
+              return val || fallback;
+            };
+            return {
+              ...d,
+              horarios: safeParse(d.horarios, []),
+              docente_titular: safeParse(d.docente_titular, { nombre: "---", estado: "", fecha_toma: "" }),
+              docente_interino: safeParse(d.docente_interino, { nombre: "---", estado: "", fecha_toma: "" }),
+              docentes_suplentes: safeParse(d.docentes_suplentes, [])
+            };
+          });
+          setEstructura(parsedData);
+          alert("Registro eliminado correctamente.");
+        } catch (error) {
+          alert("Error al eliminar: " + error.message);
+        }
       }
     }
   };
