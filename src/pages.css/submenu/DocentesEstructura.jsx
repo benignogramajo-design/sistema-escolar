@@ -69,7 +69,24 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           .order('id', { ascending: false });
         
         if (estError && estError.code !== 'PGRST116') console.error("Error estructura:", estError); // Ignorar si tabla no existe aun
-        setEstructura(estData || []);
+        
+        // Procesar datos para asegurar que los campos JSON sean objetos/arrays y no strings
+        const parsedData = (estData || []).map(item => {
+          const safeParse = (val, fallback) => {
+            if (typeof val === 'string') {
+              try { return JSON.parse(val); } catch (e) { return fallback; }
+            }
+            return val || fallback;
+          };
+          return {
+            ...item,
+            horarios: safeParse(item.horarios, []),
+            docente_titular: safeParse(item.docente_titular, { nombre: "---", estado: "" }),
+            docente_interino: safeParse(item.docente_interino, { nombre: "---", estado: "" }),
+            docentes_suplentes: safeParse(item.docentes_suplentes, [])
+          };
+        });
+        setEstructura(parsedData);
 
         // 2. Cargar Códigos (para Cursos, Div, Turno, Asignatura)
         const { data: codData } = await supabase.from('codigos').select('*');
