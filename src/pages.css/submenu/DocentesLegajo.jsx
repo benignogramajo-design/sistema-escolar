@@ -271,13 +271,13 @@ const DocentesLegajo = ({ goBack, goHome }) => {
     return (
       <div className="docente-detail">
         {/* Encabezado solo para impresión */}
-        <div className="print-header" style={{ display: showPrintPreview ? 'block' : 'none', borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px' }}>
+        <div className="print-header" style={{ display: showPrintPreview ? 'block' : 'none', borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px', color: 'black' }}>
            <div style={{ display: 'flex', alignItems: 'center' }}>
               <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
               <div>
                 <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
                 <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
-                <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>LEGAJO PERSONAL DEL DOCENTE</p>
+                <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>LEGAJO DEL PERSONAL</p>
               </div>
            </div>
         </div>
@@ -457,7 +457,7 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             >
               X
             </button>
-            <h3 style={{ textAlign: 'center', borderBottom: '2px solid #333', paddingBottom: '10px' }}>INFORMACIÓN DEL DOCENTE</h3>
+            <h3 style={{ textAlign: 'center', borderBottom: '2px solid #333', paddingBottom: '10px' }}>INFORMACIÓN DEL PERSONAL</h3>
             {renderDocenteContent(selectedDocente)}
             <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
               <button 
