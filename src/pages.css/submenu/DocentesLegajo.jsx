@@ -167,13 +167,13 @@ const DocentesLegajo = ({ goBack, goHome }) => {
           if (diaIndex !== -1 && Array.isArray(h.horas)) {
             h.horas.forEach(horaStr => {
               // Buscar índice de la fila que coincide con la hora
-              const rowIndex = turnoLabels.findIndex(l => l.startsWith(horaStr.split(" ")[0])); // Coincidencia por "1°", "2°", etc.
+              const rowIndex = turnoLabels.findIndex(l => l === horaStr);
               if (rowIndex !== -1) {
                 // Obtener plaza específica para esa hora si existe
                 let plaza = "";
                 if (h.plazas && h.plazas[horaStr]) plaza = h.plazas[horaStr];
                 
-                const content = `${asig.asignatura} ${plaza ? `(${plaza})` : ''}`;
+                const content = `${asig.asignatura || asig.cargo} ${plaza ? `(${plaza})` : ''}`.trim();
                 
                 // Si ya hay contenido, concatenar (caso raro de superposición)
                 if (grid[rowIndex][h.dia] !== "---") {
@@ -404,6 +404,14 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             </button>
             <h3 style={{ textAlign: 'center', borderBottom: '2px solid #333', paddingBottom: '10px' }}>INFORMACIÓN DEL DOCENTE</h3>
             {renderDocenteContent(selectedDocente)}
+            <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
+              <button 
+                onClick={() => setShowModal(false)}
+                style={{ padding: '10px 30px', backgroundColor: 'gray', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                CERRAR
+              </button>
+            </div>
           </div>
         </div>
       )}
