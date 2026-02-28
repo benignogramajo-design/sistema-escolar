@@ -453,7 +453,15 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   );
 
   // --- Filtrado de Datos ---
-  const filteredData = estructura.filter(item => {
+  const filteredData = estructura.map(item => {
+    // Actualizar turno dinámicamente basado en códigos
+    let dynamicTurno = item.turno;
+    if (item.cargo === "DOCENTE" && item.curso && item.division) {
+      const found = codigos.find(c => c.curso === item.curso && c.division === item.division);
+      if (found) dynamicTurno = found.turno;
+    }
+    return { ...item, turno: dynamicTurno };
+  }).filter(item => {
     // Helper para buscar texto en objetos JSON
     const searchInDocentes = (docObj, term) => {
       if (!docObj) return false;

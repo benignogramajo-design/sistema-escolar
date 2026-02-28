@@ -58,16 +58,33 @@ const DocentesLegajo = ({ goBack, goHome }) => {
 
       if (estError && estError.code !== 'PGRST116') throw estError;
 
-      // 3. Procesar y combinar datos
+      // 3. Obtener Códigos (Para turno dinámico)
+      const { data: codData, error: codError } = await supabase
+        .from('codigos')
+        .select('*');
+
+      if (codError) throw codError;
+
+      // 4. Procesar y combinar datos
       const processedData = (docData || []).map(doc => {
         const nombreCompleto = `${doc.apellido}, ${doc.nombre}`;
         
         // Buscar asignaciones en estructura_horario donde aparezca este docente
-        const assignments = (estData || []).filter(item => {
+        const rawAssignments = (estData || []).filter(item => {
           const isTitular = item.docente_titular?.nombre === nombreCompleto;
           const isInterino = item.docente_interino?.nombre === nombreCompleto;
           const isSuplente = Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.some(s => s.nombre === nombreCompleto);
           return isTitular || isInterino || isSuplente;
+        });
+
+        // Actualizar turno dinámicamente basado en códigos
+        const assignments = rawAssignments.map(asig => {
+          let dynamicTurno = asig.turno;
+          if (asig.cargo === "DOCENTE" && asig.curso && asig.division) {
+            const found = (codData || []).find(c => c.curso === asig.curso && c.division === asig.division);
+            if (found) dynamicTurno = found.turno;
+          }
+          return { ...asig, turno: dynamicTurno };
         });
 
         // Agregar información para la tabla principal
