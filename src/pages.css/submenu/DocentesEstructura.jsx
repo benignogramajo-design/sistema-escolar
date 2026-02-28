@@ -36,6 +36,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
   // --- Filtros ---
   const [filters, setFilters] = useState({
+    cargo: "",
     curso: "",
     division: "",
     turno: "",
@@ -432,7 +433,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       if (!Array.isArray(arr)) return false;
       return arr.some(s => (s.nombre || "").toLowerCase().includes(term));
     };
-
+    const matchCargo = !filters.cargo || item.cargo === filters.cargo;
     const matchCurso = !filters.curso || item.curso === filters.curso;
     const matchDiv = !filters.division || item.division === filters.division;
     const matchTurno = !filters.turno || item.turno === filters.turno;
@@ -452,7 +453,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       (item.docente_interino?.estado === filters.estado) ||
       (Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.some(s => s.estado === filters.estado));
 
-    return matchCurso && matchDiv && matchTurno && matchAsig && matchDia && matchDocente && matchEstado;
+    return matchCargo && matchCurso && matchDiv && matchTurno && matchAsig && matchDia && matchDocente && matchEstado;
   }).sort((a, b) => {
     // 1. Ordenar por cargo
     const cargoA = a.cargo || "";
@@ -630,6 +631,10 @@ const DocentesEstructura = ({ goBack, goHome }) => {
 
       {/* Filtros */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px' }}>
+        <select value={filters.cargo} onChange={e => setFilters({...filters, cargo: e.target.value})} style={{ padding: '5px' }}>
+          <option value="">Cargo</option>
+          {uniqueCargos.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
         <select value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px' }}>
           <option value="">Curso</option>
           {uniqueCursos.map(c => <option key={c} value={c}>{c}</option>)}
