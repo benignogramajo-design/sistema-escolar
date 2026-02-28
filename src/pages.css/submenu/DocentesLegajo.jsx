@@ -514,8 +514,8 @@ const DocentesLegajo = ({ goBack, goHome }) => {
 
       {/* Vista Previa de Impresión */}
       {showPrintPreview && selectedDocente && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div className="print-content" style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {renderDocenteContent(selectedDocente, true)}
           </div>
           
@@ -551,10 +551,38 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             }
             @media print {
               .no-print { display: none !important; }
-              body { margin: 0; padding: 0; }
-              .print-page { box-shadow: none; margin: 0; width: 100%; height: 100%; page-break-after: always; }
+              
+              /* Ocultar todo el contenido de fondo para evitar superposiciones */
+              body * {
+                visibility: hidden;
+              }
+              
+              /* Hacer visible solo la superposición de impresión y su contenido */
+              .print-overlay, .print-overlay * {
+                visibility: visible;
+              }
+              
+              .print-overlay {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                background-color: white !important;
+                display: block !important;
+                z-index: 9999 !important;
+              }
+
+              .print-content {
+                display: block !important;
+                padding: 0 !important;
+              }
+
+              .print-page { box-shadow: none; margin: 0; width: 100%; height: auto !important; page-break-after: always; }
               .print-page:last-child { page-break-after: auto; }
               @page { size: A4; margin: 0; }
+              html, body { height: auto !important; overflow: visible !important; margin: 0; padding: 0; }
             }
           `}</style>
         </div>
