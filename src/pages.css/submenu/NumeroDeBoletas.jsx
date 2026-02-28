@@ -163,17 +163,34 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
       .map(d => `${d.apellido}, ${d.nombre}`)
   )].sort();
 
-  // Convertimos a String para asegurar comparaciones correctas (ej: "1" vs 1)
-  const availableCursos = [...new Set(codigos.map(c => String(c.curso)).filter(c => c && c !== "null" && c !== "undefined"))].sort();
+  // Cursos disponibles (desde códigos) - Robustez mejorada
+  const availableCursos = [...new Set(
+    codigos
+      .map(c => c.curso ? String(c.curso).trim() : "")
+      .filter(c => c !== "" && c !== "null" && c !== "undefined")
+  )].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   
   // Divisiones filtradas por curso seleccionado
   const availableDivisiones = formData.curso 
-    ? [...new Set(codigos.filter(c => String(c.curso) === String(formData.curso)).map(c => c.division).filter(Boolean))].sort()
+    ? [...new Set(
+        codigos
+          .filter(c => c.curso && String(c.curso).trim() === String(formData.curso).trim())
+          .map(c => c.division ? String(c.division).trim() : "")
+          .filter(d => d !== "")
+      )].sort()
     : [];
 
   // Asignaturas filtradas por curso y división
   const availableAsignaturas = (formData.curso && formData.division)
-    ? [...new Set(codigos.filter(c => String(c.curso) === String(formData.curso) && String(c.division) === String(formData.division)).map(c => c.asignatura).filter(Boolean))].sort()
+    ? [...new Set(
+        codigos
+          .filter(c => 
+            c.curso && String(c.curso).trim() === String(formData.curso).trim() && 
+            c.division && String(c.division).trim() === String(formData.division).trim()
+          )
+          .map(c => c.asignatura)
+          .filter(Boolean)
+      )].sort()
     : [];
 
   // --- Manejadores ---
