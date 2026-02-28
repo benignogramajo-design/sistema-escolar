@@ -245,8 +245,11 @@ const DocentesLegajo = ({ goBack, goHome }) => {
     return grid;
   };
 
-  const getEducacionFisicaInfo = (assignments) => {
-    const ef = assignments.filter(a => (a.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA"));
+  const getEducacionFisicaInfo = (assignments, turno = null) => {
+    const ef = assignments.filter(a => 
+      (a.asignatura || "").toUpperCase().includes("EDUCACIÓN FÍSICA") &&
+      (!turno || (a.turno && a.turno.includes(turno)))
+    );
     if (ef.length === 0) return null;
     
     return ef.map(a => {
@@ -266,14 +269,15 @@ const DocentesLegajo = ({ goBack, goHome }) => {
 
     const gridManana = buildScheduleGrid(docente.assignments, horariosMananaLabels, "Mañana");
     const gridTarde = buildScheduleGrid(docente.assignments, horariosTardeLabels, "Tarde");
-    const infoEF = getEducacionFisicaInfo(docente.assignments);
+    const infoEFManana = getEducacionFisicaInfo(docente.assignments, "Mañana");
+    const infoEFTarde = getEducacionFisicaInfo(docente.assignments, "Tarde");
 
     const Header = () => (
       <div className="print-header" style={{ borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px', color: 'black' }}>
          <div style={{ display: 'flex', alignItems: 'center' }}>
             <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
             <div>
-              <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
+              <h1 style={{ fontSize: '18px', margin: 0, color: 'black' }}>Escuela Secundaria Gobernador Garmendia</h1>
               <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
               <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>LEGAJO DEL PERSONAL</p>
             </div>
@@ -352,10 +356,10 @@ const DocentesLegajo = ({ goBack, goHome }) => {
       </>
     );
 
-    const InfoEF = () => infoEF ? (
+    const InfoEF = ({ info }) => info ? (
       <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f4f8', border: '1px solid #bce0fd', borderRadius: '5px' }}>
         <strong>EDUCACIÓN FÍSICA:</strong>
-        <pre style={{ fontFamily: 'inherit', margin: '5px 0' }}>{infoEF}</pre>
+        <pre style={{ fontFamily: 'inherit', margin: '5px 0' }}>{info}</pre>
       </div>
     ) : null;
 
@@ -366,11 +370,12 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             <Header />
             <DatosPersonales />
             <TablaManana />
-            <InfoEF />
+            <InfoEF info={infoEFManana} />
           </div>
           <div className="print-page">
             <Header />
             <TablaTarde />
+            <InfoEF info={infoEFTarde} />
           </div>
         </div>
       );
@@ -380,8 +385,9 @@ const DocentesLegajo = ({ goBack, goHome }) => {
       <div className="docente-detail">
         <DatosPersonales />
         <TablaManana />
+        <InfoEF info={infoEFManana} />
         <TablaTarde />
-        <InfoEF />
+        <InfoEF info={infoEFTarde} />
       </div>
     );
   };

@@ -27,10 +27,10 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     division: "",
     turno: "",
     asignatura: "",
-    horarios: [], // Array de objetos { dia, horas: [], ef_horario: '', plazas: { [hora]: plaza } }
-    docente_titular: { nombre: "---", estado: "" },
-    docente_interino: { nombre: "---", estado: "" },
-    docentes_suplentes: [] // Array de objetos { nombre: '---', estado: '' }
+    horarios: [],
+    docente_titular: { nombre: "---", estado: "", fecha_toma: "" },
+    docente_interino: { nombre: "---", estado: "", fecha_toma: "" },
+    docentes_suplentes: []
   };
   const [formData, setFormData] = useState(initialFormState);
 
@@ -81,8 +81,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           return {
             ...item,
             horarios: safeParse(item.horarios, []),
-            docente_titular: safeParse(item.docente_titular, { nombre: "---", estado: "" }),
-            docente_interino: safeParse(item.docente_interino, { nombre: "---", estado: "" }),
+            docente_titular: safeParse(item.docente_titular, { nombre: "---", estado: "", fecha_toma: "" }),
+            docente_interino: safeParse(item.docente_interino, { nombre: "---", estado: "", fecha_toma: "" }),
             docentes_suplentes: safeParse(item.docentes_suplentes, [])
           };
         });
@@ -297,7 +297,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const addSuplente = () => {
     setFormData(prev => ({
       ...prev,
-      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "---", estado: "" }]
+      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "---", estado: "", fecha_toma: "" }]
     }));
   };
 
@@ -368,8 +368,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
             ...h,
             plazas: h.plazas || {} // Asegurar que el objeto plazas exista
           })),
-          docente_titular: item.docente_titular || { nombre: "---", estado: "" },
-          docente_interino: item.docente_interino || { nombre: "---", estado: "" },
+          docente_titular: item.docente_titular || { nombre: "---", estado: "", fecha_toma: "" },
+          docente_interino: item.docente_interino || { nombre: "---", estado: "", fecha_toma: "" },
           docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
         });
       }
@@ -414,23 +414,36 @@ const DocentesEstructura = ({ goBack, goHome }) => {
       </select>
       
       {data.nombre !== "VACANTE" && data.nombre !== "---" && (
-        <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
-          <label style={{ cursor: 'pointer' }}>
-            <input 
-              type="radio" 
-              name={`estado_${type}_${index !== null ? index : ''}`}
-              checked={data.estado === "ACTIVO"}
-              onChange={() => updateDocenteField(type, 'estado', "ACTIVO", index)}
-            /> ACTIVO
-          </label>
-          <label style={{ cursor: 'pointer' }}>
-            <input 
-              type="radio" 
-              name={`estado_${type}_${index !== null ? index : ''}`}
-              checked={data.estado === "NO ACTIVO"}
-              onChange={() => updateDocenteField(type, 'estado', "NO ACTIVO", index)}
-            /> NO ACTIVO
-          </label>
+        <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center' }}>
+          <div>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Estado:</span>
+            <label style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '12px' }}>
+              <input 
+                type="radio" 
+                name={`estado_${type}_${index !== null ? index : ''}`}
+                checked={data.estado === "ACTIVO"}
+                onChange={() => updateDocenteField(type, 'estado', "ACTIVO", index)}
+              /> ACTIVO
+            </label>
+            <label style={{ cursor: 'pointer', marginLeft: '10px', fontSize: '12px' }}>
+              <input 
+                type="radio" 
+                name={`estado_${type}_${index !== null ? index : ''}`}
+                checked={data.estado === "NO ACTIVO"}
+                onChange={() => updateDocenteField(type, 'estado', "NO ACTIVO", index)}
+              /> NO ACTIVO
+            </label>
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Fecha de Toma:
+              <input 
+                type="date"
+                value={data.fecha_toma || ""}
+                onChange={(e) => updateDocenteField(type, 'fecha_toma', e.target.value, index)}
+                style={{ marginLeft: '5px', padding: '3px', border: '1px solid #ccc', borderRadius: '3px' }}
+              />
+            </label>
+          </div>
         </div>
       )}
       {type === 'suplente' && (
@@ -911,19 +924,29 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                   })}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {item.docente_titular?.nombre} 
-                  {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
+                  {(!filters.estado || item.docente_titular?.estado === filters.estado) && (
+                    <>
+                      {item.docente_titular?.nombre} 
+                      {item.docente_titular?.estado && <span style={{fontSize: '10px', color: item.docente_titular.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_titular.estado})</span>}
+                    </>
+                  )}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {item.docente_interino?.nombre}
-                  {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
+                  {(!filters.estado || item.docente_interino?.estado === filters.estado) && (
+                    <>
+                      {item.docente_interino?.nombre}
+                      {item.docente_interino?.estado && <span style={{fontSize: '10px', color: item.docente_interino.estado === 'ACTIVO' ? 'green' : 'red'}}> ({item.docente_interino.estado})</span>}
+                    </>
+                  )}
                 </td>
                 <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes.map((s, i) => (
-                    <div key={i}>
-                      {s.nombre}
-                      {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
-                    </div>
+                  {Array.isArray(item.docentes_suplentes) && item.docentes_suplentes
+                    .filter(s => !filters.estado || s.estado === filters.estado)
+                    .map((s, i) => (
+                      <div key={i}>
+                        {s.nombre}
+                        {s.estado && <span style={{fontSize: '10px', color: s.estado === 'ACTIVO' ? 'green' : 'red'}}> ({s.estado})</span>}
+                      </div>
                   ))}
                 </td>
               </tr>
