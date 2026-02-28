@@ -28,8 +28,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     turno: "",
     asignatura: "",
     horarios: [],
-    docente_titular: { nombre: "---", estado: "", fecha_toma: "" },
-    docente_interino: { nombre: "---", estado: "", fecha_toma: "" },
+    docente_titular: { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" },
+    docente_interino: { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" },
     docentes_suplentes: []
   };
   const [formData, setFormData] = useState(initialFormState);
@@ -81,8 +81,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           return {
             ...item,
             horarios: safeParse(item.horarios, []),
-            docente_titular: safeParse(item.docente_titular, { nombre: "---", estado: "", fecha_toma: "" }),
-            docente_interino: safeParse(item.docente_interino, { nombre: "---", estado: "", fecha_toma: "" }),
+            docente_titular: safeParse(item.docente_titular, { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" }),
+            docente_interino: safeParse(item.docente_interino, { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" }),
             docentes_suplentes: safeParse(item.docentes_suplentes, [])
           };
         });
@@ -297,7 +297,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   const addSuplente = () => {
     setFormData(prev => ({
       ...prev,
-      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "---", estado: "", fecha_toma: "" }]
+      docentes_suplentes: [...prev.docentes_suplentes, { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" }]
     }));
   };
 
@@ -350,8 +350,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           ...h,
           plazas: h.plazas || {} // Asegurar que el objeto plazas exista
         })),
-        docente_titular: item.docente_titular || { nombre: "---", estado: "", fecha_toma: "" },
-        docente_interino: item.docente_interino || { nombre: "---", estado: "", fecha_toma: "" },
+        docente_titular: item.docente_titular || { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" },
+        docente_interino: item.docente_interino || { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" },
         docentes_suplentes: Array.isArray(item.docentes_suplentes) ? item.docentes_suplentes : []
       });
     } else if (mode === "delete") {
@@ -371,8 +371,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
             return {
               ...d,
               horarios: safeParse(d.horarios, []),
-              docente_titular: safeParse(d.docente_titular, { nombre: "---", estado: "", fecha_toma: "" }),
-              docente_interino: safeParse(d.docente_interino, { nombre: "---", estado: "", fecha_toma: "" }),
+              docente_titular: safeParse(d.docente_titular, { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" }),
+              docente_interino: safeParse(d.docente_interino, { nombre: "---", estado: "", fecha_toma: "", n_boleta: "" }),
               docentes_suplentes: safeParse(d.docentes_suplentes, [])
             };
           });
@@ -450,6 +450,17 @@ const DocentesEstructura = ({ goBack, goHome }) => {
                 value={data.fecha_toma || ""}
                 onChange={(e) => updateDocenteField(type, 'fecha_toma', e.target.value, index)}
                 style={{ marginLeft: '5px', padding: '3px', border: '1px solid #ccc', borderRadius: '3px' }}
+              />
+            </label>
+          </div>
+          <div>
+            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>N° Boleta:
+              <span style={{ marginLeft: '5px', fontWeight: 'normal' }}>3518-</span>
+              <input 
+                type="text"
+                value={data.n_boleta ? data.n_boleta.replace("3518-", "") : ""}
+                onChange={(e) => updateDocenteField(type, 'n_boleta', `3518-${e.target.value}`, index)}
+                style={{ width: '60px', padding: '3px', border: '1px solid #ccc', borderRadius: '3px' }}
               />
             </label>
           </div>
