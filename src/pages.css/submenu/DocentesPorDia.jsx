@@ -134,37 +134,94 @@ const PersonalPorDia = ({ goBack, goHome }) => {
   };
 
   // --- Filtros ---
-  const filteredDocentes = docentes.filter(d => {
+  const filteredDocentes = docentes.map(d => {
     const f = filters;
-    const assignments = d.rawAssignments;
+    
+    // 1. Filtro por Nombre (Docente)
+    if (f.nombre && !d.nombreCompleto.toLowerCase().includes(f.nombre.toLowerCase())) {
+      return null;
+    }
 
-    const matchNombre = !f.nombre || d.nombreCompleto.toLowerCase().includes(f.nombre.toLowerCase());
-    
-    // Filtros basados en asignaciones (si tiene AL MENOS UNA que coincida)
-    // Si no tiene asignaciones pero el filtro está vacío, pasa.
-    // Si hay filtro, debe tener asignación que coincida.
-    
-    const matchCargo = !f.cargo || assignments.some(a => a.cargo === f.cargo);
-    const matchCurso = !f.curso || assignments.some(a => a.curso === f.curso);
-    const matchDivision = !f.division || assignments.some(a => a.division === f.division);
-    const matchAsignatura = !f.asignatura || assignments.some(a => (a.asignatura || "").toLowerCase().includes(f.asignatura.toLowerCase()));
-    const matchTurno = !f.turno || assignments.some(a => a.turno === f.turno);
-    
-    const matchDia = !f.dia || assignments.some(a => Array.isArray(a.horarios) && a.horarios.some(h => h.dia === f.dia));
-    
-    const matchEstado = !f.estado || assignments.some(a => {
-      let estado = "";
+    // 2. Filtrar Asignaciones y Recalcular Display
+    const validAssignments = d.rawAssignments.filter(a => {
+      if (f.cargo && a.cargo !== f.cargo) return false;
+      if (f.curso && a.curso !== f.curso) return false;
+      if (f.division && a.division !== f.division) return false;
+      if (f.asignatura && !(a.asignatura || "").toLowerCase().includes(f.asignatura.toLowerCase())) return false;
+      if (f.turno && a.turno !== f.turno) return false;
+
+      // Estado check
+      let estado = "---";
       if (a.docente_titular?.nombre === d.nombreCompleto) estado = a.docente_titular.estado;
       else if (a.docente_interino?.nombre === d.nombreCompleto) estado = a.docente_interino.estado;
       else if (Array.isArray(a.docentes_suplentes)) {
         const sup = a.docentes_suplentes.find(s => s.nombre === d.nombreCompleto);
         if (sup) estado = sup.estado;
       }
-      return estado === f.estado;
+      if (f.estado && estado !== f.estado) return false;
+
+      // Dia check (si el filtro de día está activo, la asignación debe tener ese día)
+      if (f.dia) {
+        if (!Array.isArray(a.horarios) || !a.horarios.some(h => h.dia === f.dia)) return false;
+      }
+
+      return true;
     });
 
-    return matchNombre && matchCargo && matchCurso && matchDivision && matchAsignatura && matchTurno && matchDia && matchEstado;
-  });
+    // Si hay filtros activos que afectan asignaciones y no queda ninguna válida, ocultar docente.
+    const hasAssignmentFilters = f.cargo || f.curso || f.division || f.asignatura || f.turno || f.dia || f.estado;
+    if (hasAssignmentFilters && validAssignments.length === 0) {
+      return null;
+    }
+
+    // 3. Recalcular Strings de Visualización con las asignaciones filtradas
+    const cargos = [...new Set(validAssignments.map(a => a.cargo).filter(Boolean))].join(" / ");
+    const turnos = [...new Set(validAssignments.map(a => a.turno).filter(Boolean))].join(" / ");
+    
+    const cursoDivAsigEstadoList = validAssignments.map(a => {
+      let estado = "---";
+      if (a.docente_titular?.nombre === d.nombreCompleto) estado = a.docente_titular.estado;
+      else if (a.docente_interino?.nombre === d.nombreCompleto) estado = a.docente_interino.estado;
+      else if (Array.isArray(a.docentes_suplentes)) {
+        const sup = a.docentes_suplentes.find(s => s.nombre === d.nombreCompleto);
+        if (sup) estado = sup.estado;
+      }
+      const cursoDiv = (a.curso || a.division) ? `${a.curso || ''} ${a.division || ''}`.trim() : "---";
+      const asignatura = a.asignatura || "---";
+      return `${cursoDiv} - ${asignatura} - ${estado || '---'}`;
+    });
+    const cursoDivAsigEstado = [...new Set(cursoDivAsigEstadoList)].join(" | ");
+
+    const diasHorariosList = {};
+    validAssignments.forEach(a => {
+      if (Array.isArray(a.horarios)) {
+        a.horarios.forEach(h => {
+          // Si hay filtro de día, solo mostrar ese día en la columna
+          if (f.dia && h.dia !== f.dia) return;
+
+          if (!diasHorariosList[h.dia]) diasHorariosList[h.dia] = new Set();
+          
+          if (a.cargo !== 'DOCENTE' && h.horario_texto) {
+            diasHorariosList[h.dia].add(h.horario_texto);
+          } else if (Array.isArray(h.horas)) {
+            h.horas.forEach(hora => diasHorariosList[h.dia].add(hora.split(' ')[0]));
+          }
+        });
+      }
+    });
+    const diasHorarios = Object.entries(diasHorariosList)
+      .map(([dia, horasSet]) => `${dia} (${[...horasSet].join(', ')})`).join(" | ");
+
+    return {
+      ...d,
+      display: {
+        cargos,
+        cursoDivAsigEstado,
+        turnos,
+        diasHorarios
+      }
+    };
+  }).filter(Boolean);
 
   // Listas para selects de filtros (basadas en datos cargados)
   const uniqueCargos = [...new Set(docentes.flatMap(d => d.rawAssignments.map(a => a.cargo)).filter(Boolean))].sort();
