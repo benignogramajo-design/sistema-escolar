@@ -80,6 +80,32 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
         }
       });
 
+      // Ordenar: Apellido y Nombre -> Asignatura -> Curso -> División
+      processedRows.sort((a, b) => {
+        // 1. Apellido y Nombre
+        const nameA = (a.apellido_nombre || "").toLowerCase();
+        const nameB = (b.apellido_nombre || "").toLowerCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+
+        // 2. Asignatura
+        const asigA = (a.asignatura || "").toLowerCase();
+        const asigB = (b.asignatura || "").toLowerCase();
+        if (asigA < asigB) return -1;
+        if (asigA > asigB) return 1;
+
+        // 3. Curso
+        const cursoA = (a.curso || "").toString();
+        const cursoB = (b.curso || "").toString();
+        const compareCurso = cursoA.localeCompare(cursoB, undefined, { numeric: true });
+        if (compareCurso !== 0) return compareCurso;
+
+        // 4. División
+        const divA = (a.division || "").toString();
+        const divB = (b.division || "").toString();
+        return divA.localeCompare(divB, undefined, { numeric: true });
+      });
+
       setData(processedRows);
     } catch (error) {
       console.error("Error cargando datos:", error);
@@ -109,6 +135,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
   const uniqueCursos = [...new Set(data.map(d => d.curso).filter(Boolean))].sort();
   const uniqueDivisiones = [...new Set(data.map(d => d.division).filter(Boolean))].sort();
   const uniqueTurnos = [...new Set(data.map(d => d.turno).filter(Boolean))].sort();
+  const uniqueCaracteres = [...new Set(data.map(d => d.caracter).filter(Boolean))].sort();
 
   // --- Renderizado ---
   return (
@@ -126,14 +153,23 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
               {uniqueCargos.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <input placeholder="APELLIDO Y NOMBRE" value={filters.apellido_nombre} onChange={e => setFilters({...filters, apellido_nombre: e.target.value})} style={{ padding: '5px' }} />
-            <input placeholder="CURSO" value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px', width: '60px' }} />
-            <input placeholder="DIVISIÓN" value={filters.division} onChange={e => setFilters({...filters, division: e.target.value})} style={{ padding: '5px', width: '70px' }} />
+            <select value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px', width: '70px' }}>
+              <option value="">CURSO</option>
+              {uniqueCursos.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={filters.division} onChange={e => setFilters({...filters, division: e.target.value})} style={{ padding: '5px', width: '80px' }}>
+              <option value="">DIVISIÓN</option>
+              {uniqueDivisiones.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
             <input placeholder="ASIGNATURA" value={filters.asignatura} onChange={e => setFilters({...filters, asignatura: e.target.value})} style={{ padding: '5px' }} />
             <select value={filters.turno} onChange={e => setFilters({...filters, turno: e.target.value})} style={{ padding: '5px' }}>
               <option value="">TURNO</option>
               {uniqueTurnos.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-            <input placeholder="CARÁCTER" value={filters.caracter} onChange={e => setFilters({...filters, caracter: e.target.value})} style={{ padding: '5px' }} />
+            <select value={filters.caracter} onChange={e => setFilters({...filters, caracter: e.target.value})} style={{ padding: '5px' }}>
+              <option value="">CARÁCTER</option>
+              {uniqueCaracteres.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
             <input placeholder="N° BOLETA" value={filters.numero_boleta} onChange={e => setFilters({...filters, numero_boleta: e.target.value})} style={{ padding: '5px' }} />
             <select value={filters.estado} onChange={e => setFilters({...filters, estado: e.target.value})} style={{ padding: '5px' }}>
               <option value="">ESTADO</option>
