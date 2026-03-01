@@ -6,30 +6,10 @@ import { supabase } from "../../components.css/supabaseClient";
 import logo from "../../assets.css/logos/Logo.png";
 
 const NumeroDeBoletas = ({ goBack, goHome }) => {
-  const [boletas, setBoletas] = useState([]);
-  const [codigos, setCodigos] = useState([]);
-  const [estructura, setEstructura] = useState([]);
-  const [docentesLegajo, setDocentesLegajo] = useState([]);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
-  const [mode, setMode] = useState("view"); // 'view', 'create', 'edit'
-  const [selectedId, setSelectedId] = useState(null);
 
-  // Estado del formulario
-  const initialFormState = {
-    cargo: "",
-    apellido_nombre: "",
-    curso: "",
-    division: "",
-    asignatura: "",
-    turno: "",
-    caracter: "",
-    numero_boleta_suffix: "", // Solo la parte editable después de "3518-"
-    estado: ""
-  };
-  const [formData, setFormData] = useState(initialFormState);
-
-  // Filtros
   const [filters, setFilters] = useState({
     cargo: "",
     apellido_nombre: "",
@@ -42,13 +22,6 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
     estado: ""
   });
 
-  const cargosList = [
-    "DIRECTOR/A", "SECRETARIO", "AYUDANTE DE SECRETARIA", "PRECEPTOR",
-    "ASESOR PED.", "DOCENTE", "BIBLIOTECARIO/A",
-    "AYUDANTE CLASES PRACTICAS (TECN/INFORM)", "AYUDANTE CLASES PRACTICAS (FISICA)",
-    "PERSONAL AUXILIAR (CAT. 18)", "PERSONAL AUXILIAR (CAT. 15)"
-  ];
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -56,43 +29,58 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Obtener Boletas existentes
-      const { data: boletasData, error: boletasError } = await supabase
-        .from('numero_de_boletas')
-        .select('*')
-        .order('id', { ascending: false });
-      if (boletasError && boletasError.code !== 'PGRST116') throw boletasError;
-      setBoletas(boletasData || []);
-
-      // 2. Obtener Códigos (para listas desplegables)
-      const { data: codigosData, error: codigosError } = await supabase
-        .from('codigos')
-        .select('*');
-      if (codigosError) throw codigosError;
-      setCodigos(codigosData || []);
-
-      // 3. Obtener Estructura de Horario (para autocompletar datos)
+      // Obtener Estructura de Horario
       const { data: estData, error: estError } = await supabase
         .from('estructura_horario')
-        .select('*');
+        .select('*')
+        .order('id', { ascending: false });
+
       if (estError && estError.code !== 'PGRST116') throw estError;
 
-      // Procesar estructura para asegurar JSON válido
-      const parsedEst = (estData || []).map(item => ({
-        ...item,
-        docente_titular: typeof item.docente_titular === 'string' ? JSON.parse(item.docente_titular) : item.docente_titular,
-        docente_interino: typeof item.docente_interino === 'string' ? JSON.parse(item.docente_interino) : item.docente_interino,
-        docentes_suplentes: typeof item.docentes_suplentes === 'string' ? JSON.parse(item.docentes_suplentes) : item.docentes_suplentes
-      }));
-      setEstructura(parsedEst);
+      const processedRows = [];
 
-      // 4. Obtener Docentes de Legajo (para lista desplegable)
-      const { data: docData, error: docError } = await supabase
-        .from('datos_de_legajo_docentes')
-        .select('apellido, nombre')
-        .order('apellido');
-      if (docError) throw docError;
-      setDocentesLegajo(docData || []);
+      const safeParse = (val, fallback) => {
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch (e) { return fallback; }
+        }
+        return val || fallback;
+      };
+
+      (estData || []).forEach(item => {
+        const titular = safeParse(item.docente_titular, { nombre: "---" });
+        const interino = safeParse(item.docente_interino, { nombre: "---" });
+        const suplentes = safeParse(item.docentes_suplentes, []);
+
+        const addRow = (doc, caracter) => {
+          if (!doc || !doc.nombre || doc.nombre === "---" || doc.nombre === "VACANTE") return;
+
+          let nBoleta = doc.n_boleta || "";
+          if (!nBoleta || nBoleta.trim() === "" || nBoleta === "3518-") {
+            nBoleta = "3518-SIN N° BOLETA";
+          }
+
+          processedRows.push({
+            id: `${item.id}-${caracter}-${doc.nombre}`,
+            cargo: item.cargo,
+            apellido_nombre: doc.nombre,
+            curso: item.curso,
+            division: item.division,
+            asignatura: item.asignatura,
+            turno: item.turno,
+            caracter: caracter,
+            n_boleta: nBoleta,
+            estado: doc.estado
+          });
+        };
+
+        addRow(titular, "TITULAR");
+        addRow(interino, "INTERINO");
+        if (Array.isArray(suplentes)) {
+          suplentes.forEach(s => addRow(s, "SUPLENTE"));
+        }
+      });
+
+      setData(processedRows);
     } catch (error) {
       console.error("Error cargando datos:", error);
     } finally {
@@ -100,175 +88,8 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
     }
   };
 
-  // --- Lógica del Formulario: Autocompletado ---
-  useEffect(() => {
-    if (formData.cargo && formData.apellido_nombre) {
-      // Buscar en estructura horario coincidencias
-      // Filtramos por cargo primero
-      let matches = estructura.filter(e => e.cargo === formData.cargo);
-
-      if (formData.cargo === "DOCENTE") {
-        if (formData.curso) matches = matches.filter(e => e.curso === formData.curso);
-        if (formData.division) matches = matches.filter(e => e.division === formData.division);
-        if (formData.asignatura) matches = matches.filter(e => e.asignatura === formData.asignatura);
-      }
-
-      // Buscar el docente específico en los matches
-      const docenteMatch = matches.find(m => {
-        const nombre = formData.apellido_nombre;
-        const isTitular = m.docente_titular?.nombre === nombre;
-        const isInterino = m.docente_interino?.nombre === nombre;
-        const isSuplente = Array.isArray(m.docentes_suplentes) && m.docentes_suplentes.some(s => s.nombre === nombre);
-        return isTitular || isInterino || isSuplente;
-      });
-
-      if (docenteMatch) {
-        // Determinar Carácter y Estado
-        let caracter = "";
-        let estado = "";
-        const nombre = formData.apellido_nombre;
-
-        if (docenteMatch.docente_titular?.nombre === nombre) {
-          caracter = "TITULAR";
-          estado = docenteMatch.docente_titular.estado;
-        } else if (docenteMatch.docente_interino?.nombre === nombre) {
-          caracter = "INTERINO";
-          estado = docenteMatch.docente_interino.estado;
-        } else if (Array.isArray(docenteMatch.docentes_suplentes)) {
-          const sup = docenteMatch.docentes_suplentes.find(s => s.nombre === nombre);
-          if (sup) {
-            caracter = "SUPLENTE";
-            estado = sup.estado;
-          }
-        }
-
-        setFormData(prev => ({
-          ...prev,
-          turno: docenteMatch.turno || "",
-          caracter: caracter,
-          estado: estado || ""
-        }));
-      } else {
-        // Si no encuentra coincidencia exacta, limpiar campos autocompletados
-        setFormData(prev => ({ ...prev, turno: "", caracter: "", estado: "" }));
-      }
-    }
-  }, [formData.cargo, formData.apellido_nombre, formData.curso, formData.division, formData.asignatura, estructura]);
-
-  // --- Listas para Selects del Formulario ---
-  // Docentes disponibles (desde datos de legajo)
-  const availableDocentes = [...new Set(
-    docentesLegajo
-      .filter(d => d.apellido && d.nombre)
-      .map(d => `${d.apellido}, ${d.nombre}`)
-  )].sort();
-
-  // Cursos disponibles (desde códigos) - Robustez mejorada
-  const availableCursos = [...new Set(
-    codigos
-      .map(c => c.curso ? String(c.curso).trim() : "")
-      .filter(c => c !== "" && c !== "null" && c !== "undefined")
-  )].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  
-  // Divisiones filtradas por curso seleccionado
-  const availableDivisiones = formData.curso 
-    ? [...new Set(
-        codigos
-          .filter(c => c.curso && String(c.curso).trim() === String(formData.curso).trim())
-          .map(c => c.division ? String(c.division).trim() : "")
-          .filter(d => d !== "")
-      )].sort()
-    : [];
-
-  // Asignaturas filtradas por curso y división
-  const availableAsignaturas = (formData.curso && formData.division)
-    ? [...new Set(
-        codigos
-          .filter(c => 
-            c.curso && String(c.curso).trim() === String(formData.curso).trim() && 
-            c.division && String(c.division).trim() === String(formData.division).trim()
-          )
-          .map(c => c.asignatura)
-          .filter(Boolean)
-      )].sort()
-    : [];
-
-  // --- Manejadores ---
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const fullBoleta = `3518-${formData.numero_boleta_suffix}`;
-    
-    const payload = {
-      cargo: formData.cargo,
-      apellido_nombre: formData.apellido_nombre,
-      curso: formData.cargo === "DOCENTE" ? formData.curso : null,
-      division: formData.cargo === "DOCENTE" ? formData.division : null,
-      asignatura: formData.cargo === "DOCENTE" ? formData.asignatura : null,
-      turno: formData.turno,
-      caracter: formData.caracter,
-      numero_boleta: fullBoleta,
-      estado: formData.estado
-    };
-
-    try {
-      if (mode === "create") {
-        const { error } = await supabase.from('numero_de_boletas').insert([payload]);
-        if (error) throw error;
-      } else if (mode === "edit" && selectedId) {
-        const { error } = await supabase.from('numero_de_boletas').update(payload).eq('id', selectedId);
-        if (error) throw error;
-      }
-      await fetchData();
-      setMode("view");
-      setFormData(initialFormState);
-      setSelectedId(null);
-    } catch (error) {
-      alert("Error al guardar: " + error.message);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!selectedId) {
-      alert("Seleccione un registro para eliminar.");
-      return;
-    }
-    if (window.confirm("¿Está seguro de eliminar este registro?")) {
-      try {
-        const { error } = await supabase.from('numero_de_boletas').delete().eq('id', selectedId);
-        if (error) throw error;
-        await fetchData();
-        setSelectedId(null);
-      } catch (error) {
-        alert("Error al eliminar: " + error.message);
-      }
-    }
-  };
-
-  const handleRowClick = (item) => {
-    setSelectedId(item.id);
-    if (mode === "edit") {
-      const suffix = item.numero_boleta ? item.numero_boleta.replace("3518-", "") : "";
-      setFormData({
-        cargo: item.cargo || "",
-        apellido_nombre: item.apellido_nombre || "",
-        curso: item.curso || "",
-        division: item.division || "",
-        asignatura: item.asignatura || "",
-        turno: item.turno || "",
-        caracter: item.caracter || "",
-        numero_boleta_suffix: suffix,
-        estado: item.estado || ""
-      });
-    }
-  };
-
   // --- Filtros ---
-  const filteredData = boletas.filter(item => {
+  const filteredData = data.filter(item => {
     const f = filters;
     return (
       (!f.cargo || item.cargo === f.cargo) &&
@@ -278,10 +99,16 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
       (!f.asignatura || (item.asignatura || "").toLowerCase().includes(f.asignatura.toLowerCase())) &&
       (!f.turno || item.turno === f.turno) &&
       (!f.caracter || item.caracter === f.caracter) &&
-      (!f.numero_boleta || (item.numero_boleta || "").includes(f.numero_boleta)) &&
+      (!f.numero_boleta || (item.n_boleta || "").includes(f.numero_boleta)) &&
       (!f.estado || item.estado === f.estado)
     );
   });
+
+  // Listas para selects de filtros
+  const uniqueCargos = [...new Set(data.map(d => d.cargo).filter(Boolean))].sort();
+  const uniqueCursos = [...new Set(data.map(d => d.curso).filter(Boolean))].sort();
+  const uniqueDivisiones = [...new Set(data.map(d => d.division).filter(Boolean))].sort();
+  const uniqueTurnos = [...new Set(data.map(d => d.turno).filter(Boolean))].sort();
 
   // --- Renderizado ---
   return (
@@ -292,11 +119,11 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
         <>
           <h2>N° DE BOLETAS</h2>
 
-          {/* Filtros */}
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px' }}>
+          {/* Filtros y Botón Imprimir */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px', alignItems: 'center' }}>
             <select value={filters.cargo} onChange={e => setFilters({...filters, cargo: e.target.value})} style={{ padding: '5px' }}>
               <option value="">CARGO</option>
-              {cargosList.map(c => <option key={c} value={c}>{c}</option>)}
+              {uniqueCargos.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <input placeholder="APELLIDO Y NOMBRE" value={filters.apellido_nombre} onChange={e => setFilters({...filters, apellido_nombre: e.target.value})} style={{ padding: '5px' }} />
             <input placeholder="CURSO" value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px', width: '60px' }} />
@@ -304,8 +131,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
             <input placeholder="ASIGNATURA" value={filters.asignatura} onChange={e => setFilters({...filters, asignatura: e.target.value})} style={{ padding: '5px' }} />
             <select value={filters.turno} onChange={e => setFilters({...filters, turno: e.target.value})} style={{ padding: '5px' }}>
               <option value="">TURNO</option>
-              <option value="Mañana">Mañana</option>
-              <option value="Tarde">Tarde</option>
+              {uniqueTurnos.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             <input placeholder="CARÁCTER" value={filters.caracter} onChange={e => setFilters({...filters, caracter: e.target.value})} style={{ padding: '5px' }} />
             <input placeholder="N° BOLETA" value={filters.numero_boleta} onChange={e => setFilters({...filters, numero_boleta: e.target.value})} style={{ padding: '5px' }} />
@@ -314,78 +140,13 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
               <option value="ACTIVO">ACTIVO</option>
               <option value="NO ACTIVO">NO ACTIVO</option>
             </select>
+            <button 
+              onClick={() => setShowPrintPreview(true)} 
+              style={{ backgroundColor: 'yellow', color: 'black', padding: '8px 15px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '10px' }}
+            >
+              IMPRIMIR
+            </button>
           </div>
-
-          {/* Botones de Acción */}
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '20px' }}>
-            <button onClick={() => { setMode("create"); setFormData(initialFormState); setSelectedId(null); }} style={{ backgroundColor: 'blue', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>NUEVO</button>
-            <button onClick={() => { setMode("edit"); if(!selectedId) alert("Seleccione un registro"); }} style={{ backgroundColor: 'green', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>MODIFICAR</button>
-            <button onClick={handleDelete} style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>ELIMINAR</button>
-            <button onClick={() => setShowPrintPreview(true)} style={{ backgroundColor: 'yellow', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>IMPRIMIR</button>
-          </div>
-
-          {/* Formulario */}
-          {(mode === "create" || (mode === "edit" && selectedId)) && (
-            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', margin: '0 auto 20px', maxWidth: '800px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
-              <h3 style={{ textAlign: 'center', marginBottom: '15px' }}>{mode === "create" ? "Nueva Boleta" : "Modificar Boleta"}</h3>
-              <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                
-                <label style={{ gridColumn: '1 / -1' }}>CARGO:
-                  <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                    <option value="">Seleccione...</option>
-                    {cargosList.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </label>
-
-                <label style={{ gridColumn: '1 / -1' }}>APELLIDO Y NOMBRE:
-                  <select name="apellido_nombre" value={formData.apellido_nombre} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                    <option value="">Seleccione...</option>
-                    {availableDocentes.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </label>
-
-                {formData.cargo === "DOCENTE" && (
-                  <>
-                    <label>CURSO:
-                      <select name="curso" value={formData.curso} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                        <option value="">Seleccione...</option>
-                        {availableCursos.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </label>
-                    <label>DIVISIÓN:
-                      <select name="division" value={formData.division} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                        <option value="">Seleccione...</option>
-                        {availableDivisiones.map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                    </label>
-                    <label style={{ gridColumn: '1 / -1' }}>ASIGNATURA:
-                      <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}>
-                        <option value="">Seleccione...</option>
-                        {availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}
-                      </select>
-                    </label>
-                  </>
-                )}
-
-                <label>TURNO: <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
-                <label>CARÁCTER: <input name="caracter" value={formData.caracter} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
-                
-                <label>N° DE BOLETA: 
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '5px' }}>3518-</span>
-                    <input name="numero_boleta_suffix" value={formData.numero_boleta_suffix} onChange={handleInputChange} required style={{ flex: 1, padding: '5px' }} />
-                  </div>
-                </label>
-                
-                <label>ESTADO: <input name="estado" value={formData.estado} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
-
-                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
-                  <button type="submit" style={{ padding: '10px 30px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>GUARDAR</button>
-                  <button type="button" onClick={() => { setMode("view"); setSelectedId(null); }} style={{ padding: '10px 30px', backgroundColor: 'gray', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>CANCELAR</button>
-                </div>
-              </form>
-            </div>
-          )}
 
           {/* Tabla */}
           <div className="contenido-submenu" style={{ width: "98%", maxWidth: "100%", overflowX: 'auto' }}>
@@ -409,12 +170,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
                 ) : filteredData.length > 0 ? (
                   filteredData.map((item) => (
                     <tr 
-                      key={item.id} 
-                      onClick={() => handleRowClick(item)}
-                      style={{ 
-                        cursor: (mode === "edit" || mode === "delete") ? "pointer" : "default",
-                        backgroundColor: selectedId === item.id ? "#fffbe6" : "transparent"
-                      }}
+                      key={item.id}
                     >
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.cargo}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.apellido_nombre}</td>
@@ -423,7 +179,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.asignatura || '-'}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.turno}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.caracter}</td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.numero_boleta}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd", color: item.n_boleta.includes("SIN N° BOLETA") ? "red" : "inherit" }}>{item.n_boleta}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{item.estado}</td>
                     </tr>
                   ))
@@ -478,7 +234,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
                       <td style={{ padding: "5px", border: "1px solid #000" }}>{item.asignatura || '-'}</td>
                       <td style={{ padding: "5px", border: "1px solid #000" }}>{item.turno}</td>
                       <td style={{ padding: "5px", border: "1px solid #000" }}>{item.caracter}</td>
-                      <td style={{ padding: "5px", border: "1px solid #000" }}>{item.numero_boleta}</td>
+                      <td style={{ padding: "5px", border: "1px solid #000", color: item.n_boleta.includes("SIN N° BOLETA") ? "red" : "inherit" }}>{item.n_boleta}</td>
                       <td style={{ padding: "5px", border: "1px solid #000" }}>{item.estado}</td>
                     </tr>
                   ))}
