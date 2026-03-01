@@ -78,7 +78,12 @@ function App() {
         
         if (docenteError) throw docenteError;
 
-        let roles = Array.isArray(docenteData.cargos) ? docenteData.cargos : [];
+        let roles = [];
+        if (Array.isArray(docenteData.cargos)) {
+          roles = docenteData.cargos;
+        } else if (typeof docenteData.cargos === 'string') {
+          try { roles = JSON.parse(docenteData.cargos); } catch (e) { roles = []; }
+        }
         setUser({ ...docenteData, roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
         if (pendingPage) navigate(pendingPage, true);
@@ -107,7 +112,12 @@ function App() {
         }
 
         // No tiene cuenta custom, puede loguear con el método antiguo.
-        let roles = Array.isArray(docenteFallback.cargos) ? docenteFallback.cargos : [];
+        let roles = [];
+        if (Array.isArray(docenteFallback.cargos)) {
+          roles = docenteFallback.cargos;
+        } else if (typeof docenteFallback.cargos === 'string') {
+          try { roles = JSON.parse(docenteFallback.cargos); } catch (e) { roles = []; }
+        }
         setUser({ ...docenteFallback, roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
         if (pendingPage) navigate(pendingPage, true);
