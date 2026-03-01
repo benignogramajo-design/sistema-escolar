@@ -47,38 +47,75 @@ function App() {
     }
 
     try {
-      // 1. Buscar en Docentes
-      let { data: docente, error: errorDocente } = await supabase
-        .from('datos_de_legajo_docentes')
-        .select('*')
-        .ilike('apellido', apellido) // Insensible a mayúsculas/minúsculas
-        .eq('dni', dni)
-        .maybeSingle(); // Usamos maybeSingle para no lanzar error si hay 0 resultados, sino null
+      // --- NUEVA LÓGICA DE LOGIN ---
 
-      if (docente) {
-        // Parsear cargos si vienen como string JSON o array
-        let roles = [];
-        if (Array.isArray(docente.cargos)) roles = docente.cargos;
-        else if (typeof docente.cargos === 'string') {
-          try { roles = JSON.parse(docente.cargos); } catch (e) { roles = []; }
+      // 1. Intentar iniciar sesión con la tabla de usuarios_personal (método principal)
+      const { data: userAccount, error: accountError } = await supabase
+        .from('usuarios_personal')
+        .select('*, docente:datos_de_legajo_docentes(id, apellido, nombre, cargos)')
+        .eq('username', apellido) // 'apellido' del form es el 'username'
+        .eq('password', dni)      // 'dni' del form es la 'password'
+        .maybeSingle();
+
+      if (accountError) throw accountError;
+
+      if (userAccount) {
+        if (userAccount.is_blocked) {
+          setLoginError("Su cuenta se encuentra bloqueada. Contacte al administrador.");
+          return;
+        }
+        if (!userAccount.is_active) {
+          setLoginError("Su cuenta no está activa. Contacte al administrador.");
+          return;
         }
 
-        setUser({ ...docente, roles: roles, tipo: 'DOCENTE' });
+        // Usuario encontrado y válido, obtener datos del docente asociado
+        const { data: docenteData, error: docenteError } = await supabase
+          .from('datos_de_legajo_docentes')
+          .select('*')
+          .eq('id', userAccount.docente_id)
+          .single();
+        
+        if (docenteError) throw docenteError;
+
+        let roles = Array.isArray(docenteData.cargos) ? docenteData.cargos : [];
+        setUser({ ...docenteData, roles, tipo: 'DOCENTE' });
         setShowLoginModal(false);
-        if (pendingPage) {
-          navigate(pendingPage, true); // Reintentar navegación
-          setPendingPage(null);
-        }
+        if (pendingPage) navigate(pendingPage, true);
+        setPendingPage(null);
         return;
       }
 
-      // 2. Si no es docente, buscar en Alumnos (Lógica futura o tabla existente)
-      /*
-      let { data: alumno } = await supabase.from('datos_de_legajo_alumnos')...
-      if (alumno) { setUser({ ...alumno, roles: ['ALUMNO'], tipo: 'ALUMNO' }); ... return; }
-      */
+      // 2. Si no se encontró en usuarios_personal, intentar método de fallback (apellido/dni)
+      const { data: docenteFallback, error: fallbackError } = await supabase
+        .from('datos_de_legajo_docentes')
+        .select('*')
+        .ilike('apellido', apellido)
+        .eq('dni', dni)
+        .maybeSingle();
 
-      // Si no se encuentra
+      if (fallbackError) throw fallbackError;
+
+      if (docenteFallback) {
+        // Se encontró un docente con apellido/dni. VERIFICAR que no tenga una cuenta custom.
+        const { data: existingAccount, error: checkError } = await supabase.from('usuarios_personal').select('id').eq('docente_id', docenteFallback.id).maybeSingle();
+        if (checkError) throw checkError;
+
+        if (existingAccount) {
+          setLoginError("Sus credenciales han sido actualizadas. Por favor, use su nuevo usuario y contraseña.");
+          return;
+        }
+
+        // No tiene cuenta custom, puede loguear con el método antiguo.
+        let roles = Array.isArray(docenteFallback.cargos) ? docenteFallback.cargos : [];
+        setUser({ ...docenteFallback, roles, tipo: 'DOCENTE' });
+        setShowLoginModal(false);
+        if (pendingPage) navigate(pendingPage, true);
+        setPendingPage(null);
+        return;
+      }
+
+      // 3. Si ninguna de las dos formas funciona
       setLoginError("Usuario o contraseña incorrectos.");
 
     } catch (error) {
