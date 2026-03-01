@@ -296,6 +296,15 @@ const DocentesCodigos = ({ goBack, goHome }) => {
 
   // Filtrado de datos
   const filteredData = codigos.filter(item => {
+    const normalizeTurno = (turno) => {
+      if (!turno) return "";
+      const upper = String(turno).toUpperCase();
+      if (upper.includes("MAÑANA") && upper.includes("TARDE")) return "Mañana y Tarde";
+      if (upper.includes("MAÑANA")) return "Mañana";
+      if (upper.includes("TARDE")) return "Tarde";
+      return turno;
+    };
+
     const checkSelect = (val, filter) => !filter || (val && val.toString() === filter);
 
     const checkPlazas = (plazasData, filterText) => {
@@ -315,7 +324,7 @@ const DocentesCodigos = ({ goBack, goHome }) => {
 
     return (
       checkSelect(item.cargo, filters.cargo) &&
-      checkSelect(item.turno, filters.turno) &&
+      (!filters.turno || normalizeTurno(item.turno) === filters.turno) &&
       checkSelect(item.curso, filters.curso) &&
       checkSelect(item.division, filters.division) &&
       checkSelect(item.asignatura, filters.asignatura) &&
@@ -369,8 +378,10 @@ const DocentesCodigos = ({ goBack, goHome }) => {
           {getUniqueOptions("cargo").map(op => <option key={op} value={op}>{op}</option>)}
         </select>
         <select value={filters.turno} onChange={e => setFilters({...filters, turno: e.target.value})} style={{ padding: '5px' }}>
-          <option value="">Todos los Turnos</option>
-          {getUniqueOptions("turno").map(op => <option key={op} value={op}>{op}</option>)}
+          <option value="">Todos los Turnos</option>          
+          <option value="Mañana">Mañana</option>
+          <option value="Tarde">Tarde</option>
+          <option value="Mañana y Tarde">Mañana y Tarde</option>
         </select>
         <select value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px' }}>
           <option value="">Todos los Cursos</option>

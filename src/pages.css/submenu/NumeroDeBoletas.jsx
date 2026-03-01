@@ -46,6 +46,15 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
         return val || fallback;
       };
 
+      const normalizeTurno = (turno) => {
+        if (!turno) return "";
+        const upper = String(turno).toUpperCase();
+        if (upper.includes("MAÑANA") && upper.includes("TARDE")) return "Mañana y Tarde";
+        if (upper.includes("MAÑANA")) return "Mañana";
+        if (upper.includes("TARDE")) return "Tarde";
+        return turno;
+      };
+
       (estData || []).forEach(item => {
         const titular = safeParse(item.docente_titular, { nombre: "---" });
         const interino = safeParse(item.docente_interino, { nombre: "---" });
@@ -66,7 +75,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
             curso: item.curso,
             division: item.division,
             asignatura: item.asignatura,
-            turno: item.turno,
+            turno: normalizeTurno(item.turno),
             caracter: caracter,
             n_boleta: nBoleta,
             estado: doc.estado
@@ -134,7 +143,7 @@ const NumeroDeBoletas = ({ goBack, goHome }) => {
   const uniqueCargos = [...new Set(data.map(d => d.cargo).filter(Boolean))].sort();
   const uniqueCursos = [...new Set(data.map(d => d.curso).filter(Boolean))].sort();
   const uniqueDivisiones = [...new Set(data.map(d => d.division).filter(Boolean))].sort();
-  const uniqueTurnos = [...new Set(data.map(d => d.turno).filter(Boolean))].sort();
+  const uniqueTurnos = ["Mañana", "Tarde", "Mañana y Tarde"];
   const uniqueCaracteres = [...new Set(data.map(d => d.caracter).filter(Boolean))].sort();
 
   // --- Renderizado ---

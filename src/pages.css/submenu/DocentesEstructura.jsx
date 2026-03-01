@@ -482,6 +482,17 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     }
     return { ...item, turno: dynamicTurno };
   }).filter(item => {
+    // Normalizar turno para el filtro
+    let normalizedTurno = "";
+    const upperTurno = (item.turno || "").toUpperCase();
+    if (upperTurno.includes("MAÑANA") && upperTurno.includes("TARDE")) {
+        normalizedTurno = "Mañana y Tarde";
+    } else if (upperTurno.includes("MAÑANA")) {
+        normalizedTurno = "Mañana";
+    } else if (upperTurno.includes("TARDE")) {
+        normalizedTurno = "Tarde";
+    }
+
     // Helper para buscar texto en objetos JSON
     const searchInDocentes = (docObj, term) => {
       if (!docObj) return false;
@@ -494,7 +505,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     const matchCargo = !filters.cargo || item.cargo === filters.cargo;
     const matchCurso = !filters.curso || item.curso === filters.curso;
     const matchDiv = !filters.division || item.division === filters.division;
-    const matchTurno = !filters.turno || item.turno === filters.turno;
+    const matchTurno = !filters.turno || normalizedTurno === filters.turno;
     const matchAsig = !filters.asignatura || (item.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase());
     
     const matchDia = !filters.dia || (Array.isArray(item.horarios) && item.horarios.some(h => h.dia === filters.dia));
@@ -705,6 +716,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
           <option value="">Turno</option>
           <option value="Mañana">Mañana</option>
           <option value="Tarde">Tarde</option>
+          <option value="Mañana y Tarde">Mañana y Tarde</option>
         </select>
         <select value={filters.dia} onChange={e => setFilters({...filters, dia: e.target.value})} style={{ padding: '5px' }}>
           <option value="">Día</option>
