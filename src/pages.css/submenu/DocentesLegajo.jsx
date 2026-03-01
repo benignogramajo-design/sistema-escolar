@@ -312,7 +312,7 @@ const DocentesLegajo = ({ goBack, goHome }) => {
             <p><strong>Localidad:</strong> {docente.localidad || '---'}</p>
             <p><strong>Domicilio:</strong> {docente.domicilio || '---'}</p>
             <p><strong>Celular:</strong> {docente.celular || '---'}</p>
-            <p><strong>Email:</strong> {docente.email || '---'}</p>
+            <p><strong>Email:</strong> {docente.mail || '---'}</p>
           </div>
         </div>
 
