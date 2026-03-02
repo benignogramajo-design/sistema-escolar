@@ -16,6 +16,7 @@ import CargarNotas from "./pages.css/submenu/CargarNotas";
 import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
 import DocentesDerivaciones from "./pages.css/submenu/DocentesDerivaciones";
 import DocentesEstructura from "./pages.css/submenu/DocentesEstructura";
+import DocentesLegajo from "./pages.css/submenu/DocentesLegajo";
 import DocentesHorarios from "./pages.css/submenu/DocentesHorarios";
 import DocentesHorariosDia from "./pages.css/submenu/DocentesHorariosDia";
 import DocentesHorariosImprimir from "./pages.css/submenu/DocentesHorariosImprimir";
@@ -153,7 +154,7 @@ export const navigationMap = {
   DocentesCodigos: { component: DocentesCodigos },
   DocentesEstructura: { component: DocentesEstructura },
   DocentesDatosLegajo: { component: DocentesDatosLegajo },
-  // DocentesLegajo: { component: DocentesLegajo }, // No encontrado en contexto
+  DocentesLegajo: { component: DocentesLegajo },
   PersonalPorDia: { component: PersonalPorDia },
   NumeroDeBoletas: { component: NumeroDeBoletas },
   UsuariosPersonal: { component: UsuariosPersonal },
@@ -174,7 +175,7 @@ export const navigationMap = {
   RegistroAlumnosActaExamen: { component: RegistroAlumnosActaExamen },
   RegistroAlumnosPermisosExamen: { component: RegistroAlumnosPermisosExamen },
   RegistroAlumnosCertificados: { component: RegistroAlumnosCertificados },
-  // PlanillasEstadisticaAlumnos: { component: PlanillasEstadisticaAlumnos }, // Duplicado
+  PlanillasEstadisticaAlumnos: { component: PlanillasEstadisticaAlumnos },
   PlanillasAprobadosDesaprobados: { component: PlanillasAprobadosDesaprobados },
   PlanillasAprobadosDesaprobadosTotales: { component: PlanillasAprobadosDesaprobadosTotales },
   PlanillasRiesgoPedagogico: { component: PlanillasRiesgoPedagogico },
