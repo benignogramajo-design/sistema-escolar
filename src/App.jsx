@@ -182,10 +182,26 @@ function App() {
   };
 
   const goBack = () => {
-    // Vuelve a la página anterior en el historial.
-    // Esto es más robusto que la navegación jerárquica y funciona para todas las páginas.
-    if (pageHistory.length > 1) {
-      setPageHistory(prev => prev.slice(0, -1));
+    if (currentPageName === "Home") return;
+
+    // Buscamos la ruta jerárquica en el menú para determinar el padre
+    const path = getPath(currentPageName, menuConfig, []);
+
+    if (path && path.length > 0) {
+      // Si la página existe en el menú, navegamos a su padre jerárquico
+      if (path.length === 1) {
+        navigate("Home");
+      } else {
+        const parentAction = path[path.length - 2];
+        navigate(parentAction);
+      }
+    } else {
+      // Fallback: Si no está en el menú (ej: detalle no listado), usamos el historial
+      if (pageHistory.length > 1) {
+        setPageHistory(prev => prev.slice(0, -1));
+      } else {
+        setPageHistory(["Home"]);
+      }
     }
   };
 
