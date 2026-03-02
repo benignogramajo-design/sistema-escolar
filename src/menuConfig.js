@@ -55,6 +55,7 @@ export const menuConfig = [
           { name: "HORARIOS 2023", action: "DocentesHorarios" },
           { name: "HORARIOS POR DÍA", action: "DocentesHorariosDia" },
           { name: "HORARIOS PARA IMPRIMIR", action: "DocentesHorariosImprimir" },
+          { name: "ASIGNAR RESPONSABLE DE CURSO", action: "AsignarResponsableCurso" },
         ],
       },
       {
