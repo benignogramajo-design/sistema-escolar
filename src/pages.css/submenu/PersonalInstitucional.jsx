@@ -1,6 +1,6 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
-import BotonModulo from "../../components.css/BotonModulo";
+import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
 import fondo from "../../assets.css/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 
@@ -21,9 +21,9 @@ const PersonalInstitucional = ({ goBack, goHome, navigate }) => {
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
       <h2 style={{ textTransform: 'uppercase' }}>PERSONAL INSTITUCIONAL</h2>
-      <div className="botones-submenu">
+      <div className="subbotones">
         {botones.map((item) => (
-          <BotonModulo
+          <SubBoton
             key={item.titulo}
             titulo={item.titulo}
             color="rgba(115, 214, 253, 0.7)"
