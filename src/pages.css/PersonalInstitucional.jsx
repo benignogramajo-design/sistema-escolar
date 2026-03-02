@@ -4,7 +4,7 @@ import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
+import fondo from "../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 
 // Encuentra la sección 'Docentes' desde la configuración central
 const adminModule = menuConfig.find((item) => item.action === "Administracion");

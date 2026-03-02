@@ -4,7 +4,7 @@ import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/Fondo PRECEPTORIA1.jpg";
+import fondo from "../assets/fondos/Fondo PRECEPTORIA1.jpg";
 
 const preceptoriaMenu = menuConfig.find((item) => item.action === "Preceptoria");
 const subBotones = preceptoriaMenu ? preceptoriaMenu.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];

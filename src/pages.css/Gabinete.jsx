@@ -4,7 +4,7 @@ import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/Fondo GABINETE.jpg";
+import fondo from "../assets/fondos/Fondo GABINETE.jpg";
 
 const gabineteMenu = menuConfig.find((item) => item.action === "Gabinete");
 const subBotones = gabineteMenu ? gabineteMenu.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];

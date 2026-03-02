@@ -3,7 +3,7 @@ import NavBar from "../components.css/NavBar";
 import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/Fondo DOCENTES1.jpg";
+import fondo from "../assets/fondos/Fondo DOCENTES1.jpg";
 
 const moduleConfig = menuConfig.find((item) => item.action === "DocentesPortal");
 const subBotones = moduleConfig ? moduleConfig.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];

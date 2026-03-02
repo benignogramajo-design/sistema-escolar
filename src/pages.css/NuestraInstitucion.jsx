@@ -3,7 +3,7 @@ import NavBar from "../components.css/NavBar";
 import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/fondo1.jpg";
+import fondo from "../assets/fondos/fondo1.jpg";
 
 const moduleConfig = menuConfig.find((item) => item.action === "NuestraInstitucion");
 const subBotones = moduleConfig ? moduleConfig.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];

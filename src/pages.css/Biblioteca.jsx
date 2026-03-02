@@ -4,7 +4,7 @@ import SubBoton from "../components.css/SubBoton";
 import "../styles/pages.css";
 
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/Fondo BIBLIOTECA1.jpg";
+import fondo from "../assets/fondos/Fondo BIBLIOTECA1.jpg";
 
 const bibliotecaMenu = menuConfig.find((item) => item.action === "Biblioteca");
 const subBotones = bibliotecaMenu ? bibliotecaMenu.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];
