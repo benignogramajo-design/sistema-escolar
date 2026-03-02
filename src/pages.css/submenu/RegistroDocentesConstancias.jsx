@@ -3,14 +3,19 @@ import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
 
-import { menuConfig } from "../../menuConfig";
 import fondo from "../../assets.css/fondos/Fondo REGISTRO DOCENTES1.jpg";
 
-const adminModule = menuConfig.find((item) => item.action === "Administracion");
-const registroDocentesModule = adminModule ? adminModule.subModules.find((sub) => sub.action === "RegistroDocentesConstancias") : null;
-const subBotones = registroDocentesModule ? registroDocentesModule.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];
-
 const RegistroDocentesConstancias = ({ navigate, goBack, goHome }) => {
+  const subBotones = [
+    { titulo: "REGISTRO DE ACTAS", action: "RegistroDocentesActas" },
+    { titulo: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
+    { titulo: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
+    { titulo: "CONSTANCIAS DE SERVICIOS", action: "RegistroDocentesConstanciasServicios" },
+    { titulo: "CONSTANCIAS DE AFECTACIONES", action: "RegistroDocentesConstanciasAfectaciones" },
+    { titulo: "CONSTANCIAS DE PERMANENCIA", action: "RegistroDocentesConstanciasPermanencia" },
+    { titulo: "CONSTANCIA DE TRABAJO", action: "RegistroDocentesConstanciaTrabajo" },
+  ];
+
   return (
     <div
       className="pagina-modulo"
