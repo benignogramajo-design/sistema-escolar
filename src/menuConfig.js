@@ -30,6 +30,7 @@ export const menuConfig = [
       { name: "OFERTAS ACADÉMICAS", action: "OfertasAcademicas" },
       { name: "HORARIOS", action: "HorariosInstitucionales" },
       { name: "UNIFORME", action: "Uniforme" },
+      { name: "ORGANIGRAMA", action: "Organigrama" },
     ],
   },
   {

@@ -113,6 +113,7 @@ import Licencias from "./pages.css/submenu/Licencias";
 import AsignarResponsableCurso from "./pages.css/submenu/AsignarResponsableCurso";
 import CronogramaMesasExamen from "./pages.css/submenu/CronogramaMesasExamen";
 import DatosOrganigrama from "./pages.css/submenu/DatosOrganigrama";
+import Organigrama from "./pages.css/submenu/Organigrama";
 // ... importa el resto de tus componentes
 
 export const navigationMap = {
@@ -237,4 +238,5 @@ export const navigationMap = {
   Licencias: { component: Licencias },
   CronogramaMesasExamen: { component: CronogramaMesasExamen },
   DatosOrganigrama: { component: DatosOrganigrama },
+  Organigrama: { component: Organigrama },
 };
