@@ -16,6 +16,7 @@ const PersonalInstitucional = ({ goBack, goHome, navigate }) => {
     { titulo: "HORARIOS POR DÍA", action: "DocentesHorariosDia" },
     { titulo: "HORARIOS PARA IMPRIMIR", action: "DocentesHorariosImprimir" },
     { titulo: "ASIGNAR RESPONSABLE DE CURSO", action: "AsignarResponsableCurso" },
+    { titulo: "SEGUIMIENTO DE F501", action: "SeguimientoF501" },
   ];
 
   return (

@@ -56,6 +56,7 @@ export const menuConfig = [
           { name: "HORARIOS POR DÍA", action: "DocentesHorariosDia" },
           { name: "HORARIOS PARA IMPRIMIR", action: "DocentesHorariosImprimir" },
           { name: "ASIGNAR RESPONSABLE DE CURSO", action: "AsignarResponsableCurso" },
+          { name: "SEGUIMIENTO DE F501", action: "SeguimientoF501" },
         ],
       },
       {
