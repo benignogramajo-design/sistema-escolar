@@ -3,7 +3,7 @@ import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
 
-import fondo from "../../assets.css/fondos/Fondo REGISTRO DOCENTES1.jpg";
+import fondo from "../../assets/fondos/Fondo REGISTRO DOCENTES1.jpg";
 
 const RegistroDocentesConstancias = ({ navigate, goBack, goHome }) => {
   const subBotones = [

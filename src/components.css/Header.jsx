@@ -2,8 +2,8 @@
 import React, { useState, useRef } from "react";
 import MenuDrawer from "./MenuDrawer";
 import "../styles/header.css";
-import logo from "../assets.css/logos/Logo.png";
-import iconLogout from "../assets.css/iconos/logout.png";
+import logo from "../assets/logos/Logo.png";
+import iconLogout from "../assets/iconos/logout.png";
 
 const Header = ({ user, navigate, onLoginClick, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
