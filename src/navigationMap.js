@@ -150,5 +150,7 @@ export const pageMap = {
   BibliotecaLibros: { component: BibliotecaLibros }, BibliotecaMovimientos: { component: BibliotecaMovimientos },
 
   // Sub-rutas de navegación interna (no en menú principal pero accesibles)
-  PreceptoriaNotificaciones: { component: import("./pages.css/submenu/PreceptoriaNotificaciones").then(m => m.default) || SubModuloPage }, // Ejemplo de carga dinámica si se prefiere, o estática arriba
+  // La siguiente línea probablemente causaba un error de build porque el import dinámico no es un componente válido de React.
+  // Se ha comentado para solucionarlo, ya que la página no parece estar en uso.
+  // PreceptoriaNotificaciones: { component: SubModuloPage },
 };
