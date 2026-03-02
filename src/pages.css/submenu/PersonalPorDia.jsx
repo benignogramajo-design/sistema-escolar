@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
+import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 import { supabase } from "../../components.css/supabaseClient";
-import logo from "../../assets.css/logos/Logo.png";
+import logo from "../../assets/logos/Logo.png";
 
 const PersonalPorDia = ({ goBack, goHome }) => {
   const [docentes, setDocentes] = useState([]);

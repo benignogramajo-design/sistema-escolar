@@ -2,22 +2,22 @@
 
 // Importamos los iconos aquí para que sea la única fuente de verdad
 // --- Iconos Existentes ---
-import iconPreceptoria from "./assets.css/iconos/Icono PRECEPTORIA1.jpg";
-import iconBiblioteca from "./assets.css/iconos/Icono BIBLIOTECA1.jpg";
+import iconPreceptoria from "./assets/iconos/Icono PRECEPTORIA1.jpg";
+import iconBiblioteca from "./assets/iconos/Icono BIBLIOTECA1.jpg";
 
 // --- Iconos para Módulos de Administración ---
-import iconPersonalInstitucional from "./assets.css/iconos/Icono DOCENTES1.jpg";
-import iconRegistroDocentes from "./assets.css/iconos/Icono REGISTRO DOCENTES1.jpg";
-import iconRegistroAlumnos from "./assets.css/iconos/Icono REGISTRO ALUMNOS1.jpg";
-import iconPlanillas from "./assets.css/iconos/Icono PLANILLAS1.jpg";
-import iconNoticias from "./assets.css/iconos/ICONO NOTICIAS.jpg";
+import iconPersonalInstitucional from "./assets/iconos/Icono DOCENTES1.jpg";
+import iconRegistroDocentes from "./assets/iconos/Icono REGISTRO DOCENTES1.jpg";
+import iconRegistroAlumnos from "./assets/iconos/Icono REGISTRO ALUMNOS1.jpg";
+import iconPlanillas from "./assets/iconos/Icono PLANILLAS1.jpg";
+import iconNoticias from "./assets/iconos/ICONO NOTICIAS.jpg";
 
 // --- Iconos Nuevos ---
-import iconInstitucion from "./assets.css/iconos/Icono INSTITUCION.jpg";
-import iconAdministracion from "./assets.css/iconos/Icono ADMINISTRACIÓN.jpg";
-import iconDocentes from "./assets.css/iconos/Icono DOCENTES.jpg";
-import iconAlumnos from "./assets.css/iconos/Icono ALUMNOS.jpg";
-import iconGabinete from "./assets.css/iconos/Icono GABINETE.jpg";
+import iconInstitucion from "./assets/iconos/Icono INSTITUCION.jpg";
+import iconAdministracion from "./assets/iconos/Icono ADMINISTRACIÓN.jpg";
+import iconDocentes from "./assets/iconos/Icono DOCENTES.jpg";
+import iconAlumnos from "./assets/iconos/Icono ALUMNOS.jpg";
+import iconGabinete from "./assets/iconos/Icono GABINETE.jpg";
 
 export const menuConfig = [
   {

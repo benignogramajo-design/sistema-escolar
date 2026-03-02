@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo PRECEPTORIA1.jpg"; // Corrección de extensión
+import fondo from "../../assets/fondos/Fondo PRECEPTORIA1.jpg"; // Corrección de extensión
 import { supabase } from "../../components.css/supabaseClient";
-import logo from "../../assets.css/logos/Logo.png";
+import logo from "../../assets/logos/Logo.png";
 
 const MesasDeExamen = ({ goBack, goHome }) => {
   const [mesas, setMesas] = useState([]);

@@ -2,8 +2,8 @@ import React from "react";
 import BotonModulo from "../components.css/BotonModulo";
 import "../styles/pages.css";
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/fondo1.jpg";
-import fotoPortada from "../assets.css/fondos/Foto Portada1.png";
+import fondo from "../assets/fondos/fondo1.jpg";
+import fotoPortada from "../assets/fondos/Foto Portada1.png";
 
 // Datos de ejemplo para las noticias. En un futuro, esto vendría de una API.
 const newsData = [
