@@ -140,26 +140,38 @@ function App() {
   };
 
   const navigate = (newPage, force = false) => {
-    // 1. Obtener la ruta jerárquica para saber la Sección Principal (Root)
-    const path = getPath(newPage, menuConfig, []) || [newPage];
-    const rootSection = path[0]; // Ej: "Administracion", "NuestraInstitucion"
+    // 1. Determinar la sección raíz para la verificación de permisos.
+    let rootSection;
+    const newPagePath = getPath(newPage, menuConfig, []);
 
-    // 2. Verificar si es pública
+    if (newPagePath) {
+      // Si la nueva página está en la estructura del menú, su raíz es el primer elemento.
+      rootSection = newPagePath[0];
+    } else {
+      // Si la nueva página NO está en el menú (p. ej., una página de detalles),
+      // hereda la sección raíz de la página ACTUAL.
+      const currentPagePath = getPath(currentPageName, menuConfig, []) || [currentPageName];
+      rootSection = currentPagePath[0];
+    }
+
+    // Fallback por si no se encuentra una sección raíz.
+    rootSection = rootSection || newPage;
+
+    // 2. Verificar si la sección es pública.
     if (publicSections.includes(rootSection) || newPage === "Home") {
       setPageHistory(prev => [...prev, newPage]);
       return;
     }
 
-    // 3. Si no es pública, verificar usuario
+    // 3. Si no es pública, verificar si el usuario está logueado.
     if (!user && !force) {
       setPendingPage(newPage);
       setShowLoginModal(true);
       return;
     }
 
-    // 4. Verificar permisos del rol
+    // 4. Verificar permisos del rol del usuario.
     const userRoles = user?.roles || [];
-    // Verificamos si ALGUNO de los roles del usuario tiene permiso para esta sección
     const hasAccess = userRoles.some(rol => roleAccess[rol]?.includes(rootSection));
 
     if (hasAccess || force) {
@@ -170,16 +182,10 @@ function App() {
   };
 
   const goBack = () => {
-    if (currentPageName === "Home") return;
-
-    const path = getPath(currentPageName, menuConfig, ["Home"]);
-
-    if (path && path.length > 1) {
-      // Establece el historial a la ruta del padre jerárquico
-      setPageHistory(path.slice(0, -1));
-    } else {
-      // Si no se encuentra en el menú o es nivel superior, volver al Home
-      setPageHistory(["Home"]);
+    // Vuelve a la página anterior en el historial.
+    // Esto es más robusto que la navegación jerárquica y funciona para todas las páginas.
+    if (pageHistory.length > 1) {
+      setPageHistory(prev => prev.slice(0, -1));
     }
   };
 
