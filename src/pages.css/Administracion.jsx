@@ -4,7 +4,7 @@ import BotonModulo from "../components.css/BotonModulo";
 import "../styles/pages.css";
 
 import { menuConfig } from "../menuConfig";
-import fondo from "../assets.css/fondos/ADMINISTRACION.jpg";
+import fondo from "../assets/fondos/ADMINISTRACION.jpg";
 
 // Buscamos el módulo de Administración para obtener sus sub-módulos
 const adminModule = menuConfig.find((item) => item.action === "Administracion");
