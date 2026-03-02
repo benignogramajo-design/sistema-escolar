@@ -3,7 +3,7 @@ import Header from "./components.css/Header";
 import LoginModal from "./components.css/LoginModal";
 import { supabase } from "./components.css/supabaseClient";
 import { roleAccess, publicSections } from "./components.css/authConfig";
-import { pageMap } from "./navigationMap";
+import { navigationMap as pageMap } from "./navigationMap";
 import { menuConfig } from "./menuConfig";
 
 // Función auxiliar para encontrar la ruta jerárquica de una página
