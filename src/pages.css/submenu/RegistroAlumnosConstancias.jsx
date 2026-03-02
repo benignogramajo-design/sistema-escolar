@@ -3,14 +3,19 @@ import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
 
-import { menuConfig } from "../../menuConfig";
 import fondo from "../../assets.css/fondos/Fondo REGISTRO ALUMNOS1.jpg";
 
-const adminModule = menuConfig.find((item) => item.action === "Administracion");
-const registroAlumnosModule = adminModule ? adminModule.subModules.find((sub) => sub.action === "RegistroAlumnosConstancias") : null;
-const subBotones = registroAlumnosModule ? registroAlumnosModule.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];
-
 const RegistroAlumnosConstancias = ({ navigate, goBack, goHome }) => {
+  const subBotones = [
+    { titulo: "FICHA DEL ALUMNO", action: "RegistroAlumnosFicha" },
+    { titulo: "LIBRO MATRIZ", action: "RegistroAlumnosLibroMatriz" },
+    { titulo: "BOLETO ESTUDIANTIL", action: "RegistroAlumnosBoletoEstudiantil" },
+    { titulo: "CAUSAL DE VACANTE", action: "RegistroAlumnosCausalVacante" },
+    { titulo: "ACTA DE EXAMEN", action: "RegistroAlumnosActaExamen" },
+    { titulo: "PERMISOS DE EXAMEN", action: "RegistroAlumnosPermisosExamen" },
+    { titulo: "CERTIFICADOS", action: "RegistroAlumnosCertificados" },
+  ];
+
   return (
     <div
       className="pagina-modulo"

@@ -3,14 +3,25 @@ import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
 
-import { menuConfig } from "../../menuConfig";
 import fondo from "../../assets.css/fondos/Fondo PLANILLAS1.jpg";
 
-const adminModule = menuConfig.find((item) => item.action === "Administracion");
-const planillasModule = adminModule ? adminModule.subModules.find((sub) => sub.action === "PlanillasEstadisticas") : null;
-const subBotones = planillasModule ? planillasModule.subItems.map((sub) => ({ titulo: sub.name, action: sub.action })) : [];
-
 const PlanillasEstadisticas = ({ navigate, goBack, goHome }) => {
+  const subBotones = [
+    { titulo: "ESTADÍSTICA DE ALUMNOS", action: "PlanillasEstadisticaAlumnos" },
+    { titulo: "APROBADOS Y DESAPROBADOS POR CURSO, DIVISIÓN Y MATERIA", action: "PlanillasAprobadosDesaprobados" },
+    { titulo: "APROBADOS Y DESAPROBADOS (TOTALES)", action: "PlanillasAprobadosDesaprobadosTotales" },
+    { titulo: "RIESGO PEDAGÓGICO", action: "PlanillasRiesgoPedagogico" },
+    { titulo: "ESTADÍSTICA GENERAL", action: "PlanillasEstadisticaGeneral" },
+    { titulo: "CICLO BÁSICO", action: "PlanillasCicloBasico" },
+    { titulo: "BACHILLER EN ECONOMÍA", action: "PlanillasBachillerEconomia" },
+    { titulo: "BACHILLER EN INFORMÁTICA", action: "PlanillasBachillerInformatica" },
+    { titulo: "LIBRETA", action: "PlanillasLibreta" },
+    { titulo: "RAC", action: "PlanillasRAC" },
+    { titulo: "ATACALAR", action: "PlanillasATACALAR" },
+    { titulo: "MESAS DE EXAMEN", action: "PlanillasMesasExamen" },
+    { titulo: "COMPENDIOS", action: "PlanillasCompendios" },
+  ];
+
   return (
     <div
       className="pagina-modulo"
