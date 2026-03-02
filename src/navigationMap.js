@@ -109,7 +109,10 @@ import VerSalidasEducativas from "./pages.css/submenu/VerSalidasEducativas";
 import BibliotecaLibros from "./pages.css/submenu/BibliotecaLibros";
 import BibliotecaMovimientos from "./pages.css/submenu/BibliotecaMovimientos";
 import SeguimientoF501 from "./pages.css/submenu/SeguimientoF501";
+import Licencias from "./pages.css/submenu/Licencias";
 import AsignarResponsableCurso from "./pages.css/submenu/AsignarResponsableCurso";
+import CronogramaMesasExamen from "./pages.css/submenu/CronogramaMesasExamen";
+import DatosOrganigrama from "./pages.css/submenu/DatosOrganigrama";
 // ... importa el resto de tus componentes
 
 export const navigationMap = {
@@ -231,4 +234,7 @@ export const navigationMap = {
   BibliotecaMovimientos: { component: BibliotecaMovimientos },
   AsignarResponsableCurso: { component: AsignarResponsableCurso },
   SeguimientoF501: { component: SeguimientoF501 },
+  Licencias: { component: Licencias },
+  CronogramaMesasExamen: { component: CronogramaMesasExamen },
+  DatosOrganigrama: { component: DatosOrganigrama },
 };
