@@ -10,6 +10,7 @@ const DocentesCodigos = ({ goBack, goHome }) => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [mode, setMode] = useState("view"); // 'view', 'create', 'edit', 'delete'
+  const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
   // Estado del formulario
@@ -197,97 +198,6 @@ const DocentesCodigos = ({ goBack, goHome }) => {
     }
   };
 
-  // Función para imprimir / generar PDF
-  const handlePrint = () => {
-    const fullLogoUrl = new URL(logo, window.location.href).href;
-    
-    // Helper local para texto plano
-    const formatPlazasText = (plazas) => {
-      let p = plazas;
-      if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) {} }
-      if (Array.isArray(p)) return p.join(" - ");
-      return p || "";
-    };
-
-    const rowsHtml = filteredData.map(item => `
-      <tr>
-        <td style="border: 1px solid #000; padding: 5px; text-align: center;">${item.orden || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px;">${item.cargo || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px;">${item.turno || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px; text-align: center;">${item.curso || ''} ${item.division || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px;">${item.asignatura || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px; text-align: center;">${item.carga_horaria || ''}</td>
-        <td style="border: 1px solid #000; padding: 5px;">${formatPlazasText(item.plazas)}</td>
-      </tr>
-    `).join('');
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Vista Previa - Códigos Docentes</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th { background-color: #f2f2f2; border: 1px solid #000; padding: 8px; font-size: 12px; }
-          td { border: 1px solid #000; padding: 8px; font-size: 11px; }
-          .header-container { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
-          .logo { width: 60px; height: auto; margin-right: 20px; }
-          .school-info h1 { font-size: 16px; margin: 0; }
-          .school-info p { font-size: 12px; margin: 2px 0; }
-          
-          @media print {
-            .no-print { display: none !important; }
-            thead { display: table-header-group; } 
-            tr { page-break-inside: avoid; }
-          }
-
-          .preview-controls {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #333; padding: 15px; text-align: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-          }
-          .btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
-          .btn-print { background-color: yellow; color: black; }
-          .btn-save { background-color: #fff; color: #333; }
-          .btn-close { background-color: red; color: white; }
-        </style>
-      </head>
-      <body>
-        <table>
-          <thead>
-            <tr>
-              <th colspan="7" style="border: none; background: none; text-align: left; padding: 0 0 10px 0;">
-                <div class="header-container">
-                  <img src="${fullLogoUrl}" class="logo" alt="Logo" />
-                  <div class="school-info">
-                    <h1>Escuela Secundaria Gobernador Garmendia</h1>
-                    <p>CUE: 9001717/00 - Av. de la Soja S/N° - Gobernador Garmendia - Burruyacu</p>
-                    <p>escuelasecgarmendia@gmail.com</p>
-                  </div>
-                </div>
-              </th>
-            </tr>
-            <tr><th>Ord.</th><th>Cargo</th><th>Turno</th><th>Curso/Div</th><th>Asignatura</th><th>HS</th><th>Plazas</th></tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-        <div class="preview-controls no-print">
-          <button class="btn btn-save" onclick="window.print()">GUARDAR COMO PDF</button>
-          <button class="btn btn-print" onclick="window.print()">IMPRIMIR</button>
-          <button class="btn btn-close" onclick="window.close()">CERRAR</button>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-    }
-  };
-
   // Helper para obtener opciones únicas para los filtros
   const getUniqueOptions = (field) => {
     const values = codigos.map(item => item[field]).filter(val => val !== null && val !== undefined && val !== "");
@@ -338,199 +248,254 @@ const DocentesCodigos = ({ goBack, goHome }) => {
     return sum + (isNaN(hs) ? 0 : hs);
   }, 0);
 
+  // --- Renderizado de Tabla ---
+  const renderTable = (isPrint = false) => {
+    const tableStyles = isPrint 
+      ? { width: "100%", borderCollapse: "collapse", fontSize: '10px' }
+      : { width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)" };
+    
+    const thStyles = isPrint
+      ? { padding: "5px", border: "1px solid #000", backgroundColor: "#f2f2f2" }
+      : { padding: "10px", border: "1px solid #ddd" };
+
+    const tdStyles = isPrint
+      ? { padding: "5px", border: "1px solid #000" }
+      : { padding: "10px", border: "1px solid #ddd" };
+
+    return (
+      <table style={tableStyles}>
+        <thead style={isPrint ? {} : { backgroundColor: "#333", color: "white" }}>
+          <tr>
+            <th style={thStyles}>Ord.</th>                 
+            <th style={thStyles}>Cargo</th>
+            <th style={thStyles}>Turno</th>
+            <th style={thStyles}>Curso/Div</th>
+            <th style={thStyles}>Asignatura</th>
+            <th style={thStyles}>HS</th>
+            <th style={thStyles}>Plazas</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredData.length > 0 ? (
+            filteredData.map((item) => (
+              <tr 
+                key={item.id}
+                onClick={() => !isPrint && handleRowClick(item)}
+                style={!isPrint ? { 
+                  cursor: (mode === "edit" || mode === "delete") ? "pointer" : "default",
+                  backgroundColor: (mode === "edit" || mode === "delete") ? "#fffbe6" : "transparent",
+                  transition: "background-color 0.2s"
+                } : {}}
+                onMouseEnter={(e) => { if(!isPrint && mode !== "view") e.currentTarget.style.backgroundColor = "#f0f0f0"; }}
+                onMouseLeave={(e) => { if(!isPrint && mode !== "view") e.currentTarget.style.backgroundColor = (mode === "edit" || mode === "delete") ? "#fffbe6" : "transparent"; }}
+              >
+                <td style={{...tdStyles, textAlign: "center" }}>{item.orden}</td>
+                <td style={tdStyles}>{item.cargo}</td>
+                <td style={tdStyles}>{item.turno}</td>
+                <td style={{...tdStyles, textAlign: "center" }}>{item.curso} {item.division}</td>
+                <td style={tdStyles}>{item.asignatura}</td>
+                <td style={{...tdStyles, textAlign: "center" }}>{item.carga_horaria}</td>
+                <td style={tdStyles}>{formatPlazas(item.plazas, item.id)}</td>
+              </tr>
+            ))
+          ) : (
+            <tr><td colSpan="7" style={{ ...tdStyles, padding: "20px", textAlign: "center" }}>No se encontraron registros.</td></tr>
+          )}
+        </tbody>
+        {filteredData.length > 0 && (
+          <tfoot>
+            <tr style={{ backgroundColor: isPrint ? "#f2f2f2" : "#e0e0e0", fontWeight: "bold" }}>
+              <td colSpan="5" style={{ ...tdStyles, textAlign: "right" }}>TOTAL HORAS:</td>
+              <td style={{ ...tdStyles, textAlign: "center" }}>{totalHs}</td>
+              <td style={tdStyles}></td>
+            </tr>
+          </tfoot>
+        )}
+      </table>
+    );
+  };
+
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
-      <h2>CÓDIGOS DOCENTES</h2>
+      {!showPrintPreview && (
+        <>
+          <h2>CÓDIGOS DOCENTES</h2>
 
-      {/* Botones de Acción */}
-      <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', margin: '20px 0' }}>
-        <button 
-          onClick={() => { setMode("create"); setFormData(initialFormState); setSelectedId(null); }} 
-          style={{ backgroundColor: 'blue', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          NUEVO
-        </button>
-        <button 
-          onClick={() => { setMode("edit"); setSelectedId(null); }} 
-          style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          MODIFICAR
-        </button>
-        <button 
-          onClick={() => { setMode("delete"); setSelectedId(null); }} 
-          style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          ELIMINAR
-        </button>
-        <button 
-          onClick={handlePrint} 
-          style={{ backgroundColor: 'yellow', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
-        >
-          IMPRIMIR
-        </button>
-      </div>
+          {/* Botones de Acción */}
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', margin: '20px 0' }}>
+            <button 
+              onClick={() => { setMode("create"); setFormData(initialFormState); setSelectedId(null); }} 
+              style={{ backgroundColor: 'blue', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              NUEVO
+            </button>
+            <button 
+              onClick={() => { setMode("edit"); setSelectedId(null); }} 
+              style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              MODIFICAR
+            </button>
+            <button 
+              onClick={() => { setMode("delete"); setSelectedId(null); }} 
+              style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              ELIMINAR
+            </button>
+            <button 
+              onClick={() => setShowPrintPreview(true)} 
+              style={{ backgroundColor: 'yellow', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              IMPRIMIR
+            </button>
+          </div>
 
-      {/* Filtros */}
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px' }}>
-        <select value={filters.cargo} onChange={e => setFilters({...filters, cargo: e.target.value})} style={{ padding: '5px' }}>
-          <option value="">Todos los Cargos</option>
-          {getUniqueOptions("cargo").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select value={filters.turno} onChange={e => setFilters({...filters, turno: e.target.value})} style={{ padding: '5px' }}>
-          <option value="">Todos los Turnos</option>          
-          <option value="Mañana">Mañana</option>
-          <option value="Tarde">Tarde</option>
-          <option value="Mañana y Tarde">Mañana y Tarde</option>
-        </select>
-        <select value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px' }}>
-          <option value="">Todos los Cursos</option>
-          {getUniqueOptions("curso").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select value={filters.division} onChange={e => setFilters({...filters, division: e.target.value})} style={{ padding: '5px' }}>
-          <option value="">Todas las Divisiones</option>
-          {getUniqueOptions("division").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select value={filters.asignatura} onChange={e => setFilters({...filters, asignatura: e.target.value})} style={{ padding: '5px', maxWidth: '200px' }}>
-          <option value="">Todas las Asignaturas</option>
-          {getUniqueOptions("asignatura").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <input 
-          placeholder="Filtrar por Plaza" 
-          value={filters.plazas} 
-          onChange={e => setFilters({...filters, plazas: e.target.value})} 
-          style={{ padding: '5px' }} 
-        />
-      </div>
+          {/* Filtros */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px' }}>
+            <select value={filters.cargo} onChange={e => setFilters({...filters, cargo: e.target.value})} style={{ padding: '5px' }}>
+              <option value="">Todos los Cargos</option>
+              {getUniqueOptions("cargo").map(op => <option key={op} value={op}>{op}</option>)}
+            </select>
+            <select value={filters.turno} onChange={e => setFilters({...filters, turno: e.target.value})} style={{ padding: '5px' }}>
+              <option value="">Todos los Turnos</option>          
+              <option value="Mañana">Mañana</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Mañana y Tarde">Mañana y Tarde</option>
+            </select>
+            <select value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ padding: '5px' }}>
+              <option value="">Todos los Cursos</option>
+              {getUniqueOptions("curso").map(op => <option key={op} value={op}>{op}</option>)}
+            </select>
+            <select value={filters.division} onChange={e => setFilters({...filters, division: e.target.value})} style={{ padding: '5px' }}>
+              <option value="">Todas las Divisiones</option>
+              {getUniqueOptions("division").map(op => <option key={op} value={op}>{op}</option>)}
+            </select>
+            <select value={filters.asignatura} onChange={e => setFilters({...filters, asignatura: e.target.value})} style={{ padding: '5px', maxWidth: '200px' }}>
+              <option value="">Todas las Asignaturas</option>
+              {getUniqueOptions("asignatura").map(op => <option key={op} value={op}>{op}</option>)}
+            </select>
+            <input 
+              placeholder="Filtrar por Plaza" 
+              value={filters.plazas} 
+              onChange={e => setFilters({...filters, plazas: e.target.value})} 
+              style={{ padding: '5px' }} 
+            />
+          </div>
 
-      {/* Formulario de Carga/Edición */}
-      {(mode === "create" || (mode === "edit" && selectedId)) && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', margin: '0 auto 20px', maxWidth: '800px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
-          <h3 style={{ textAlign: 'center', marginBottom: '15px' }}>{mode === "create" ? "Nuevo Código" : "Modificar Código"}</h3>
-          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-            
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              Turno:
-              <select name="turno" value={formData.turno} onChange={handleInputChange} style={{ padding: '8px' }}>
-                <option value="">Seleccione...</option>
-                <option value="Mañana">Mañana</option>
-                <option value="Tarde">Tarde</option>
-                <option value="Mañana y Tarde">Mañana y Tarde</option>
-              </select>
-            </label>
+          {/* Formulario de Carga/Edición */}
+          {(mode === "create" || (mode === "edit" && selectedId)) && (
+            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', margin: '0 auto 20px', maxWidth: '800px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
+              <h3 style={{ textAlign: 'center', marginBottom: '15px' }}>{mode === "create" ? "Nuevo Código" : "Modificar Código"}</h3>
+              <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                
+                <label style={{ display: 'flex', flexDirection: 'column' }}>
+                  Turno:
+                  <select name="turno" value={formData.turno} onChange={handleInputChange} style={{ padding: '8px' }}>
+                    <option value="">Seleccione...</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Mañana y Tarde">Mañana y Tarde</option>
+                  </select>
+                </label>
 
-            <label style={{ display: 'flex', flexDirection: 'column' }}>
-              Cargo:
-              <select name="cargo" value={formData.cargo} onChange={handleInputChange} style={{ padding: '8px' }}>
-                <option value="">Seleccione...</option>
-                {[
-                  "DIRECTOR/A", "SECRETARIO", "AYUDANTE DE SECRETARIA", "PRECEPTOR", 
-                  "ASESOR PED.", "DOCENTE", "BIBLIOTECARIO/A", 
-                  "AYUDANTE CLASES PRACTICAS (TECN/INFORM)", "AYUDANTE CLASES PRACTICAS (FISICA)", 
-                  "PERSONAL AUXILIAR (CAT. 18)", "PERSONAL AUXILIAR (CAT. 15)"
-                ].map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>
+                  Cargo:
+                  <select name="cargo" value={formData.cargo} onChange={handleInputChange} style={{ padding: '8px' }}>
+                    <option value="">Seleccione...</option>
+                    {[
+                      "DIRECTOR/A", "SECRETARIO", "AYUDANTE DE SECRETARIA", "PRECEPTOR", 
+                      "ASESOR PED.", "DOCENTE", "BIBLIOTECARIO/A", 
+                      "AYUDANTE CLASES PRACTICAS (TECN/INFORM)", "AYUDANTE CLASES PRACTICAS (FISICA)", 
+                      "PERSONAL AUXILIAR (CAT. 18)", "PERSONAL AUXILIAR (CAT. 15)"
+                    ].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
 
-            <label style={{ display: 'flex', flexDirection: 'column' }}>N° de Ord.: <input name="orden" value={formData.orden} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
-            <label style={{ display: 'flex', flexDirection: 'column' }}>Curso: <input name="curso" value={formData.curso} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
-            <label style={{ display: 'flex', flexDirection: 'column' }}>División: <input name="division" value={formData.division} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
-            <label style={{ display: 'flex', flexDirection: 'column' }}>Asignatura: <input name="asignatura" value={formData.asignatura} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
-            <label style={{ display: 'flex', flexDirection: 'column' }}>Carga Horaria: <input name="carga_horaria" value={formData.carga_horaria} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
-            
-            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-              <h4>Plazas</h4>
-              {formData.plazas.map((plaza, index) => (
-                <div key={index} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <label style={{ minWidth: '60px' }}>Plaza {index + 1}:</label>
-                  <input 
-                    value={plaza} 
-                    onChange={(e) => handlePlazaChange(index, e.target.value)}
-                    style={{ flex: 1, padding: '8px' }}
-                    placeholder="Ingrese plaza..."
-                  />
+                <label style={{ display: 'flex', flexDirection: 'column' }}>N° de Ord.: <input name="orden" value={formData.orden} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>Curso: <input name="curso" value={formData.curso} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>División: <input name="division" value={formData.division} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>Asignatura: <input name="asignatura" value={formData.asignatura} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
+                <label style={{ display: 'flex', flexDirection: 'column' }}>Carga Horaria: <input name="carga_horaria" value={formData.carga_horaria} onChange={handleInputChange} style={{ padding: '8px' }} /></label>
+                
+                <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                  <h4>Plazas</h4>
+                  {formData.plazas.map((plaza, index) => (
+                    <div key={index} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <label style={{ minWidth: '60px' }}>Plaza {index + 1}:</label>
+                      <input 
+                        value={plaza} 
+                        onChange={(e) => handlePlazaChange(index, e.target.value)}
+                        style={{ flex: 1, padding: '8px' }}
+                        placeholder="Ingrese plaza..."
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
-              <button type="submit" style={{ padding: '10px 30px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Guardar</button>
-              <button type="button" onClick={() => { setMode("view"); setSelectedId(null); }} style={{ padding: '10px 30px', backgroundColor: 'gray', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Cancelar</button>
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                  <button type="submit" style={{ padding: '10px 30px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Guardar</button>
+                  <button type="button" onClick={() => { setMode("view"); setSelectedId(null); }} style={{ padding: '10px 30px', backgroundColor: 'gray', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Cancelar</button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
+          )}
+
+          <div className="contenido-submenu" style={{ width: "98%", maxWidth: "100%" }}>
+            {mode === "edit" && !selectedId && <div style={{ backgroundColor: '#e6fffa', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid green', borderRadius: '5px' }}>Seleccione un registro de la lista para modificarlo.</div>}
+            {mode === "delete" && <div style={{ backgroundColor: '#fff5f5', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid red', borderRadius: '5px' }}>Seleccione un registro de la lista para eliminarlo.</div>}
+            {fetchError && (
+              <div style={{ backgroundColor: '#fff5f5', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid red', borderRadius: '5px', color: 'red' }}>
+                Error al cargar datos: {fetchError}
+              </div>
+            )}
+
+            {loading ? (
+              <p style={{ textAlign: "center", fontWeight: "bold" }}>Cargando datos...</p>
+            ) : (
+              renderTable(false)
+            )}
+          </div>
+        </>
       )}
 
-      <div className="contenido-submenu" style={{ width: "98%", maxWidth: "100%" }}>
-        {mode === "edit" && !selectedId && <div style={{ backgroundColor: '#e6fffa', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid green', borderRadius: '5px' }}>Seleccione un registro de la lista para modificarlo.</div>}
-        {mode === "delete" && <div style={{ backgroundColor: '#fff5f5', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid red', borderRadius: '5px' }}>Seleccione un registro de la lista para eliminarlo.</div>}
-        {fetchError && (
-          <div style={{ backgroundColor: '#fff5f5', padding: '10px', textAlign: 'center', marginBottom: '10px', border: '1px solid red', borderRadius: '5px', color: 'red' }}>
-            Error al cargar datos: {fetchError}
+      {showPrintPreview && (
+        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div className="print-content" style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="print-page">
+              <div style={{ borderBottom: '2px solid black', marginBottom: '20px', paddingBottom: '10px', color: 'black' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
+                  <div>
+                    <h1 style={{ fontSize: '18px', margin: 0, color: 'black' }}>Escuela Secundaria Gobernador Garmendia</h1>
+                    <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
+                    <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px' }}>CÓDIGOS DOCENTES</p>
+                  </div>
+                </div>
+              </div>
+              {renderTable(true)}
+            </div>
           </div>
-        )}
-
-        {loading ? (
-          <p style={{ textAlign: "center", fontWeight: "bold" }}>Cargando datos...</p>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#333", color: "white" }}>
-
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Ord.</th>                 
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Cargo</th>
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Turno</th>
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Curso/Div</th>
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Asignatura</th>
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>HS</th>
-                <th style={{ padding: "10px", border: "1px solid #ddd" }}>Plazas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <tr 
-                    key={item.id}
-                    onClick={() => handleRowClick(item)}
-                    style={{ 
-                      cursor: (mode === "edit" || mode === "delete") ? "pointer" : "default",
-                      backgroundColor: (mode === "edit" || mode === "delete") ? "#fffbe6" : "transparent",
-                      transition: "background-color 0.2s"
-                    }}
-                    onMouseEnter={(e) => { if(mode !== "view") e.currentTarget.style.backgroundColor = "#f0f0f0"; }}
-                    onMouseLeave={(e) => { if(mode !== "view") e.currentTarget.style.backgroundColor = (mode === "edit" || mode === "delete") ? "#fffbe6" : "transparent"; }}
-                  >
-                    <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>{item.orden}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{item.cargo}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{item.turno}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>{item.curso} {item.division}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>{item.asignatura}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>{item.carga_horaria}</td>
-                    <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-                      {formatPlazas(item.plazas, item.id)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" style={{ padding: "20px", textAlign: "center", border: "1px solid #ddd" }}>
-                    No se encontraron registros.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            {filteredData.length > 0 && (
-              <tfoot>
-                <tr style={{ backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
-                  <td colSpan="5" style={{ padding: "10px", border: "1px solid #ddd", textAlign: "right" }}>TOTAL HORAS:</td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>{totalHs}</td>
-                  <td style={{ padding: "10px", border: "1px solid #ddd" }}></td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        )}
-      </div>
+          <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', backgroundColor: '#333', padding: '15px', textAlign: 'center', boxShadow: '0 -2px 10px rgba(0,0,0,0.3)' }}>
+            <button onClick={() => window.print()} style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 20px', margin: '0 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>GUARDAR COMO PDF</button>
+            <button onClick={() => window.print()} style={{ backgroundColor: '#ffc107', color: 'black', padding: '10px 20px', margin: '0 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>IMPRIMIR</button>
+            <button onClick={() => setShowPrintPreview(false)} style={{ backgroundColor: '#dc3545', color: 'white', padding: '10px 20px', margin: '0 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>CANCELAR</button>
+          </div>
+          <style>{`
+            .print-page { width: 210mm; min-height: 297mm; padding: 20mm; margin-bottom: 20px; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
+            @media print {
+              .no-print { display: none !important; }
+              body * { visibility: hidden; }
+              .print-overlay, .print-overlay * { visibility: visible; }
+              .print-overlay { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; background-color: white !important; display: block !important; z-index: 9999 !important; }
+              .print-content { display: block !important; padding: 0 !important; }
+              .print-page { box-shadow: none; margin: 0; width: 100%; height: auto !important; page-break-after: always; }
+              .print-page:last-child { page-break-after: auto; }
+              @page { size: A4; margin: 0; }
+              html, body { height: auto !important; overflow: visible !important; margin: 0; padding: 0; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 };
