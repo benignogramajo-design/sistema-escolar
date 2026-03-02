@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/fondo1.jpg";
+import fondo from "../../assets/fondos/fondo1.jpg";
 
 const OfertasAcademicas = ({ goBack, goHome }) => {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo GABINETE.jpg";
+import fondo from "../../assets/fondos/Fondo GABINETE.jpg";
 
 const GabineteAlumnos = ({ goBack, goHome }) => {
   return (

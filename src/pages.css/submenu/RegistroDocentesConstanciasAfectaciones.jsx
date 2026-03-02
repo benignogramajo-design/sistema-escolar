@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo REGISTRO DOCENTES1.jpg";
+import fondo from "../../assets/fondos/Fondo REGISTRO DOCENTES1.jpg";
 
 const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
   return (

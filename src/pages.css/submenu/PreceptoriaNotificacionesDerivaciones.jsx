@@ -2,7 +2,7 @@ import React from "react";
 import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo PRECEPTORIA1.jpg";
+import fondo from "../../assets/fondos/Fondo PRECEPTORIA1.jpg";
 
 const PreceptoriaNotificacionesDerivaciones = ({ navigate, goBack, goHome }) => {
   return (

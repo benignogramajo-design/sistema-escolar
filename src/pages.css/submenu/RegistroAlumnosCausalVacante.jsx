@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo REGISTRO ALUMNOS1.jpg";
+import fondo from "../../assets/fondos/Fondo REGISTRO ALUMNOS1.jpg";
 
 const RegistroAlumnosCausalVacante = ({ goBack, goHome }) => {
   return (

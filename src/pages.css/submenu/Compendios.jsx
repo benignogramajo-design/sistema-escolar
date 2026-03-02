@@ -3,7 +3,7 @@ import NavBar from "../../components.css/NavBar";
 import BotonModulo from "../../components.css/BotonModulo";
 import "../../styles/pages.css";
 import { menuConfig } from "../../menuConfig";
-import fondo from "../../assets.css/fondos/Fondo PLANILLAS1.jpg";
+import fondo from "../../assets/fondos/Fondo PLANILLAS1.jpg";
 
 const Compendios = ({ goBack, goHome, navigate }) => {
   // Compendios es un sub-item dentro de Planillas

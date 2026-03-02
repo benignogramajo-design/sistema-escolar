@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/FONDO NOTICIAS.jpg";
+import fondo from "../../assets/fondos/FONDO NOTICIAS.jpg";
 
 const MisNoticias = ({ goBack, goHome }) => {
   return (

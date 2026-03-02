@@ -1,7 +1,7 @@
 import React from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
+import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 
 const UsuariosAlumnos = ({ goBack, goHome }) => {
   return (

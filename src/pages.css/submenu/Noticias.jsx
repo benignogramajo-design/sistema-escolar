@@ -2,7 +2,7 @@ import React from "react";
 import NavBar from "../../components.css/NavBar";
 import SubBoton from "../../components.css/SubBoton";
 import "../../styles/pages.css";
-import fondo from "../../assets.css/fondos/FONDO NOTICIAS.jpg";
+import fondo from "../../assets/fondos/FONDO NOTICIAS.jpg";
 
 const Noticias = ({ navigate, goBack, goHome }) => {
   return (
