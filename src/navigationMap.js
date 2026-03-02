@@ -12,6 +12,7 @@ import Preceptoria from "./pages.css/Preceptoria";
 import CompendiosCargados from "./pages.css/submenu/CompendiosCargados";
 import CompendiosHabilitar from "./pages.css/submenu/CompendiosHabilitar";
 import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
+import CargarNotas from "./pages.css/submenu/CargarNotas";
 import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
 import DocentesDerivaciones from "./pages.css/submenu/DocentesDerivaciones";
 import DocentesEstructura from "./pages.css/submenu/DocentesEstructura";
@@ -105,6 +106,8 @@ import UsuariosAlumnos from "./pages.css/submenu/UsuariosAlumnos";
 import UsuariosPersonal from "./pages.css/submenu/UsuariosPersonal";
 import VerPlanificaciones from "./pages.css/submenu/VerPlanificaciones";
 import VerSalidasEducativas from "./pages.css/submenu/VerSalidasEducativas";
+import BibliotecaLibros from "./pages.css/submenu/BibliotecaLibros";
+import BibliotecaMovimientos from "./pages.css/submenu/BibliotecaMovimientos";
 // ... importa el resto de tus componentes
 
 export const navigationMap = {
@@ -122,6 +125,7 @@ export const navigationMap = {
   // --- SUBMENÚS ---
   // Estas páginas también contienen botones y necesitan `navigate`
   PersonalInstitucional: { component: PersonalInstitucional, needsNavigate: true },
+  Docentes: { component: PersonalInstitucional, needsNavigate: true },
   RegistroDocentesConstancias: { component: RegistroDocentesConstancias, needsNavigate: true },
   RegistroAlumnosConstancias: { component: RegistroAlumnosConstancias, needsNavigate: true },
   PlanillasEstadisticas: { component: PlanillasEstadisticas, needsNavigate: true },
@@ -205,10 +209,10 @@ export const navigationMap = {
   MisConstanciasAlumno: { component: MisConstanciasAlumno },
   MisHorariosAlumno: { component: MisHorariosAlumno },
   FechasImportantes: { component: FechasImportantes },
-  MisNotificaciones: { component: MisNotificacionesAlumno }, // Asumo que es el de alumno
+  MisNotificacionesAlumno: { component: MisNotificacionesAlumno },
   MisCursos: { component: MisCursos },
   MisHorariosDocente: { component: MisHorariosDocente },
-  // CargarNotas: { component: CargarNotas }, // No encontrado
+  CargarNotas: { component: CargarNotas },
   FechasExamen: { component: FechasExamen },
   SeguimientoPorAlumno: { component: SeguimientoPorAlumno },
   SeguimientoPorCurso: { component: SeguimientoPorCurso },
@@ -221,6 +225,6 @@ export const navigationMap = {
   DocentesNotificaciones: { component: DocentesNotificaciones },
   DocentesDerivaciones: { component: DocentesDerivaciones },
   DocentesRecibidosEnviados: { component: DocentesRecibidosEnviados },
-  // BibliotecaLibros: { component: BibliotecaLibros }, // No encontrado
-  // BibliotecaMovimientos: { component: BibliotecaMovimientos }, // No encontrado
+  BibliotecaLibros: { component: BibliotecaLibros },
+  BibliotecaMovimientos: { component: BibliotecaMovimientos },
 };
