@@ -16,7 +16,7 @@ import HorariosInstitucionales from "./pages.css/submenu/HorariosInstitucionales
 import Uniforme from "./pages.css/submenu/Uniforme";
 
 // Administración - Personal Institucional
-import Docentes from "./pages.css/submenu/Docentes"; // Página intermedia
+import PersonalInstitucional from "./pages.css/submenu/PersonalInstitucional"; // ANTES Docentes
 import DocentesCodigos from "./pages.css/submenu/DocentesCodigos";
 import DocentesEstructura from "./pages.css/submenu/DocentesEstructura";
 import DocentesDatosLegajo from "./pages.css/submenu/DocentesDatosLegajo";
@@ -29,7 +29,7 @@ import DocentesHorariosDia from "./pages.css/submenu/DocentesHorariosDia";
 import DocentesHorariosImprimir from "./pages.css/submenu/DocentesHorariosImprimir";
 
 // Administración - Registro y Constancias Docentes
-import RegistroDocentesConstancias from "./pages.css/submenu/RegistroDocentesConstancias"; // Página intermedia
+import RegistroYConstanciasDeDocentes from "./pages.css/submenu/RegistroYConstanciasDeDocentes"; // ANTES RegistroDocentesConstancias
 import RegistroDocentesActas from "./pages.css/submenu/RegistroDocentesActas";
 import RegistroDocentesLicencias from "./pages.css/submenu/RegistroDocentesLicencias";
 import RegistroDocentesRegimenLicencias from "./pages.css/submenu/RegistroDocentesRegimenLicencias";
@@ -39,7 +39,7 @@ import RegistroDocentesConstanciasPermanencia from "./pages.css/submenu/Registro
 import RegistroDocentesConstanciaTrabajo from "./pages.css/submenu/RegistroDocentesConstanciaTrabajo";
 
 // Administración - Registro y Constancia Alumnos
-import RegistroAlumnosConstancias from "./pages.css/submenu/RegistroAlumnosConstancias"; // Página intermedia
+import RegistroYConstanciaDeAlumnos from "./pages.css/submenu/RegistroYConstanciaDeAlumnos"; // ANTES RegistroAlumnosConstancias
 import RegistroAlumnosFicha from "./pages.css/submenu/RegistroAlumnosFicha"; // RENOMBRADO
 import RegistroAlumnosLibroMatriz from "./pages.css/submenu/RegistroAlumnosLibroMatriz";
 import RegistroAlumnosBoletoEstudiantil from "./pages.css/submenu/RegistroAlumnosBoletoEstudiantil";
@@ -49,7 +49,7 @@ import RegistroAlumnosPermisosExamen from "./pages.css/submenu/RegistroAlumnosPe
 import RegistroAlumnosCertificados from "./pages.css/submenu/RegistroAlumnosCertificados";
 
 // Administración - Planillas y Estadísticas
-import PlanillasEstadisticas from "./pages.css/submenu/PlanillasEstadisticas"; // Página intermedia
+import PlanillasYEstadisticas from "./pages.css/submenu/PlanillasYEstadisticas"; // ANTES PlanillasEstadisticas
 import PlanillasEstadisticaAlumnos from "./pages.css/submenu/PlanillasEstadisticaAlumnos";
 import PlanillasAprobadosDesaprobados from "./pages.css/submenu/PlanillasAprobadosDesaprobados";
 import PlanillasAprobadosDesaprobadosTotales from "./pages.css/submenu/PlanillasAprobadosDesaprobadosTotales";
@@ -62,7 +62,7 @@ import PlanillasLibreta from "./pages.css/submenu/PlanillasLibreta";
 import PlanillasRAC from "./pages.css/submenu/PlanillasRAC";
 import PlanillasATACALAR from "./pages.css/submenu/PlanillasATACALAR"; // RENOMBRADO
 import PlanillasMesasExamen from "./pages.css/submenu/PlanillasMesasExamen";
-import PlanillasCompendios from "./pages.css/submenu/PlanillasCompendios"; // Página intermedia
+import Compendios from "./pages.css/submenu/Compendios"; // ANTES PlanillasCompendios
 import CompendiosHabilitar from "./pages.css/submenu/CompendiosHabilitar";
 import CompendiosCargados from "./pages.css/submenu/CompendiosCargados";
 
@@ -132,12 +132,12 @@ export const pageMap = {
 
   // Submenús
   HistoriaInstitucional: { component: HistoriaInstitucional }, OfertasAcademicas: { component: OfertasAcademicas }, HorariosInstitucionales: { component: HorariosInstitucionales }, Uniforme: { component: Uniforme },
-  Docentes: { component: Docentes }, DocentesCodigos: { component: DocentesCodigos }, DocentesEstructura: { component: DocentesEstructura }, DocentesDatosLegajo: { component: DocentesDatosLegajo }, DocentesLegajo: { component: DocentesLegajo }, PersonalPorDia: { component: PersonalPorDia }, NumeroDeBoletas: { component: NumeroDeBoletas }, DocentesUsuarios: { component: UsuariosPersonal }, DocentesHorarios: { component: DocentesHorarios }, DocentesHorariosDia: { component: DocentesHorariosDia }, DocentesHorariosImprimir: { component: DocentesHorariosImprimir },
-  RegistroDocentesConstancias: { component: RegistroDocentesConstancias }, RegistroDocentesActas: { component: RegistroDocentesActas }, RegistroDocentesLicencias: { component: RegistroDocentesLicencias }, RegistroDocentesRegimenLicencias: { component: RegistroDocentesRegimenLicencias }, RegistroDocentesConstanciasServicios: { component: RegistroDocentesConstanciasServicios }, RegistroDocentesConstanciasAfectaciones: { component: RegistroDocentesConstanciasAfectaciones }, RegistroDocentesConstanciasPermanencia: { component: RegistroDocentesConstanciasPermanencia }, RegistroDocentesConstanciaTrabajo: { component: RegistroDocentesConstanciaTrabajo },
-  RegistroAlumnosConstancias: { component: RegistroAlumnosConstancias }, RegistroAlumnosFicha: { component: RegistroAlumnosFicha }, RegistroAlumnosLibroMatriz: { component: RegistroAlumnosLibroMatriz }, RegistroAlumnosBoletoEstudiantil: { component: RegistroAlumnosBoletoEstudiantil }, RegistroAlumnosCausalVacante: { component: RegistroAlumnosCausalVacante }, RegistroAlumnosActaExamen: { component: RegistroAlumnosActaExamen }, RegistroAlumnosPermisosExamen: { component: RegistroAlumnosPermisosExamen }, RegistroAlumnosCertificados: { component: RegistroAlumnosCertificados },
-  PlanillasEstadisticas: { component: PlanillasEstadisticas }, PlanillasEstadisticaAlumnos: { component: PlanillasEstadisticaAlumnos }, PlanillasAprobadosDesaprobados: { component: PlanillasAprobadosDesaprobados }, PlanillasAprobadosDesaprobadosTotales: { component: PlanillasAprobadosDesaprobadosTotales }, PlanillasRiesgoPedagogico: { component: PlanillasRiesgoPedagogico }, PlanillasEstadisticaGeneral: { component: PlanillasEstadisticaGeneral }, PlanillasCicloBasico: { component: PlanillasCicloBasico }, PlanillasBachillerEconomia: { component: PlanillasBachillerEconomia }, PlanillasBachillerInformatica: { component: PlanillasBachillerInformatica }, PlanillasLibreta: { component: PlanillasLibreta }, PlanillasRAC: { component: PlanillasRAC }, PlanillasATACALAR: { component: PlanillasATACALAR }, PlanillasMesasExamen: { component: PlanillasMesasExamen },
-  PlanillasCompendios: { component: PlanillasCompendios }, CompendiosHabilitar: { component: CompendiosHabilitar }, CompendiosCargados: { component: CompendiosCargados },
-  Noticias: { component: Noticias }, MisNoticias: { component: MisNoticias }, NuevaNoticia: { component: NuevaNoticia },
+  Docentes: { component: PersonalInstitucional, needsNavigate: true }, DocentesCodigos: { component: DocentesCodigos }, DocentesEstructura: { component: DocentesEstructura }, DocentesDatosLegajo: { component: DocentesDatosLegajo }, DocentesLegajo: { component: DocentesLegajo }, PersonalPorDia: { component: PersonalPorDia }, NumeroDeBoletas: { component: NumeroDeBoletas }, DocentesUsuarios: { component: UsuariosPersonal }, DocentesHorarios: { component: DocentesHorarios }, DocentesHorariosDia: { component: DocentesHorariosDia }, DocentesHorariosImprimir: { component: DocentesHorariosImprimir },
+  RegistroDocentesConstancias: { component: RegistroYConstanciasDeDocentes, needsNavigate: true }, RegistroDocentesActas: { component: RegistroDocentesActas }, RegistroDocentesLicencias: { component: RegistroDocentesLicencias }, RegistroDocentesRegimenLicencias: { component: RegistroDocentesRegimenLicencias }, RegistroDocentesConstanciasServicios: { component: RegistroDocentesConstanciasServicios }, RegistroDocentesConstanciasAfectaciones: { component: RegistroDocentesConstanciasAfectaciones }, RegistroDocentesConstanciasPermanencia: { component: RegistroDocentesConstanciasPermanencia }, RegistroDocentesConstanciaTrabajo: { component: RegistroDocentesConstanciaTrabajo },
+  RegistroAlumnosConstancias: { component: RegistroYConstanciaDeAlumnos, needsNavigate: true }, RegistroAlumnosFicha: { component: RegistroAlumnosFicha }, RegistroAlumnosLibroMatriz: { component: RegistroAlumnosLibroMatriz }, RegistroAlumnosBoletoEstudiantil: { component: RegistroAlumnosBoletoEstudiantil }, RegistroAlumnosCausalVacante: { component: RegistroAlumnosCausalVacante }, RegistroAlumnosActaExamen: { component: RegistroAlumnosActaExamen }, RegistroAlumnosPermisosExamen: { component: RegistroAlumnosPermisosExamen }, RegistroAlumnosCertificados: { component: RegistroAlumnosCertificados },
+  PlanillasEstadisticas: { component: PlanillasYEstadisticas, needsNavigate: true }, PlanillasEstadisticaAlumnos: { component: PlanillasEstadisticaAlumnos }, PlanillasAprobadosDesaprobados: { component: PlanillasAprobadosDesaprobados }, PlanillasAprobadosDesaprobadosTotales: { component: PlanillasAprobadosDesaprobadosTotales }, PlanillasRiesgoPedagogico: { component: PlanillasRiesgoPedagogico }, PlanillasEstadisticaGeneral: { component: PlanillasEstadisticaGeneral }, PlanillasCicloBasico: { component: PlanillasCicloBasico }, PlanillasBachillerEconomia: { component: PlanillasBachillerEconomia }, PlanillasBachillerInformatica: { component: PlanillasBachillerInformatica }, PlanillasLibreta: { component: PlanillasLibreta }, PlanillasRAC: { component: PlanillasRAC }, PlanillasATACALAR: { component: PlanillasATACALAR }, PlanillasMesasExamen: { component: PlanillasMesasExamen },
+  PlanillasCompendios: { component: Compendios, needsNavigate: true }, CompendiosHabilitar: { component: CompendiosHabilitar }, CompendiosCargados: { component: CompendiosCargados },
+  Noticias: { component: Noticias, needsNavigate: true }, MisNoticias: { component: MisNoticias }, NuevaNoticia: { component: NuevaNoticia },
   
   PreceptoriaCargarDatos: { component: PreceptoriaCargarDatos }, PreceptoriaAsistencia: { component: PreceptoriaAsistencia }, PreceptoriaInformeAsistencia: { component: PreceptoriaInformeAsistencia }, PreceptoriaCalificaciones: { component: PreceptoriaCalificaciones }, PreceptoriaCompendiosBlanco: { component: PreceptoriaCompendiosBlanco }, PreceptoriaCompendiosNotas: { component: PreceptoriaCompendiosNotas }, PreceptoriaPlanilla: { component: PreceptoriaPlanilla }, PreceptoriaSeguimientoBlanco: { component: PreceptoriaSeguimientoBlanco }, PreceptoriaSeguimientoNotas: { component: PreceptoriaSeguimientoNotas }, LegajoDeAlumno: { component: LegajoDeAlumno }, PreceptoriaNotificacionesDerivaciones: { component: PreceptoriaNotificacionesDerivaciones, needsNavigate: true }, MesasDeExamen: { component: MesasDeExamen },
   
