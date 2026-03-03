@@ -229,7 +229,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
     // Estilos
     const headerColor = isManana ? "#ffe0b2" : "#c8e6c9"; // Naranja claro / Verde claro
     const cellStyle = { border: "1px solid black", padding: "2px", textAlign: "center", fontSize: "10px", height: "40px", verticalAlign: "middle" };
-    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold" };
+    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "18px" };
     const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "120px", fontSize: "12px" };
 
     return (
