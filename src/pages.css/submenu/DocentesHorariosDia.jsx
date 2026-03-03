@@ -10,6 +10,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
   const [codigos, setCodigos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [isDayDropdownOpen, setIsDayDropdownOpen] = useState(false);
 
   // --- Filtros (Misma lógica que DocentesEstructura) ---
   const [filters, setFilters] = useState({
@@ -17,7 +18,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
     curso: "",
     division: "",
     turno: "",
-    dia: "",
+    dia: [],
     asignatura: "",
     docente: "",
     estado: ""
@@ -94,7 +95,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
     const matchDiv = !filters.division || item.division === filters.division;
     const matchTurno = !filters.turno || normalizedTurno === filters.turno;
     const matchAsig = !filters.asignatura || (item.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase());
-    const matchDia = !filters.dia || (Array.isArray(item.horarios) && item.horarios.some(h => h.dia === filters.dia));
+    const matchDia = filters.dia.length === 0 || (Array.isArray(item.horarios) && item.horarios.some(h => filters.dia.includes(h.dia)));
     
     const termDoc = filters.docente.toLowerCase();
     const matchDocente = !filters.docente || 
@@ -115,10 +116,18 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
   const uniqueDivisiones = [...new Set(codigos.map(c => c.division))].sort();
   const uniqueCargos = [...new Set(codigos.map(c => c.cargo).filter(Boolean))].sort();
 
+  const toggleDay = (day) => {
+    setFilters(prev => {
+      const newDays = prev.dia.includes(day) 
+        ? prev.dia.filter(d => d !== day)
+        : [...prev.dia, day];
+      return { ...prev, dia: newDays };
+    });
+  };
+
   // --- Lógica de Impresión (Grilla) ---
-  const renderPrintGrid = () => {
+  const renderPrintGrid = (diaSeleccionado) => {
     const turnoSeleccionado = filters.turno || "Mañana"; // Default a Mañana si no se selecciona
-    const diaSeleccionado = filters.dia || "Lunes"; // Default a Lunes
     const isManana = turnoSeleccionado === "Mañana";
     const isTarde = turnoSeleccionado === "Tarde";
 
@@ -304,10 +313,29 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
               <option value="Mañana">Mañana</option>
               <option value="Tarde">Tarde</option>
             </select>
-            <select value={filters.dia} onChange={e => setFilters({...filters, dia: e.target.value})} style={{ padding: '5px' }}>
-              <option value="">Día</option>
-              {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
+            
+            {/* Filtro de Día Multi-select */}
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setIsDayDropdownOpen(!isDayDropdownOpen)}
+                style={{ padding: '6px', minWidth: '100px', textAlign: 'left', cursor: 'pointer', backgroundColor: 'white', border: '1px solid #767676', borderRadius: '2px', fontSize: '13.33px' }}
+              >
+                {filters.dia.length === 0 ? "Día" : filters.dia.join(", ")}
+              </button>
+              {isDayDropdownOpen && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, backgroundColor: 'white', border: '1px solid #ccc', zIndex: 10, padding: '10px', borderRadius: '4px', width: '150px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+                  {diasSemana.map(d => (
+                    <div key={d} style={{ marginBottom: '5px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={filters.dia.includes(d)} onChange={() => toggleDay(d)} style={{ marginRight: '8px' }} />
+                        {d}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <input placeholder="Asignatura" value={filters.asignatura} onChange={e => setFilters({...filters, asignatura: e.target.value})} style={{ padding: '5px' }} />
             <input placeholder="Docente" value={filters.docente} onChange={e => setFilters({...filters, docente: e.target.value})} style={{ padding: '5px' }} />
             <select value={filters.estado} onChange={e => setFilters({...filters, estado: e.target.value})} style={{ padding: '5px' }}>
@@ -318,8 +346,8 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
 
             <button 
               onClick={() => {
-                if (!filters.dia || !filters.turno) {
-                  alert("Para imprimir, por favor seleccione un DÍA y un TURNO.");
+                if (filters.dia.length === 0 || !filters.turno) {
+                  alert("Para imprimir, por favor seleccione al menos un DÍA y un TURNO.");
                   return;
                 }
                 setShowPrintPreview(true);
@@ -379,13 +407,16 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
           <div className="print-content" style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             
             <div className="print-page">
-              {/* Encabezado */}
-              <div style={{ borderBottom: '2px solid black', marginBottom: '10px', paddingBottom: '5px', color: 'black', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia - {filters.turno?.toUpperCase()} - {new Date().toLocaleDateString()}</h1>
-              </div>
-
-              {/* Tabla Grilla */}
-              {renderPrintGrid()}
+              {filters.dia.sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b)).map((dia, index) => (
+                <div key={dia} style={{ pageBreakAfter: index < filters.dia.length - 1 ? 'always' : 'auto', marginBottom: '30px' }}>
+                  {/* Encabezado */}
+                  <div style={{ borderBottom: '2px solid black', marginBottom: '10px', paddingBottom: '5px', color: 'black', textAlign: 'center' }}>
+                    <h1 style={{ fontSize: '18px', margin: 0, color: 'black' }}>Escuela Secundaria Gobernador Garmendia - {filters.turno?.toUpperCase()} - {new Date().toLocaleDateString()}</h1>
+                  </div>
+                  {/* Tabla Grilla */}
+                  {renderPrintGrid(dia)}
+                </div>
+              ))}
             </div>
 
           </div>
