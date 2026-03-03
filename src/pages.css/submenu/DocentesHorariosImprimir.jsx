@@ -198,7 +198,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
 
     // Estilos
     const cellStyle = { border: "1px solid black", padding: "2px", textAlign: "center", fontSize: "10px", height: "40px", verticalAlign: "middle" };
-    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold" };
+    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "18px" };
     const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "150px", fontSize: "12px" }; // Fuente 12px para primera columna
 
     return (
@@ -427,11 +427,29 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
               box-sizing: border-box;
             }
             @media print {
+              html, body {
+                height: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
               .no-print { display: none !important; }
               body * { visibility: hidden; }
               .print-overlay, .print-overlay * { visibility: visible; }
-              .print-overlay { position: absolute; top: 0; left: 0; width: 100%; background: white; }
-              .print-page { margin: 0; width: 100%; box-shadow: none; }
+              .print-overlay {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background-color: white !important;
+                overflow: visible !important;
+                display: block !important;
+                z-index: 9999 !important;
+              }
+              .print-content { display: block !important; padding: 0 !important; }
+              .print-page { margin: 0 !important; width: 100% !important; box-shadow: none !important; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .print-page:last-child { page-break-after: auto; }
               @page { size: landscape; margin: 5mm; }
             }
           `}</style>
