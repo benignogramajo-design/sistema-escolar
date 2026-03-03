@@ -230,7 +230,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
     const headerColor = isManana ? "#ffe0b2" : "#c8e6c9"; // Naranja claro / Verde claro
     const cellStyle = { border: "1px solid black", padding: "2px", textAlign: "center", fontSize: "10px", height: "40px", verticalAlign: "middle" };
     const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold" };
-    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "120px" };
+    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "120px", fontSize: "12px" };
 
     return (
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
