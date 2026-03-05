@@ -720,7 +720,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
             <button onClick={() => setShowDetail({ show: false, data: null, isPrint: false })} style={{ padding: '10px 20px', margin: '0 10px' }}>CANCELAR</button>
           </div>
           <style>{`
-            .print-page { background: white; width: ${showDetail.data ? '210mm' : '297mm'}; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            .print-page { background: white; width: ${showDetail.data ? '210mm' : '297mm'}; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
             @media print {
               .no-print { display: none !important; }
               @page {
@@ -746,6 +746,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 left: 0 !important;
                 width: 100% !important;
                 background-color: white !important;
+                height: auto !important;
+                overflow: visible !important;
               }
               .print-content {
                 padding: 0 !important;
