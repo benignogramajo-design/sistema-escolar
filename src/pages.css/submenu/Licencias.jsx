@@ -88,8 +88,10 @@ const Licencias = ({ goBack, goHome, user }) => {
 
   useEffect(() => {
     if (formData.inicio_de_licencia && formData.cantidad_dias > 0) {
-      const startDate = new Date(formData.inicio_de_licencia);
-      startDate.setDate(startDate.getDate() + parseInt(formData.cantidad_dias));
+      // Se crea la fecha en la zona horaria local para evitar errores de un día por UTC.
+      const startDate = new Date(formData.inicio_de_licencia + 'T00:00:00');
+      // Se suma la cantidad de días y se resta 1 según el requerimiento.
+      startDate.setDate(startDate.getDate() + parseInt(formData.cantidad_dias) - 1);
       setFormData(prev => ({ ...prev, finalizacion_de_licencia: startDate.toISOString().split('T')[0] }));
     } else {
       setFormData(prev => ({ ...prev, finalizacion_de_licencia: "" }));
