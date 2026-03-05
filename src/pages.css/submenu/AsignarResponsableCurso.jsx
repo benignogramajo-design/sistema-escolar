@@ -17,7 +17,6 @@ const AsignarResponsableCurso = ({ goBack, goHome }) => {
   const [mode, setMode] = useState("view"); // 'view', 'create', 'edit', 'delete'
   const [showForm, setShowForm] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [showPrintPreview, setShowPrintPreview] = useState(false);
 
   // Form state
   const initialFormState = {
@@ -213,7 +212,97 @@ const AsignarResponsableCurso = ({ goBack, goHome }) => {
   };
   
   const handlePrint = () => {
-    setShowPrintPreview(true);
+    const fullLogoUrl = new URL(logo, window.location.href).href;
+    
+    const rowsHtml = filteredData.map(item => `
+      <tr>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.cargo || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.docente_nombre || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px; text-align: center;">${item.curso || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px; text-align: center;">${item.division || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.turno || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.dia || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.asignatura || ''}</td>
+        <td style="border: 1px solid #000; padding: 8px; font-size: 11px;">${item.estado || ''}</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Vista Previa - Responsables de Curso</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th { background-color: #f2f2f2; border: 1px solid #000; padding: 8px; font-size: 12px; }
+          td { border: 1px solid #000; padding: 8px; font-size: 11px; }
+          .header-container { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .logo { width: 60px; height: auto; margin-right: 20px; }
+          .school-info h1 { font-size: 16px; margin: 0; }
+          .school-info p { font-size: 12px; margin: 2px 0; }
+          
+          @media print {
+            .no-print { display: none !important; }
+            thead { display: table-header-group; } 
+            tr { page-break-inside: avoid; }
+            @page { size: A4 landscape; margin: 15mm; }
+          }
+
+          .preview-controls {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #333; padding: 15px; text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+          }
+          .btn { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+          .btn-print { background-color: yellow; color: black; }
+          .btn-save { background-color: #fff; color: #333; }
+          .btn-close { background-color: red; color: white; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <thead>
+            <tr>
+              <th colspan="8" style="border: none; background: none; text-align: left; padding: 0 0 10px 0;">
+                <div class="header-container">
+                  <img src="${fullLogoUrl}" class="logo" alt="Logo" />
+                  <div class="school-info">
+                    <h1>Escuela Secundaria Gobernador Garmendia</h1>
+                    <p>CUE: 9001717/00 - Av. de la Soja S/N° - Gobernador Garmendia - Burruyacu</p>
+                    <p>escuelasecgarmendia@gmail.com</p>
+                    <p style="font-weight: bold; font-size: 14px; margin-top: 5px;">RESPONSABLES DE CURSO</p>
+                  </div>
+                </div>
+              </th>
+            </tr>
+            <tr>
+                <th>CARGO</th>
+                <th>APELLIDO Y NOMBRE</th>
+                <th>CURSO</th>
+                <th>DIVISION</th>
+                <th>TURNO</th>
+                <th>DIA</th>
+                <th>ASIGNATURA</th>
+                <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="preview-controls no-print">
+          <button class="btn btn-save" onclick="window.print()">GUARDAR COMO PDF</button>
+          <button class="btn btn-print" onclick="window.print()">IMPRIMIR</button>
+          <button class="btn btn-close" onclick="window.close()">CERRAR</button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    }
   };
 
   // --- FILTERING & DERIVED DATA ---
@@ -364,74 +453,6 @@ const AsignarResponsableCurso = ({ goBack, goHome }) => {
           </tbody>
         </table>
       </div>
-
-      {/* Print Preview */}
-      {showPrintPreview && (
-        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto' }}>
-            <div className="print-content" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div className="print-page">
-                    <div className="print-header" style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px', color: 'black' }}>
-                        <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
-                        <div>
-                            <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
-                            <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
-                        </div>
-                    </div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
-                        <thead>
-                            <tr style={{ backgroundColor: '#f2f2f2' }}>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>CARGO</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>APELLIDO Y NOMBRE</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>CURSO</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>DIVISION</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>TURNO</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>DIA</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>ASIGNATURA</th>
-                                <th style={{ border: '1px solid black', padding: '4px' }}>ESTADO</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredData.map(item => (
-                                <tr key={item.id}>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.cargo}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.docente_nombre}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.curso}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.division}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.turno}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.dia}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.asignatura}</td>
-                                    <td style={{ border: '1px solid black', padding: '4px' }}>{item.estado}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', backgroundColor: '#333', padding: '15px', textAlign: 'center' }}>
-                <button onClick={() => window.print()} style={{ padding: '10px 20px', margin: '0 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '5px' }}>GUARDAR COMO PDF</button>
-                <button onClick={() => window.print()} style={{ padding: '10px 20px', margin: '0 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '5px' }}>IMPRIMIR</button>
-                <button onClick={() => setShowPrintPreview(false)} style={{ padding: '10px 20px', margin: '0 10px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '5px' }}>CANCELAR</button>
-            </div>
-            <style>{`
-                @media print {
-                    .no-print { display: none !important; }
-                    body * { visibility: hidden; }
-                    .print-overlay, .print-overlay * { visibility: visible; }
-                    .print-overlay { position: absolute; left: 0; top: 0; width: 100%; }
-                    .print-page { margin: 0; width: 100%; box-shadow: none; page-break-after: always; }
-                    .print-page:last-child { page-break-after: auto; }
-                    @page { size: A4 landscape; margin: 15mm; }
-                }
-                .print-page {
-                    width: 297mm;
-                    min-height: 210mm;
-                    padding: 15mm;
-                    background: white;
-                    box-sizing: border-box;
-                }
-            `}</style>
-        </div>
-      )}
     </div>
   );
 };
