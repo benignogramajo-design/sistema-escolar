@@ -169,7 +169,7 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
   ]);
 
   useEffect(() => {
-    const { cargo, curso, division } = formData;
+    const { cargo, curso, division, asignatura } = formData;
     if (cargo !== 'DOCENTE') {
       setFormData(prev => ({ ...prev, curso: '---', division: '---', asignatura: '---', turno: '' }));
       setAvailableDivisions([]);
@@ -187,16 +187,31 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
 
     if (curso && curso !== '---' && division && division !== '---') {
       const asigs = [...new Set(codigos.filter(c => c.curso === curso && c.division === division).map(c => c.asignatura))].sort();
-      const plazas = codigos.find(c => c.curso === curso && c.division === division)?.plazas || [];
       const turno = codigos.find(c => c.curso === curso && c.division === division)?.turno || "";
       setAvailableAsignaturas(asigs);
-      setAvailablePlazas(Array.isArray(plazas) ? plazas : []);
       setFormData(prev => ({ ...prev, turno }));
+
+      if (asignatura && asignatura !== '---') {
+        const found = codigos.find(c => c.curso === curso && c.division === division && c.asignatura === asignatura);
+        let plazas = found?.plazas || [];
+        if (typeof plazas === 'string') {
+          try { plazas = JSON.parse(plazas); } catch (e) { plazas = []; }
+        }
+        const plazasArray = Array.isArray(plazas) ? plazas : [];
+        setAvailablePlazas(plazasArray);
+
+        // Auto-completar si hay una sola plaza
+        if (plazasArray.length === 1) {
+          setFormData(prev => ({ ...prev, plazas: plazasArray[0] }));
+        }
+      } else {
+        setAvailablePlazas([]);
+      }
     } else {
       setAvailableAsignaturas([]);
       setAvailablePlazas([]);
     }
-  }, [formData.cargo, formData.curso, formData.division, codigos]);
+  }, [formData.cargo, formData.curso, formData.division, formData.asignatura, codigos]);
 
   // --- Handlers ---
   const handleFilterChange = (e) => {
@@ -362,7 +377,7 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
         <strong>{label}:</strong> {sectionData?.value || '---'}
         {sectionData?.observations?.filter(o => o.text).map((obs, i) => (
           <div key={i} style={{ marginLeft: '20px', fontSize: '0.9em' }}>
-            <em>Obs:</em> {obs.text} ({obs.date || 's/f'})
+            <em>Obs:</em> {obs.text} ({obs.date || '---'})
           </div>
         ))}
       </div>
