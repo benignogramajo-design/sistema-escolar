@@ -196,15 +196,36 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
           try { plazas = JSON.parse(plazas); } catch (e) { plazas = []; }
         }
         const plazasArray = Array.isArray(plazas) ? plazas : [];
-        setFormData(prev => ({ ...prev, plazas: plazasArray.join(" - ") }));
+
+        // Auto-completar Horarios desde Estructura
+        const structFound = estructura.find(e => 
+          e.cargo === cargo && 
+          e.curso === curso && 
+          e.division === division && 
+          e.asignatura === asignatura
+        );
+        let newHorarios = [];
+        if (structFound) {
+          let hData = structFound.horarios;
+          if (typeof hData === 'string') { try { hData = JSON.parse(hData); } catch (e) { hData = []; } }
+          if (Array.isArray(hData)) {
+            newHorarios = hData.map(h => ({
+              dia: h.dia,
+              horario: Array.isArray(h.horas) ? h.horas.join(", ") : (h.horario_texto || "")
+            }));
+          }
+        }
+        if (newHorarios.length === 0) newHorarios = [{ dia: "", horario: "" }];
+
+        setFormData(prev => ({ ...prev, plazas: plazasArray.join(" - "), dias_horarios: newHorarios }));
       } else {
-        setFormData(prev => ({ ...prev, plazas: "" }));
+        setFormData(prev => ({ ...prev, plazas: "", dias_horarios: [{ dia: "", horario: "" }] }));
       }
     } else {
       setAvailableAsignaturas([]);
-      setFormData(prev => ({ ...prev, plazas: "" }));
+      setFormData(prev => ({ ...prev, plazas: "", dias_horarios: [{ dia: "", horario: "" }] }));
     }
-  }, [formData.cargo, formData.curso, formData.division, formData.asignatura, codigos]);
+  }, [formData.cargo, formData.curso, formData.division, formData.asignatura, codigos, estructura]);
 
   // --- Handlers ---
   const handleFilterChange = (e) => {
@@ -297,7 +318,16 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // Obtener el usuario autenticado para cumplir con la política de seguridad (RLS).
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      alert("Error de autenticación: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.");
+      console.error("Error de autenticación al guardar:", authError);
+      return;
+    }
+
     const cleanField = (value) => value || '---';
 
     const payload = {
@@ -308,6 +338,7 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
       hasta: cleanField(formData.hasta),
       documentacion_adjunta: formData.documentacion_adjunta.filter(d => d.trim() !== ''),
       dias_horarios: formData.dias_horarios.filter(d => d.dia && d.horario),
+      user_id: user.id, // Se asume que la columna para el ID de usuario es 'user_id'
     };
 
     // Limpiar observaciones vacías antes de guardar
@@ -475,6 +506,55 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
               <label>Asignatura: <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.division} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}</select></label>
               <label>Carácter: <select name="caracter" value={formData.caracter} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
               <label>Plazas: <input type="text" name="plazas" value={formData.plazas} onChange={handleInputChange} disabled={!formData.division} style={{ width: '100%', padding: '5px' }} /></label>
+              
+              <div style={{ gridColumn: '1 / -1', border: '1px solid #eee', padding: '10px', borderRadius: '5px' }}>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>HORARIOS:</label>
+                {formData.dias_horarios.map((item, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
+                    <select 
+                      value={item.dia} 
+                      onChange={(e) => {
+                        const newHorarios = [...formData.dias_horarios];
+                        newHorarios[index].dia = e.target.value;
+                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
+                      }}
+                      style={{ padding: '5px' }}
+                    >
+                      <option value="">Día...</option>
+                      {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <input 
+                      type="text" 
+                      placeholder="Horario" 
+                      value={item.horario} 
+                      onChange={(e) => {
+                        const newHorarios = [...formData.dias_horarios];
+                        newHorarios[index].horario = e.target.value;
+                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
+                      }}
+                      style={{ flex: 1, padding: '5px' }} 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const newHorarios = formData.dias_horarios.filter((_, i) => i !== index);
+                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
+                      }}
+                      style={{ backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', padding: '0 10px' }}
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+                <button 
+                  type="button" 
+                  onClick={() => setFormData(prev => ({ ...prev, dias_horarios: [...prev.dias_horarios, { dia: "", horario: "" }] }))}
+                  style={{ backgroundColor: '#eee', border: '1px solid #ccc', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer', marginTop: '5px' }}
+                >
+                  + Agregar Horario
+                </button>
+              </div>
+
               <label style={{ gridColumn: '1 / -1' }}>Causal: <input name="causal" value={formData.causal} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Desde: <input type="date" name="desde" value={formData.desde || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Hasta: <input name="hasta" value={formData.hasta} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
