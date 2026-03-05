@@ -68,6 +68,21 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     "PERSONAL AUXILIAR (CAT. 18)", "PERSONAL AUXILIAR (CAT. 15)"
   ];
 
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === '---') return '---';
+    // Handles 'YYYY-MM-DD' format by splitting to avoid timezone issues with new Date()
+    const parts = dateString.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      // Basic validation
+      if (!isNaN(parseInt(day)) && !isNaN(parseInt(month)) && !isNaN(parseInt(year))) {
+        return `${day}/${month}/${year}`;
+      }
+    }
+    // Fallback for other formats or if it's not a date string
+    return dateString;
+  };
+
   // --- Carga de Datos ---
   const fetchData = async () => {
     setLoading(true);
@@ -431,7 +446,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <strong>{label}:</strong> {sectionData?.value || '---'}
         {sectionData?.observations?.filter(o => o.text).map((obs, i) => (
           <div key={i} style={{ marginLeft: '20px', fontSize: '0.9em' }}>
-            <em>Obs:</em> {obs.text} ({obs.date || '---'})
+            <em>Obs:</em> {obs.text} ({formatDate(obs.date)})
           </div>
         ))}
       </div>
@@ -456,8 +471,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
           <tr>
             <td>
               <div style={{ padding: '10px', lineHeight: '1.6' }}>
-                <p><strong>Fecha Ofrecimiento:</strong> {data.fecha_ofrecimiento || '---'}</p>
-                <p><strong>Fecha Designación:</strong> {data.fecha_designacion || '---'}</p>
+                <p><strong>Fecha Ofrecimiento:</strong> {formatDate(data.fecha_ofrecimiento)}</p>
+                <p><strong>Fecha Designación:</strong> {formatDate(data.fecha_designacion)}</p>
                 <p><strong>Cargo:</strong> {data.cargo}</p>
                 <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
                 <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
@@ -467,7 +482,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
                 <p><strong>Plazas:</strong> {data.plazas}</p>
                 <p><strong>Causal:</strong> {data.causal}</p>
-                <p><strong>Desde:</strong> {data.desde || '---'} <strong>Hasta:</strong> {data.hasta || '---'}</p>
+                <p><strong>Desde:</strong> {formatDate(data.desde)} <strong>Hasta:</strong> {formatDate(data.hasta)}</p>
                 <hr style={{ borderTop: '1px solid #ccc' }} />
                 {renderSection("En Dirección de Nivel", data.en_direccion_nivel)}
                 {renderSection("En Junta", data.en_junta)}
@@ -475,7 +490,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 {renderSection("En la Institución", data.en_institucion)}
                 {renderSection("Fecha de Cobro", data.fecha_cobro_docente)}
                 <hr style={{ borderTop: '1px solid #ccc' }} />
-                <p><strong>Fecha Seguimiento:</strong> {data.fecha_seguimiento}</p>
+                <p><strong>Fecha Seguimiento:</strong> {formatDate(data.fecha_seguimiento)}</p>
                 <p><strong>Estado:</strong> {data.estado}</p>
                 <p><strong>Documentación Adjunta:</strong> {(data.documentacion_adjunta || []).join(", ")}</p>
               </div>
@@ -680,16 +695,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                     <tbody>
                       {filteredData.map(item => (
                         <tr key={item.id} style={{ color: getRowColor(item.estado) }}>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.fecha_ofrecimiento || '---'}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.fecha_designacion || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_ofrecimiento)}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_designacion)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.cargo}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.curso} {item.division} - {item.turno}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.asignatura}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.causal}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.desde || '---'}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.hasta || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.desde)}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.hasta)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.estado}</td>
                         </tr>
                       ))}
@@ -739,6 +754,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 box-shadow: none !important;
                 margin: 0 !important;
                 width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
               }
               thead { display: table-header-group; }
               tr { page-break-inside: avoid; }
@@ -762,17 +779,17 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
             ) : filteredData.length > 0 ? (
               filteredData.map(item => (
                 <tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
-                  <td>{item.fecha_ofrecimiento || '---'}</td>
-                  <td>{item.fecha_designacion || '---'}</td>
-                  <td>{item.fecha_seguimiento || '---'}</td>
+                  <td>{formatDate(item.fecha_ofrecimiento)}</td>
+                  <td>{formatDate(item.fecha_designacion)}</td>
+                  <td>{formatDate(item.fecha_seguimiento)}</td>
                   <td>{item.cargo}</td>
                   <td>{item.curso} {item.division} - {item.turno}</td>
                   <td>{item.asignatura}</td>
                   <td>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
                   <td>{item.causal}</td>
                   <td>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
-                  <td>{item.desde || '---'}</td>
-                  <td>{item.hasta || '---'}</td>
+                  <td>{formatDate(item.desde)}</td>
+                  <td>{formatDate(item.hasta)}</td>
                   <td>{item.estado}</td>
                   <td onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: false })} style={{ backgroundColor: 'lightblue', color: 'black', fontSize: '10px', padding: '2px 5px', marginRight: '5px' }}>VER</button>
