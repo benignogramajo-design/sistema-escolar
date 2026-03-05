@@ -427,7 +427,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     const docentePropuesto = docentes.find(d => d.id === data.docente_propuesto_id)?.nombre || data.docente_propuesto_id;
 
     const renderSection = (label, sectionData) => (
-      <div>
+      <div style={{ marginBottom: '5px' }}>
         <strong>{label}:</strong> {sectionData?.value || '---'}
         {sectionData?.observations?.filter(o => o.text).map((obs, i) => (
           <div key={i} style={{ marginLeft: '20px', fontSize: '0.9em' }}>
@@ -438,30 +438,51 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     );
 
     return (
-      <div style={{ padding: '10px', fontSize: '12px', lineHeight: '1.6' }}>
-        <p><strong>Fecha Ofrecimiento:</strong> {data.fecha_ofrecimiento || '---'}</p>
-        <p><strong>Fecha Designación:</strong> {data.fecha_designacion || '---'}</p>
-        <p><strong>Cargo:</strong> {data.cargo}</p>
-        <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
-        <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
-        <p><strong>Curso/Div - Turno:</strong> {data.curso} {data.division} - {data.turno}</p>
-        <p><strong>Asignatura:</strong> {data.asignatura}</p>
-        <p><strong>Carácter Dueño:</strong> {data.caracter_dueno}</p>
-        <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
-        <p><strong>Plazas:</strong> {data.plazas}</p>
-        <p><strong>Causal:</strong> {data.causal}</p>
-        <p><strong>Desde:</strong> {data.desde || '---'} <strong>Hasta:</strong> {data.hasta || '---'}</p>
-        <hr />
-        {renderSection("En Dirección de Nivel", data.en_direccion_nivel)}
-        {renderSection("En Junta", data.en_junta)}
-        {renderSection("En Novedades Salariales", data.en_novedades)}
-        {renderSection("En la Institución", data.en_institucion)}
-        {renderSection("Fecha de Cobro", data.fecha_cobro_docente)}
-        <hr />
-        <p><strong>Fecha Seguimiento:</strong> {data.fecha_seguimiento}</p>
-        <p><strong>Estado:</strong> {data.estado}</p>
-        <p><strong>Documentación Adjunta:</strong> {(data.documentacion_adjunta || []).join(", ")}</p>
-      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+        <thead>
+          <tr>
+            <td style={{ border: 'none', paddingBottom: '10px' }}>
+               <div className="print-header" style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '10px', color: 'black' }}>
+                  <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
+                  <div>
+                    <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
+                    <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
+                  </div>
+                </div>
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style={{ padding: '10px', lineHeight: '1.6' }}>
+                <p><strong>Fecha Ofrecimiento:</strong> {data.fecha_ofrecimiento || '---'}</p>
+                <p><strong>Fecha Designación:</strong> {data.fecha_designacion || '---'}</p>
+                <p><strong>Cargo:</strong> {data.cargo}</p>
+                <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
+                <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
+                <p><strong>Curso/Div - Turno:</strong> {data.curso} {data.division} - {data.turno}</p>
+                <p><strong>Asignatura:</strong> {data.asignatura}</p>
+                <p><strong>Carácter Dueño:</strong> {data.caracter_dueno}</p>
+                <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
+                <p><strong>Plazas:</strong> {data.plazas}</p>
+                <p><strong>Causal:</strong> {data.causal}</p>
+                <p><strong>Desde:</strong> {data.desde || '---'} <strong>Hasta:</strong> {data.hasta || '---'}</p>
+                <hr style={{ borderTop: '1px solid #ccc' }} />
+                {renderSection("En Dirección de Nivel", data.en_direccion_nivel)}
+                {renderSection("En Junta", data.en_junta)}
+                {renderSection("En Novedades Salariales", data.en_novedades)}
+                {renderSection("En la Institución", data.en_institucion)}
+                {renderSection("Fecha de Cobro", data.fecha_cobro_docente)}
+                <hr style={{ borderTop: '1px solid #ccc' }} />
+                <p><strong>Fecha Seguimiento:</strong> {data.fecha_seguimiento}</p>
+                <p><strong>Estado:</strong> {data.estado}</p>
+                <p><strong>Documentación Adjunta:</strong> {(data.documentacion_adjunta || []).join(", ")}</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     );
   };
 
@@ -632,7 +653,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
                     <thead>
                       <tr>
-                        <th colSpan="10" style={{ border: 'none', paddingBottom: '10px' }}>
+                        <th colSpan="11" style={{ border: 'none', paddingBottom: '10px' }}>
                           <div className="print-header" style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '10px', color: 'black' }}>
                             <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
                             <div>
@@ -685,16 +706,17 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
           </div>
           <style>{`
             @media print { 
-              .no-print { display: none; } 
-              @page { size: landscape; margin: 10mm; }
-              body { -webkit-print-color-adjust: exact; }
-              .print-overlay { position: static !important; background: white !important; height: auto !important; overflow: visible !important; }
-              .print-content { display: block !important; padding: 0 !important; }
-              .print-page { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+              .no-print { display: none !important; } 
+              @page { size: ${showDetail.data ? 'A4' : 'A4 landscape'}; margin: 10mm; }
+              body { visibility: hidden; }
+              .print-overlay, .print-overlay * { visibility: visible; }
+              .print-overlay { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+              .print-content { width: 100%; padding: 0; }
+              .print-page { width: 100%; margin: 0; box-shadow: none; }
               thead { display: table-header-group; }
               tr { page-break-inside: avoid; }
             }
-            .print-page { background: white; width: 297mm; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            .print-page { background: white; width: ${showDetail.data ? '210mm' : '297mm'}; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
           `}</style>
         </div>
       )}
