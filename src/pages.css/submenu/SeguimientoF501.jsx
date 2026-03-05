@@ -418,13 +418,13 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   });
 
   // --- Helpers de Visualización ---
-  const getDocenteName = (id) => docentes.find(d => d.id === id)?.nombre || id;
+  const getDocenteName = (id) => docentes.find(d => d.id == id)?.nombre || id;
 
   // --- Renderizado ---
   const renderDetailContent = (data) => {
     if (!data) return null;
-    const docenteDueno = docentes.find(d => d.id === data.docente_dueno_id)?.nombre || data.docente_dueno_id;
-    const docentePropuesto = docentes.find(d => d.id === data.docente_propuesto_id)?.nombre || data.docente_propuesto_id;
+    const docenteDueno = getDocenteName(data.docente_dueno_id);
+    const docentePropuesto = getDocenteName(data.docente_propuesto_id);
 
     const renderSection = (label, sectionData) => (
       <div style={{ marginBottom: '5px' }}>
