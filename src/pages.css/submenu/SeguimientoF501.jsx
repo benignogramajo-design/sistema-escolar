@@ -5,7 +5,7 @@ import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 import { supabase } from "../../components.css/supabaseClient";
 import logo from "../../assets/logos/Logo.png";
 
-const SeguimientoF501 = ({ goBack, goHome }) => {
+const SeguimientoF501 = ({ goBack, goHome, user }) => {
   // --- Estados de Datos ---
   const [seguimientos, setSeguimientos] = useState([]);
   const [docentes, setDocentes] = useState([]);
@@ -319,12 +319,8 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Obtener el usuario autenticado para cumplir con la política de seguridad (RLS).
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!user) {
       alert("Error de autenticación: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.");
-      console.error("Error de autenticación al guardar:", authError);
       return;
     }
 

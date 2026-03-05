@@ -216,7 +216,7 @@ function App() {
     }
 
     const PageComponent = pageData.component;
-    const pageProps = { goBack, goHome };
+    const pageProps = { goBack, goHome, user };
 
     if (pageData.needsNavigate) {
       pageProps.navigate = navigate;
