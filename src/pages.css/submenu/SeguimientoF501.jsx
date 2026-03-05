@@ -233,6 +233,10 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
       const newSectionData = { ...prev[section] };
       if (obsIndex === null) { // Campo principal (value)
         newSectionData.value = value;
+        // If a date/status is set, and there are no observations, add an empty one to start.
+        if (value && (!newSectionData.observations || newSectionData.observations.length === 0)) {
+          newSectionData.observations = [{ text: '', date: '' }];
+        }
       } else { // Campo de una observación
         if (!newSectionData.observations) newSectionData.observations = [];
         newSectionData.observations[obsIndex][field] = value;
@@ -413,7 +417,7 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
       {formData[sectionName]?.value && (
         <div style={{ marginTop: '10px' }}>
           <label>Observaciones:</label>
-          {(formData[sectionName]?.observations || [{ text: '', date: '' }]).map((obs, i) => (
+          {(formData[sectionName]?.observations || []).map((obs, i) => (
             <div key={i} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
               <input type="text" placeholder={`Obs. ${i + 1}`} value={obs.text} onChange={e => handleObservationChange(sectionName, 'text', e.target.value, i)} style={{ flex: 2, padding: '5px' }} />
               {obs.text && (
