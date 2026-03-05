@@ -51,7 +51,6 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
   // --- Estados para Desplegables Dependientes ---
   const [availableDivisions, setAvailableDivisions] = useState([]);
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
-  const [availablePlazas, setAvailablePlazas] = useState([]);
 
   // --- Estado de Filtros ---
   const [filters, setFilters] = useState({
@@ -174,7 +173,6 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
       setFormData(prev => ({ ...prev, curso: '---', division: '---', asignatura: '---', turno: '' }));
       setAvailableDivisions([]);
       setAvailableAsignaturas([]);
-      setAvailablePlazas([]);
       return;
     }
 
@@ -198,18 +196,13 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
           try { plazas = JSON.parse(plazas); } catch (e) { plazas = []; }
         }
         const plazasArray = Array.isArray(plazas) ? plazas : [];
-        setAvailablePlazas(plazasArray);
-
-        // Auto-completar si hay una sola plaza
-        if (plazasArray.length === 1) {
-          setFormData(prev => ({ ...prev, plazas: plazasArray[0] }));
-        }
+        setFormData(prev => ({ ...prev, plazas: plazasArray.join(" - ") }));
       } else {
-        setAvailablePlazas([]);
+        setFormData(prev => ({ ...prev, plazas: "" }));
       }
     } else {
       setAvailableAsignaturas([]);
-      setAvailablePlazas([]);
+      setFormData(prev => ({ ...prev, plazas: "" }));
     }
   }, [formData.cargo, formData.curso, formData.division, formData.asignatura, codigos]);
 
@@ -423,7 +416,9 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
           {(formData[sectionName]?.observations || [{ text: '', date: '' }]).map((obs, i) => (
             <div key={i} style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
               <input type="text" placeholder={`Obs. ${i + 1}`} value={obs.text} onChange={e => handleObservationChange(sectionName, 'text', e.target.value, i)} style={{ flex: 2, padding: '5px' }} />
-              <input type="date" value={obs.date} onChange={e => handleObservationChange(sectionName, 'date', e.target.value, i)} style={{ flex: 1, padding: '5px' }} />
+              {obs.text && (
+                <input type="date" value={obs.date} onChange={e => handleObservationChange(sectionName, 'date', e.target.value, i)} style={{ flex: 1, padding: '5px' }} />
+              )}
             </div>
           ))}
         </div>
@@ -475,7 +470,7 @@ const SeguimientoF501 = ({ goBack, goHome }) => {
               <label>Turno: <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
               <label>Asignatura: <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.division} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}</select></label>
               <label>Carácter: <select name="caracter" value={formData.caracter} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
-              <label>Plazas: <select name="plazas" value={formData.plazas} onChange={handleInputChange} disabled={!formData.division} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availablePlazas.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
+              <label>Plazas: <input type="text" name="plazas" value={formData.plazas} onChange={handleInputChange} disabled={!formData.division} style={{ width: '100%', padding: '5px' }} /></label>
               <label style={{ gridColumn: '1 / -1' }}>Causal: <input name="causal" value={formData.causal} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Desde: <input type="date" name="desde" value={formData.desde || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Hasta: <input name="hasta" value={formData.hasta} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
