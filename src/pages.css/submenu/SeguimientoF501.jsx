@@ -334,7 +334,6 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       hasta: cleanField(formData.hasta),
       documentacion_adjunta: formData.documentacion_adjunta.filter(d => d.trim() !== ''),
       dias_horarios: formData.dias_horarios.filter(d => d.dia && d.horario),
-      user_id: user.id, // Se asume que la columna para el ID de usuario es 'user_id'
     };
 
     // Limpiar observaciones vacías antes de guardar
