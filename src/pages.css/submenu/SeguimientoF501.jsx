@@ -32,7 +32,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     turno: "",
     asignatura: "",
     dias_horarios: [{ dia: "", horario: "" }],
-    caracter: "INTERINO",
+    caracter_dueno: "TITULAR",
+    caracter_propuesto: "INTERINO",
     plazas: "",
     causal: "",
     desde: null,
@@ -55,7 +56,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   // --- Estado de Filtros ---
   const [filters, setFilters] = useState({
     fecha: "", mes: "", anio: "", cargo: "", curso: "", division: "",
-    turno: "", asignatura: "", caracter: "", causal: "", desde: "",
+    turno: "", asignatura: "", causal: "", desde: "",
     hasta: "", estado: ""
   });
 
@@ -112,6 +113,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       let latestDate = null;
       let latestSource = "";
       let latestIsObservation = false;
+      let isPendiente = false;
 
       const sections = [
         { key: 'en_direccion_nivel', status: 'ENVIADO A D.E.S.', obsStatus: 'EN CORRECCIÓN DE D.E.S.' },
@@ -131,6 +133,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
               latestSource = section.key;
               latestIsObservation = false;
             }
+          } else if (data.value === 'PENDIENTE') {
+            isPendiente = true;
           }
           if (data.observations) {
             data.observations.forEach(obs => {
@@ -153,7 +157,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       if (finalSection) {
         newFormData.estado = latestIsObservation ? finalSection.obsStatus : finalSection.status;
       } else {
-        newFormData.estado = "";
+        newFormData.estado = isPendiente ? "PENDIENTE" : "";
       }
 
       return newFormData;
@@ -291,6 +295,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       fecha_cobro_docente: item.fecha_cobro_docente || { value: "", observations: [] },
       documentacion_adjunta: item.documentacion_adjunta ? [...item.documentacion_adjunta, ""] : [""],
       dias_horarios: item.dias_horarios && item.dias_horarios.length > 0 ? item.dias_horarios : [{ dia: "", horario: "" }],
+      caracter_dueno: item.caracter_dueno || "TITULAR",
+      caracter_propuesto: item.caracter_propuesto || "INTERINO",
     };
     // Añadir un campo de observación vacío si es necesario
     ['en_direccion_nivel', 'en_junta', 'en_novedades', 'en_institucion', 'fecha_cobro_docente'].forEach(key => {
@@ -381,13 +387,38 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       (!filters.division || item.division === filters.division) &&
       (!filters.turno || item.turno === filters.turno) &&
       (!filters.asignatura || (item.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase())) &&
-      (!filters.caracter || item.caracter === filters.caracter) &&
       (!filters.causal || (item.causal || "").toLowerCase().includes(filters.causal.toLowerCase())) &&
       (!filters.desde || item.desde === filters.desde) &&
       (!filters.hasta || item.hasta === filters.hasta) &&
       (!filters.estado || item.estado === filters.estado)
     );
   });
+
+  // --- Ordenamiento ---
+  const getEstadoOrder = (estado) => {
+    if (!estado) return 99;
+    const e = estado.toUpperCase();
+    if (e.includes("D.E.S.") || e.includes("DIRECCIÓN DE NIVEL")) return 1;
+    if (e.includes("JUNTA")) return 2;
+    if (e.includes("NOVEDADES")) return 3;
+    if (e.includes("INSTITUCION") || e.includes("INSTITUCIÓN")) return 4;
+    if (e.includes("COBRANDO") || e.includes("COBRO")) return 5;
+    return 99;
+  };
+
+  filteredData.sort((a, b) => {
+    const orderA = getEstadoOrder(a.estado);
+    const orderB = getEstadoOrder(b.estado);
+    if (orderA !== orderB) return orderA - orderB;
+    
+    // Ordenar por fecha de designación
+    const dateA = new Date(a.fecha_designacion || '1900-01-01');
+    const dateB = new Date(b.fecha_designacion || '1900-01-01');
+    return dateA - dateB;
+  });
+
+  // --- Helpers de Visualización ---
+  const getDocenteName = (id) => docentes.find(d => d.id === id)?.nombre || id;
 
   // --- Renderizado ---
   const renderDetailContent = (data) => {
@@ -413,9 +444,10 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <p><strong>Cargo:</strong> {data.cargo}</p>
         <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
         <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
-        <p><strong>Curso/Div/Turno:</strong> {data.curso} {data.division} ({data.turno})</p>
+        <p><strong>Curso/Div - Turno:</strong> {data.curso} {data.division} - {data.turno}</p>
         <p><strong>Asignatura:</strong> {data.asignatura}</p>
-        <p><strong>Carácter:</strong> {data.caracter}</p>
+        <p><strong>Carácter Dueño:</strong> {data.caracter_dueno}</p>
+        <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
         <p><strong>Plazas:</strong> {data.plazas}</p>
         <p><strong>Causal:</strong> {data.causal}</p>
         <p><strong>Desde:</strong> {data.desde || '---'} <strong>Hasta:</strong> {data.hasta || '---'}</p>
@@ -456,6 +488,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     </div>
   );
 
+  const getRowColor = (estado) => {
+    if (!estado) return 'black';
+    const e = estado.toUpperCase();
+    if (e === 'PENDIENTE') return 'red';
+    if (e.includes("D.E.S.")) return 'blue';
+    if (e.includes("JUNTA") || e.includes("NOVEDADES")) return 'green';
+    if (e.includes("INSTITUCION") || e.includes("COBRANDO")) return 'black';
+    return 'black';
+  };
+
   const getUniqueOptions = (field) => [...new Set(seguimientos.map(item => item[field]).filter(Boolean))].sort();
 
   return (
@@ -468,7 +510,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <input type="date" name="fecha" value={filters.fecha} onChange={handleFilterChange} style={{ padding: '5px' }} />
         <select name="mes" value={filters.mes} onChange={handleFilterChange} style={{ padding: '5px' }}><option value="">Mes</option>{Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{i + 1}</option>)}</select>
         <input type="number" name="anio" placeholder="Año" value={filters.anio} onChange={handleFilterChange} style={{ padding: '5px', width: '70px' }} />
-        {['cargo', 'curso', 'division', 'turno', 'asignatura', 'caracter', 'causal', 'estado'].map(f => (
+        {['cargo', 'curso', 'division', 'turno', 'asignatura', 'causal', 'estado'].map(f => (
           <select key={f} name={f} value={filters[f]} onChange={handleFilterChange} style={{ padding: '5px' }}>
             <option value="">{f.replace('_', ' ').toUpperCase()}</option>
             {getUniqueOptions(f).map(op => <option key={op} value={op}>{op}</option>)}
@@ -493,13 +535,17 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
               <label>Fecha Ofrecimiento: <input type="date" name="fecha_ofrecimiento" value={formData.fecha_ofrecimiento || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Fecha Designación: <input type="date" name="fecha_designacion" value={formData.fecha_designacion || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
               <label>Cargo: <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{cargosList.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
+              
               <label>Docente Dueño: <select name="docente_dueno_id" value={formData.docente_dueno_id} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="SIN DOCENTES">SIN DOCENTES</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label>Carácter Dueño: <select name="caracter_dueno" value={formData.caracter_dueno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="TITULAR">TITULAR</option><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
+              
               <label style={{ gridColumn: '1 / -1' }}>Docente Propuesto: <select name="docente_propuesto_id" value={formData.docente_propuesto_id} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="VACANTE ENVIADO A JUNTA">VACANTE ENVIADO A JUNTA</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label style={{ gridColumn: '1 / -1' }}>Carácter Propuesto: <select name="caracter_propuesto" value={formData.caracter_propuesto} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
+              
               <label>Curso: <input name="curso" value={formData.curso} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE'} style={{ width: '100%', padding: '5px' }} /></label>
               <label>División: <select name="division" value={formData.division} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.curso} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableDivisions.map(d => <option key={d} value={d}>{d}</option>)}</select></label>
               <label>Turno: <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
               <label>Asignatura: <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.division} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}</select></label>
-              <label>Carácter: <select name="caracter" value={formData.caracter} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
               <label>Plazas: <input type="text" name="plazas" value={formData.plazas} onChange={handleInputChange} disabled={!formData.division} style={{ width: '100%', padding: '5px' }} /></label>
               
               <div style={{ gridColumn: '1 / -1', border: '1px solid #eee', padding: '10px', borderRadius: '5px' }}>
@@ -579,19 +625,56 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       {/* --- Vista Detallada / Impresión --- */}
       {(showDetail.show) && (
         <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto' }}>
-          <div className="print-content" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="print-content" style={{ padding: '0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div className="print-page">
-              <div className="print-header" style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px', color: 'black' }}>
-                <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
-                <div>
-                  <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
-                  <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
-                </div>
-              </div>
               {showDetail.data ? renderDetailContent(showDetail.data) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
-                  {/* Renderizado de tabla para impresión general */}
-                </table>
+                <>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
+                    <thead>
+                      <tr>
+                        <th colSpan="10" style={{ border: 'none', paddingBottom: '10px' }}>
+                          <div className="print-header" style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '10px', color: 'black' }}>
+                            <img src={logo} alt="Logo" style={{ width: '60px', marginRight: '20px' }} />
+                            <div>
+                              <h1 style={{ fontSize: '18px', margin: 0 }}>Escuela Secundaria Gobernador Garmendia</h1>
+                              <p style={{ fontSize: '12px', margin: 0 }}>CUE: 9001717/00 - Av. de la Soja S/N°</p>
+                            </div>
+                          </div>
+                        </th>
+                      </tr>
+                      <tr style={{ backgroundColor: "#f2f2f2", color: "black" }}>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>F. OFREC.</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>F. DESIG.</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>CARGO</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>CURSO</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>ASIGNATURA</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>DOCENTE</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>CAUSAL</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>DOCENTE PROPUESTO</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>DESDE</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>HASTA</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>ESTADO</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map(item => (
+                        <tr key={item.id} style={{ color: getRowColor(item.estado) }}>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.fecha_ofrecimiento || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.fecha_designacion || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.cargo}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.curso} {item.division} - {item.turno}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.asignatura}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.causal}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.desde || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.hasta || '---'}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.estado}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
               )}
             </div>
           </div>
@@ -601,8 +684,17 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
             <button onClick={() => setShowDetail({ show: false, data: null, isPrint: false })} style={{ padding: '10px 20px', margin: '0 10px' }}>CANCELAR</button>
           </div>
           <style>{`
-            @media print { .no-print { display: none; } @page { size: A4; margin: 20mm; } }
-            .print-page { background: white; width: 210mm; min-height: 297mm; padding: 20mm; margin: 20px auto; box-sizing: border-box; }
+            @media print { 
+              .no-print { display: none; } 
+              @page { size: landscape; margin: 10mm; }
+              body { -webkit-print-color-adjust: exact; }
+              .print-overlay { position: static !important; background: white !important; height: auto !important; overflow: visible !important; }
+              .print-content { display: block !important; padding: 0 !important; }
+              .print-page { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+              thead { display: table-header-group; }
+              tr { page-break-inside: avoid; }
+            }
+            .print-page { background: white; width: 297mm; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
           `}</style>
         </div>
       )}
@@ -612,26 +704,25 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '11px' }}>
           <thead>
             <tr style={{ backgroundColor: "#333", color: "white" }}>
-              <th>F. OFREC.</th><th>F. DESIG.</th><th>F. SEGUIM.</th><th>CARGO</th><th>CURSO</th><th>DIV</th>
-              <th>TURNO</th><th>ASIGNATURA</th><th>CARÁCTER</th><th>CAUSAL</th><th>DESDE</th><th>HASTA</th><th>ESTADO</th><th>VISTA</th>
+              <th>F. OFREC.</th><th>F. DESIG.</th><th>F. SEGUIM.</th><th>CARGO</th><th>CURSO</th>
+              <th>ASIGNATURA</th><th>DOCENTE</th><th>CAUSAL</th><th>DOCENTE PROPUESTO</th><th>DESDE</th><th>HASTA</th><th>ESTADO</th><th>VISTA</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="14" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
+              <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
             ) : filteredData.length > 0 ? (
               filteredData.map(item => (
-                <tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default' }}>
+                <tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
                   <td>{item.fecha_ofrecimiento || '---'}</td>
                   <td>{item.fecha_designacion || '---'}</td>
                   <td>{item.fecha_seguimiento || '---'}</td>
                   <td>{item.cargo}</td>
-                  <td>{item.curso}</td>
-                  <td>{item.division}</td>
-                  <td>{item.turno}</td>
+                  <td>{item.curso} {item.division} - {item.turno}</td>
                   <td>{item.asignatura}</td>
-                  <td>{item.caracter}</td>
+                  <td>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
                   <td>{item.causal}</td>
+                  <td>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
                   <td>{item.desde || '---'}</td>
                   <td>{item.hasta || '---'}</td>
                   <td>{item.estado}</td>
@@ -642,7 +733,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 </tr>
               ))
             ) : (
-              <tr><td colSpan="14" style={{ textAlign: 'center', padding: '20px' }}>No se encontraron registros.</td></tr>
+              <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>No se encontraron registros.</td></tr>
             )}
           </tbody>
         </table>
