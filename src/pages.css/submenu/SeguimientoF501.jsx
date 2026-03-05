@@ -705,18 +705,44 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
             <button onClick={() => setShowDetail({ show: false, data: null, isPrint: false })} style={{ padding: '10px 20px', margin: '0 10px' }}>CANCELAR</button>
           </div>
           <style>{`
-            @media print { 
-              .no-print { display: none !important; } 
-              @page { size: ${showDetail.data ? 'A4' : 'A4 landscape'}; margin: 10mm; }
-              body { visibility: hidden; }
-              .print-overlay, .print-overlay * { visibility: visible; }
-              .print-overlay { position: absolute; left: 0; top: 0; width: 100%; background: white; }
-              .print-content { width: 100%; padding: 0; }
-              .print-page { width: 100%; margin: 0; box-shadow: none; }
+            .print-page { background: white; width: ${showDetail.data ? '210mm' : '297mm'}; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            @media print {
+              .no-print { display: none !important; }
+              @page {
+                size: ${showDetail.data ? 'A4 portrait' : 'A4 landscape'};
+                margin: 10mm;
+              }
+              html, body {
+                height: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: none !important;
+              }
+              body * {
+                visibility: hidden;
+              }
+              .print-overlay, .print-overlay * {
+                visibility: visible;
+              }
+              .print-overlay {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                background-color: white !important;
+              }
+              .print-content {
+                padding: 0 !important;
+              }
+              .print-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+              }
               thead { display: table-header-group; }
               tr { page-break-inside: avoid; }
             }
-            .print-page { background: white; width: ${showDetail.data ? '210mm' : '297mm'}; min-height: 210mm; padding: 10mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
           `}</style>
         </div>
       )}
