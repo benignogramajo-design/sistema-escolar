@@ -53,18 +53,41 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: estData } = await supabase.from('estructura_horario').select('*');
-      const parsedData = (estData || []).map(item => ({
-        ...item,
-        horarios: typeof item.horarios === 'string' ? JSON.parse(item.horarios) : (item.horarios || []),
-        docente_titular: typeof item.docente_titular === 'string' ? JSON.parse(item.docente_titular) : (item.docente_titular || { nombre: "---" }),
-        docente_interino: typeof item.docente_interino === 'string' ? JSON.parse(item.docente_interino) : (item.docente_interino || { nombre: "---" }),
-        docentes_suplentes: typeof item.docentes_suplentes === 'string' ? JSON.parse(item.docentes_suplentes) : (item.docentes_suplentes || [])
-      }));
-      setRealSchedule(parsedData);
-
-      const { data: codData } = await supabase.from('codigos').select('*');
+      // Cargar códigos primero para usarlos en la actualización dinámica del turno
+      const { data: codData, error: codError } = await supabase.from('codigos').select('*');
+      if (codError) throw codError;
       setCodigos(codData || []);
+
+      const { data: estData, error: estError } = await supabase.from('estructura_horario').select('*');
+      if (estError) throw estError;
+
+      const parsedData = (estData || []).map(item => {
+        const safeParse = (val, fallback) => {
+            if (typeof val === 'string') {
+              try { return JSON.parse(val); } catch (e) { return fallback; }
+            }
+            return val || fallback;
+        };
+
+        // Lógica de actualización dinámica del turno
+        let dynamicTurno = item.turno;
+        if (item.cargo === 'DOCENTE' && item.curso && item.division) {
+            const foundCode = (codData || []).find(c => String(c.curso) === String(item.curso) && String(c.division) === String(item.division));
+            if (foundCode) {
+                dynamicTurno = foundCode.turno;
+            }
+        }
+
+        return {
+            ...item,
+            turno: dynamicTurno, // Sobrescribir con el turno correcto
+            horarios: safeParse(item.horarios, []),
+            docente_titular: safeParse(item.docente_titular, { nombre: "---" }),
+            docente_interino: safeParse(item.docente_interino, { nombre: "---" }),
+            docentes_suplentes: safeParse(item.docentes_suplentes, [])
+        };
+      });
+      setRealSchedule(parsedData);
     } catch (error) {
       console.error("Error cargando datos:", error);
     } finally {
