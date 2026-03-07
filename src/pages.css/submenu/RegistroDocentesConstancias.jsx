@@ -8,8 +8,6 @@ import fondo from "../../assets/fondos/Fondo REGISTRO DOCENTES1.jpg";
 const RegistroDocentesConstancias = ({ navigate, goBack, goHome }) => {
   const subBotones = [
     { titulo: "REGISTRO DE ACTAS", action: "RegistroDocentesActas" },
-    { titulo: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
-    { titulo: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
     { titulo: "CONSTANCIAS DE SERVICIOS", action: "RegistroDocentesConstanciasServicios" },
     { titulo: "CONSTANCIAS DE AFECTACIONES", action: "RegistroDocentesConstanciasAfectaciones" },
     { titulo: "CONSTANCIAS DE PERMANENCIA", action: "RegistroDocentesConstanciasPermanencia" },

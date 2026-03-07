@@ -13,6 +13,7 @@ const PersonalInstitucional = ({ goBack, goHome, navigate }) => {
     { titulo: "PERSONAL POR DIA", action: "PersonalPorDia" },
     { titulo: "N° DE BOLETAS", action: "NumeroDeBoletas" },
     { titulo: "USUARIOS", action: "DocentesUsuarios" },
+    { titulo: "HORARIOS 2023", action: "DocentesHorarios" },
     { titulo: "HORARIOS POR DÍA", action: "DocentesHorariosDia" },
     { titulo: "HORARIOS PARA IMPRIMIR", action: "DocentesHorariosImprimir" },
     { titulo: "ASIGNAR RESPONSABLE DE CURSO", action: "AsignarResponsableCurso" },
@@ -20,6 +21,9 @@ const PersonalInstitucional = ({ goBack, goHome, navigate }) => {
     { titulo: "LICENCIAS", action: "Licencias" },
     { titulo: "CRONOGRAMA MESAS DE EXAMEN", action: "CronogramaMesasExamen" },
     { titulo: "DATOS DE ORGANIGRAMA", action: "DatosOrganigrama" },
+    { titulo: "SIMULADOR DE HORARIOS", action: "SimuladorHorarios" },
+    { titulo: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
+    { titulo: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
   ];
 
   return (
