@@ -92,7 +92,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     // El requerimiento pide 10 columnas para mañana y 13 para tarde.
     // Intentaremos llenar esas columnas con las divisiones existentes.
     const divisiones = [...new Set(codigos
-      .filter(c => c.turno && c.turno.toUpperCase().includes(turno.toUpperCase()))
+      .filter(c => c.turno && c.turno.toUpperCase().includes(turno.toUpperCase()) && c.curso && c.division)
       .map(c => `${c.curso} ${c.division}`)
     )].sort();
 
@@ -101,12 +101,14 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
   // Obtener contenido de una celda
   const getCellContent = (dataset, turno, dia, horaIdentifier, divisionStr) => {
-    const [curso, division] = divisionStr.split(" ");
+    const parts = divisionStr.split(" ");
+    const curso = parts[0];
+    const division = parts[1];
     
     // Buscar en el dataset
     const item = dataset.find(d => 
-      d.curso === curso && 
-      d.division === division && 
+      String(d.curso) === String(curso) && 
+      String(d.division) === String(division) && 
       d.turno && d.turno.toUpperCase().includes(turno.toUpperCase()) &&
       d.cargo === "DOCENTE" // Solo materias curriculares
     );
@@ -222,21 +224,83 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   };
 
   const swapCells = (source, target) => {
-    // Lógica compleja: encontrar los items en simulationData y modificar sus horarios
-    // Para simplificar en este entorno: intercambiamos la ASIGNATURA y DOCENTES de los items
-    // en ese horario específico.
-    // Nota: Esto es una simplificación. En un sistema real, mover horarios implica validaciones complejas.
-    
-    const newData = [...simulationData];
-    
-    // Helper para encontrar y modificar
-    // ... (Implementación completa requeriría reestructurar el objeto de horarios dentro del item)
-    // Dado que la estructura es compleja (array de horarios dentro de un item que representa una materia),
-    // el "swap" visual real implica cambiar la hora asignada a la materia.
+    const newData = JSON.parse(JSON.stringify(simulationData));
 
-    alert("Funcionalidad de intercambio visual simulada. (Requiere lógica compleja de reasignación de horarios en base de datos)");
-    // Aquí iría la lógica de mutación de newData
-    // setSimulationData(newData);
+    const getParams = (cell) => {
+      const parts = cell.divisionStr.split(" ");
+      return { curso: parts[0], division: parts[1], turno: cell.turno, dia: cell.dia, horaId: cell.horaIdentifier };
+    };
+
+    const srcP = getParams(source);
+    const tgtP = getParams(target);
+
+    // Helper para encontrar índice del item
+    const findItemIdx = (params) => newData.findIndex(d => 
+      String(d.curso) === String(params.curso) && 
+      String(d.division) === String(params.division) &&
+      d.turno && d.turno.toUpperCase().includes(params.turno.toUpperCase()) &&
+      d.cargo === "DOCENTE"
+    );
+
+    const srcIdx = findItemIdx(srcP);
+    const tgtIdx = findItemIdx(tgtP);
+
+    // Helper para extraer y remover horario
+    const extractHour = (item, params) => {
+      if (!item || !item.horarios) return null;
+      const hIdx = item.horarios.findIndex(h => h.dia === params.dia);
+      if (hIdx === -1) return null;
+      
+      const hObj = item.horarios[hIdx];
+      const val = typeof params.horaId === 'number' 
+        ? hObj.horas.find(x => x.startsWith(`${params.horaId}°`)) 
+        : hObj.horas.find(x => x.includes(params.horaId));
+      
+      if (!val) return null;
+
+      // Remover
+      hObj.horas = hObj.horas.filter(x => x !== val);
+      if (hObj.horas.length === 0) item.horarios.splice(hIdx, 1);
+      
+      return val;
+    };
+
+    // Helper para agregar horario
+    const insertHour = (item, params, val) => {
+      // Actualizar prefijo de hora si es numérico (ej: mover de 1° a 2°)
+      let newVal = val;
+      if (typeof params.horaId === 'number') {
+        newVal = val.replace(/^\d+°/, `${params.horaId}°`);
+      }
+
+      let hObj = item.horarios.find(h => h.dia === params.dia);
+      if (!hObj) {
+        hObj = { dia: params.dia, horas: [] };
+        item.horarios.push(hObj);
+      }
+      hObj.horas.push(newVal);
+    };
+
+    const srcVal = srcIdx !== -1 ? extractHour(newData[srcIdx], srcP) : null;
+    const tgtVal = tgtIdx !== -1 ? extractHour(newData[tgtIdx], tgtP) : null;
+
+    if (srcVal) {
+      // Mover item fuente a destino (actualiza curso/división del item completo)
+      const item = newData[srcIdx];
+      item.curso = tgtP.curso;
+      item.division = tgtP.division;
+      insertHour(item, tgtP, srcVal);
+    }
+    
+    if (tgtVal) {
+      // Mover item destino a fuente
+      const item = newData[tgtIdx];
+      item.curso = srcP.curso;
+      item.division = srcP.division;
+      insertHour(item, srcP, tgtVal);
+    }
+
+    setSimulationData(newData);
   };
 
   const handleDeleteSimulation = async (id) => {
@@ -259,14 +323,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     const maxCols = turno === "MAÑANA" ? 10 : 13;
     const displayColumns = columns.slice(0, maxCols);
 
-    // Si hay filtro de curso/división, filtramos las columnas
-    const filteredColumns = displayColumns.filter(col => {
-      if (filters.curso && !col.startsWith(filters.curso)) return false;
-      if (filters.division && !col.endsWith(filters.division)) return false;
-      return true;
-    });
-
-    if (filteredColumns.length === 0) return <p>No hay datos para mostrar con los filtros actuales.</p>;
+    if (displayColumns.length === 0) return <p>No hay datos para mostrar.</p>;
 
     const timeSlots = turno === "MAÑANA" ? horariosManana : horariosTarde;
 
@@ -276,8 +333,8 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ backgroundColor: "#f0f0f0" }}>
-              <th style={{ width: '120px', border: '1px solid #999' }}>horarios/Cursos</th>
-              {filteredColumns.map(col => (
+              <th style={{ width: '120px', border: '1px solid #999' }}>HORARIOS / CURSOS</th>
+              {displayColumns.map(col => (
                 <th key={col} style={{ border: '1px solid #999', padding: '5px' }}>{col}</th>
               ))}
             </tr>
@@ -287,7 +344,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
               const horaIdentifier = index < 8 ? index + 1 : "EDUCACIÓN FÍSICA";
               // Detección de colisiones en la fila
               const rowDocents = [];
-              filteredColumns.forEach(col => {
+              displayColumns.forEach(col => {
                 const item = getCellContent(dataset, turno, dia, horaIdentifier, col);
                 if (item) {
                   const docStr = getDocenteString(item);
@@ -301,7 +358,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
               return (
                 <tr key={index}>
                   <td style={{ fontWeight: 'bold', textAlign: 'center', border: '1px solid #999', fontSize: '10px' }}>{slotLabel}</td>
-                  {filteredColumns.map(col => {
+                  {displayColumns.map(col => {
                     const item = getCellContent(dataset, turno, dia, horaIdentifier, col);
                     const docStr = item ? getDocenteString(item) : "";
                     const asigStr = item ? item.asignatura : "";
@@ -391,13 +448,6 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
             </label>
           ))}
         </div>
-
-        {!showSaveCancel && (
-          <>
-            <input placeholder="CURSO" value={filters.curso} onChange={e => setFilters({...filters, curso: e.target.value})} style={{ width: '60px', padding: '5px' }} />
-            <input placeholder="DIVISIÓN" value={filters.division} onChange={e => setFilters({...filters, division: e.target.value})} style={{ width: '70px', padding: '5px' }} />
-          </>
-        )}
 
         <select value={filters.estado} onChange={e => setFilters({...filters, estado: e.target.value})} style={{ padding: '5px' }}>
           <option value="TODOS">ESTADO: TODOS</option>
