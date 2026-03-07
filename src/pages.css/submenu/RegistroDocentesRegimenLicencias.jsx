@@ -20,7 +20,7 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
     capitulo: "", capitulo_nombre: "",
     articulo: "", articulo_nombre: "",
     inciso: "", inciso_nombre: "",
-    contenido: ""
+    contenido: [""] // Cambiado a array para múltiples párrafos
   };
   const [formData, setFormData] = useState(initialForm);
 
@@ -79,7 +79,11 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
     const item = data.find(d => d.id === selectedId);
     if (item) {
       setModalMode("edit");
-      setFormData(item);
+      // Asegurarse de que contenido sea un array con un campo vacío al final
+      const contenidoArray = Array.isArray(item.contenido) 
+        ? [...item.contenido, ""] 
+        : (item.contenido ? [item.contenido, ""] : [""]);
+      setFormData({...item, contenido: contenidoArray});
       setShowModal(true);
     }
   };
@@ -104,11 +108,18 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
     try {
       // Extraer id y created_at para no enviarlos en el payload si no es necesario o para limpiar
       const { id, created_at, ...payload } = formData;
+
+      // Limpiar contenidos vacíos antes de guardar
+      const cleanPayload = {
+        ...payload,
+        contenido: payload.contenido.filter(p => p.trim() !== '')
+      };
+
       if (modalMode === "create") {
-        const { error } = await supabase.from('regimen_licencias').insert([payload]);
+        const { error } = await supabase.from('regimen_licencias').insert([cleanPayload]);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('regimen_licencias').update(payload).eq('id', selectedId);
+        const { error } = await supabase.from('regimen_licencias').update(cleanPayload).eq('id', selectedId);
         if (error) throw error;
       }
       setShowModal(false);
@@ -121,6 +132,18 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleContenidoChange = (index, value) => {
+    const newContenidos = [...formData.contenido];
+    newContenidos[index] = value;
+
+    // Si se escribe en el último campo y no está vacío, agregar uno nuevo
+    if (index === newContenidos.length - 1 && value.trim() !== "") {
+      newContenidos.push("");
+    }
+
+    setFormData(prev => ({ ...prev, contenido: newContenidos }));
   };
 
   // --- Lógica de Tabla (RowSpan real y Ordenamiento) ---
@@ -239,7 +262,10 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
 
                   {/* Celda Contenido */}
                   <td style={{ padding: "8px", border: "1px solid #ddd", verticalAlign: 'top' }}>
-                    {item.contenido}
+                    {Array.isArray(item.contenido)
+                      ? item.contenido.map((p, i) => <p key={i} style={{ margin: '0 0 5px 0', padding: 0 }}>{p}</p>)
+                      : item.contenido
+                    }
                   </td>
                 </tr>
               ))
@@ -323,13 +349,16 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
               {/* Sección Contenido */}
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ fontWeight: 'bold' }}>CONTENIDO:</label>
-                <textarea 
-                  name="contenido" 
-                  value={formData.contenido} 
-                  onChange={handleInputChange} 
-                  rows="5"
-                  style={{ width: '100%', padding: '5px' }} 
-                />
+                {formData.contenido.map((texto, index) => (
+                  <textarea 
+                    key={index}
+                    value={texto} 
+                    onChange={(e) => handleContenidoChange(index, e.target.value)} 
+                    rows="3"
+                    style={{ width: '100%', padding: '5px', marginTop: '5px' }}
+                    placeholder={`Párrafo ${index + 1}`}
+                  />
+                ))}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
@@ -343,7 +372,7 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
 
       {/* --- Vista Previa Impresión --- */}
       {showPrint && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'white', zIndex: 2000, overflowY: 'auto' }}>
+        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'white', zIndex: 2000, overflowY: 'auto' }}>
           <div className="print-container" style={{ padding: '40px', maxWidth: '210mm', margin: '0 auto' }}>
             
             {/* Encabezado */}
@@ -388,9 +417,12 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
                             {item.inciso} {item.inciso_nombre ? `- ${item.inciso_nombre}` : ''}
                           </span>
                         )}
-                        <span style={{ fontSize: '12px' }}>
-                          {item.contenido}
-                        </span>
+                        <div style={{ fontSize: '12px', display: 'inline' }}>
+                          {Array.isArray(item.contenido)
+                            ? item.contenido.map((p, i) => <p key={i} style={{margin: '0 0 10px 0'}}>{p}</p>)
+                            : <p style={{margin: 0, display: 'inline'}}>{item.contenido}</p>
+                          }
+                        </div>
                       </div>
                     </div>
                   );
@@ -409,6 +441,9 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
           <style>{`
             @media print {
               .no-print { display: none !important; }
+              body * { visibility: hidden; }
+              .print-overlay, .print-overlay * { visibility: visible; }
+              .print-overlay { position: absolute; top: 0; left: 0; width: 100%; }
               body { background-color: white; }
               .print-container { padding: 0; margin: 0; width: 100%; max-width: none; }
               @page { size: A4; margin: 20mm; }
