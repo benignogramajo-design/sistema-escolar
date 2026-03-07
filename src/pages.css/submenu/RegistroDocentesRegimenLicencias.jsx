@@ -37,7 +37,28 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
         .order('id', { ascending: true }); // Orden básico por ID, idealmente sería por orden lógico
       
       if (error) throw error;
-      setData(result || []);
+
+      // Parse 'contenido' which might be a JSON string, a plain string, or an array
+      const parsedData = (result || []).map(item => {
+        let parsedContenido = item.contenido;
+        if (typeof parsedContenido === 'string') {
+          try {
+            // Try to parse it as JSON
+            parsedContenido = JSON.parse(parsedContenido);
+          } catch (e) {
+            // If it fails, it's just a plain string. Keep it as is for now.
+          }
+        }
+        
+        // Now, ensure the final result is an array.
+        if (!Array.isArray(parsedContenido)) {
+          parsedContenido = parsedContenido ? [String(parsedContenido)] : [];
+        }
+
+        return { ...item, contenido: parsedContenido };
+      });
+
+      setData(parsedData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -59,7 +80,7 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
       (item.articulo_nombre || "").toLowerCase().includes(searchText) ||
       (item.inciso || "").toLowerCase().includes(searchText) ||
       (item.inciso_nombre || "").toLowerCase().includes(searchText) ||
-      (item.contenido || "").toLowerCase().includes(searchText);
+      (Array.isArray(item.contenido) && item.contenido.some(p => p.toLowerCase().includes(searchText)));
 
     return matchCap && matchArt && matchInc && matchText;
   });
