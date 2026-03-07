@@ -21,8 +21,7 @@ const PrintStyles = () => (
           display: none !important;
         }
         body.print-simulation-active .contenido-submenu { width: 100% !important; max-width: 100% !important; margin: 0; padding: 0; background-color: transparent; box-shadow: none; }
-        .print-page-container { page-break-after: always; padding: 10mm; }
-        body.print-simulation-active .contenido-submenu > div:last-child > .print-page-container:last-child { page-break-after: auto; }
+        .print-page-container { page-break-after: always; padding: 5mm; width: 100%; min-height: 95vh; box-sizing: border-box; display: flex; flex-direction: column; }
         .print-header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
         .print-header img { width: 60px; margin-right: 20px; }
         .print-header div h1 { font-size: 16px; margin: 0; color: black; }
@@ -286,76 +285,75 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
     const getParams = (cell) => {
       const parts = cell.divisionStr.split(" ");
-      return { curso: parts[0], division: parts[1], turno: cell.turno, dia: cell.dia, horaId: cell.horaIdentifier };
+      return { curso: parts[0], division: parts[1], turno: cell.turno, dia: cell.dia, horaId: cell.horaIdentifier, divisionStr: cell.divisionStr };
     };
 
     const srcP = getParams(source);
     const tgtP = getParams(target);
 
-    // Helper para encontrar índice del item
-    const findItemIdx = (params) => newData.findIndex(d => 
-      String(d.curso) === String(params.curso) && 
-      String(d.division) === String(params.division) &&
-      d.turno && d.turno.toUpperCase().includes(params.turno.toUpperCase()) &&
-      d.cargo === "DOCENTE"
-    );
+    // Find the actual items in the cells using the same logic as renderGrid
+    const srcItem = getCellContent(newData, srcP.turno, srcP.dia, srcP.horaId, srcP.divisionStr);
+    const tgtItem = getCellContent(newData, tgtP.turno, tgtP.dia, tgtP.horaId, tgtP.divisionStr);
 
-    const srcIdx = findItemIdx(srcP);
-    const tgtIdx = findItemIdx(tgtP);
-
-    // Helper para extraer y remover horario
-    const extractHour = (item, params) => {
-      if (!item || !item.horarios) return null;
-      const hIdx = item.horarios.findIndex(h => h.dia === params.dia);
-      if (hIdx === -1) return null;
-      
-      const hObj = item.horarios[hIdx];
-      const val = typeof params.horaId === 'number' 
-        ? hObj.horas.find(x => x.startsWith(`${params.horaId}°`)) 
-        : hObj.horas.find(x => x.includes(params.horaId));
-      
-      if (!val) return null;
-
-      // Remover
-      hObj.horas = hObj.horas.filter(x => x !== val);
-      if (hObj.horas.length === 0) item.horarios.splice(hIdx, 1);
-      
-      return val;
-    };
-
-    // Helper para agregar horario
-    const insertHour = (item, params, val) => {
-      // Actualizar prefijo de hora si es numérico (ej: mover de 1° a 2°)
-      let newVal = val;
-      if (typeof params.horaId === 'number') {
-        newVal = val.replace(/^\d+°/, `${params.horaId}°`);
-      }
-
-      let hObj = item.horarios.find(h => h.dia === params.dia);
-      if (!hObj) {
-        hObj = { dia: params.dia, horas: [] };
-        item.horarios.push(hObj);
-      }
-      hObj.horas.push(newVal);
-    };
-
-    const srcVal = srcIdx !== -1 ? extractHour(newData[srcIdx], srcP) : null;
-    const tgtVal = tgtIdx !== -1 ? extractHour(newData[tgtIdx], tgtP) : null;
-
-    if (srcVal) {
-      // Mover item fuente a destino (actualiza curso/división del item completo)
-      const item = newData[srcIdx];
-      item.curso = tgtP.curso;
-      item.division = tgtP.division;
-      insertHour(item, tgtP, srcVal);
+    // If we are swapping two empty cells, do nothing.
+    if (!srcItem && !tgtItem) {
+      return;
     }
-    
-    if (tgtVal) {
-      // Mover item destino a fuente
-      const item = newData[tgtIdx];
-      item.curso = srcP.curso;
-      item.division = srcP.division;
-      insertHour(item, srcP, tgtVal);
+
+    // Helper to find the full hour string (e.g., "1° 07:30 A 08.10") from an identifier
+    const getHourStringFromId = (params) => {
+      if (typeof params.horaId !== 'number') return params.horaId; // e.g., "EDUCACIÓN FÍSICA"
+      const labels = params.turno.toUpperCase().includes("MAÑANA") ? horariosManana : horariosTarde;
+      const index = params.horaId - 1;
+      return labels[index] || `${params.horaId}°`; // Fallback
+    };
+
+    // 1. Remove old time slots from items
+    if (srcItem) {
+      const horarioDelDia = srcItem.horarios.find(h => h.dia === srcP.dia);
+      if (horarioDelDia) {
+        if (typeof srcP.horaId === 'number') {
+            horarioDelDia.horas = horarioDelDia.horas.filter(h => !h.startsWith(`${srcP.horaId}°`));
+        } else { // It's "EDUCACIÓN FÍSICA"
+            horarioDelDia.horas = horarioDelDia.horas.filter(h => !h.includes(srcP.horaId));
+        }
+        // If the day has no more hours, remove the day object
+        if (horarioDelDia.horas.length === 0) {
+          srcItem.horarios = srcItem.horarios.filter(h => h.dia !== srcP.dia);
+        }
+      }
+    }
+    if (tgtItem) {
+      const horarioDelDia = tgtItem.horarios.find(h => h.dia === tgtP.dia);
+      if (horarioDelDia) {
+        if (typeof tgtP.horaId === 'number') {
+            horarioDelDia.horas = horarioDelDia.horas.filter(h => !h.startsWith(`${tgtP.horaId}°`));
+        } else { // It's "EDUCACIÓN FÍSICA"
+            horarioDelDia.horas = horarioDelDia.horas.filter(h => !h.includes(tgtP.horaId));
+        }
+        // If the day has no more hours, remove the day object
+        if (horarioDelDia.horas.length === 0) {
+          tgtItem.horarios = tgtItem.horarios.filter(h => h.dia !== tgtP.dia);
+        }
+      }
+    }
+
+    // 2. Add new time slots to items
+    if (srcItem) { // Move source item to target's slot
+      let horarioDelDia = srcItem.horarios.find(h => h.dia === tgtP.dia);
+      if (!horarioDelDia) {
+        horarioDelDia = { dia: tgtP.dia, horas: [] };
+        srcItem.horarios.push(horarioDelDia);
+      }
+      horarioDelDia.horas.push(getHourStringFromId(tgtP));
+    }
+    if (tgtItem) { // Move target item to source's slot
+      let horarioDelDia = tgtItem.horarios.find(h => h.dia === srcP.dia);
+      if (!horarioDelDia) {
+        horarioDelDia = { dia: srcP.dia, horas: [] };
+        tgtItem.horarios.push(horarioDelDia);
+      }
+      horarioDelDia.horas.push(getHourStringFromId(srcP));
     }
 
     setSimulationData(newData);
@@ -557,7 +555,14 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
         {turnosToShow.map(turno => (
           <div key={turno}>
             {diasToShow.map(dia => (
-              <div key={`${turno}-${dia}`}>
+              <div key={`${turno}-${dia}`} className="print-page-container">
+                <div className="print-header">
+                  <img src={logo} alt="Logo" />
+                  <div>
+                    <h1>Escuela Secundaria Gobernador Garmendia</h1>
+                    <p>CUE: 9001717/00 - Av. de la Soja S/N°</p>
+                  </div>
+                </div>
                 {renderGrid(turno, dia, dataset, isInteractive)}
               </div>
             ))}
