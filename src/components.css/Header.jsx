@@ -31,7 +31,7 @@ const Header = ({ user, navigate, onLoginClick, onLogout }) => {
       <div className="header-left">
         <img src={logo} alt="Logo" className="header-logo" />
         <div className="header-text">
-          <h1>Escula Secundaria Gobernador Garmendia</h1>
+          <h1>Escuela Secundaria Gobernador Garmendia</h1>
           <p>CUE: 9001717/00 - Av. de la Soja S/N° - Gobernador Garmendia - Burruyacu</p>
           <p> escuelasecgarmendia@gmail.com</p>
         </div>

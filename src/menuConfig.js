@@ -62,6 +62,7 @@ export const menuConfig = [
           { name: "CRONOGRAMA MESAS DE EXAMEN", action: "CronogramaMesasExamen" },
           { name: "DATOS DE ORGANIGRAMA", action: "DatosOrganigrama" },
           { name: "SIMULADOR DE HORARIOS", action: "SimuladorHorarios" },
+          { name: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
         ],
       },
       {
@@ -72,7 +73,6 @@ export const menuConfig = [
         subItems: [
           { name: "REGISTRO DE ACTAS", action: "RegistroDocentesActas" },
           { name: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
-          { name: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
           { name: "CONSTANCIAS DE SERVICIOS", action: "RegistroDocentesConstanciasServicios" },
           { name: "CONSTANCIAS DE AFECTACIONES", action: "RegistroDocentesConstanciasAfectaciones" },
           { name: "CONSTANCIAS DE PERMANENCIA", action: "RegistroDocentesConstanciasPermanencia" },
