@@ -23,7 +23,6 @@ const PersonalInstitucional = ({ goBack, goHome, navigate }) => {
     { titulo: "DATOS DE ORGANIGRAMA", action: "DatosOrganigrama" },
     { titulo: "SIMULADOR DE HORARIOS", action: "SimuladorHorarios" },
     { titulo: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
-    { titulo: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
   ];
 
   return (

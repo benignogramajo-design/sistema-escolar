@@ -97,7 +97,6 @@ import RegistroDocentesConstancias from "./pages.css/submenu/RegistroDocentesCon
 import RegistroDocentesConstanciasAfectaciones from "./pages.css/submenu/RegistroDocentesConstanciasAfectaciones";
 import RegistroDocentesConstanciasPermanencia from "./pages.css/submenu/RegistroDocentesConstanciasPermanencia";
 import RegistroDocentesConstanciasServicios from "./pages.css/submenu/RegistroDocentesConstanciasServicios";
-import RegistroDocentesLicencias from "./pages.css/submenu/RegistroDocentesLicencias";
 import RegistroDocentesRegimenLicencias from "./pages.css/submenu/RegistroDocentesRegimenLicencias";
 import SalidaEducativa from "./pages.css/submenu/SalidaEducativa";
 import SeguimientoPorAlumno from "./pages.css/submenu/SeguimientoPorAlumno";
@@ -115,6 +114,7 @@ import AsignarResponsableCurso from "./pages.css/submenu/AsignarResponsableCurso
 import CronogramaMesasExamen from "./pages.css/submenu/CronogramaMesasExamen";
 import DatosOrganigrama from "./pages.css/submenu/DatosOrganigrama";
 import Organigrama from "./pages.css/submenu/Organigrama";
+import SimuladorHorarios from "./pages.css/submenu/SimuladorHorarios";
 // ... importa el resto de tus componentes
 
 export const navigationMap = {
@@ -162,7 +162,6 @@ export const navigationMap = {
   DocentesHorariosDia: { component: DocentesHorariosDia },
   DocentesHorariosImprimir: { component: DocentesHorariosImprimir },
   RegistroDocentesActas: { component: RegistroDocentesActas },
-  RegistroDocentesLicencias: { component: RegistroDocentesLicencias },
   RegistroDocentesRegimenLicencias: { component: RegistroDocentesRegimenLicencias },
   RegistroDocentesConstanciasServicios: { component: RegistroDocentesConstanciasServicios },
   RegistroDocentesConstanciasAfectaciones: { component: RegistroDocentesConstanciasAfectaciones },
@@ -240,4 +239,5 @@ export const navigationMap = {
   CronogramaMesasExamen: { component: CronogramaMesasExamen },
   DatosOrganigrama: { component: DatosOrganigrama },
   Organigrama: { component: Organigrama },
+  SimuladorHorarios: { component: SimuladorHorarios },
 };

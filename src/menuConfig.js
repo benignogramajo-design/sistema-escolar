@@ -63,7 +63,6 @@ export const menuConfig = [
           { name: "DATOS DE ORGANIGRAMA", action: "DatosOrganigrama" },
           { name: "SIMULADOR DE HORARIOS", action: "SimuladorHorarios" },
           { name: "RÉGIMEN DE LICENCIAS", action: "RegistroDocentesRegimenLicencias" },
-          { name: "REGISTRO DE LICENCIAS", action: "RegistroDocentesLicencias" },
         ],
       },
       {
