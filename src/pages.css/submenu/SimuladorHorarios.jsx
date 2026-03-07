@@ -32,8 +32,17 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
   // --- Constantes ---
   const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-  // Definimos 10 filas genéricas como pide el requerimiento (10 filas por tabla)
-  const filasHorario = Array.from({ length: 10 }, (_, i) => i + 1); 
+  
+  const horariosManana = [
+    "1° 07:30 A 08.10", "2° 08:10 A 08:50", "3° 08:55 A 09:35", "4° 09:35 A 10:15",
+    "5° 10:20 A 11:00", "6° 11:00 A 11:40", "7° 11:40 A 12:20", "8° 12:20 A 13:00",
+    "EDUCACIÓN FÍSICA"
+  ];
+  const horariosTarde = [
+    "1° 13:10 A 13:50", "2° 13:50 A 14:30", "3° 14:35 A 15:15", "4° 15:15 A 15:55",
+    "5° 16:00 A 16:40", "6° 16:40 A 17:20", "7° 17:20 A 18:00", "8° 18:00 A 18:40",
+    "EDUCACIÓN FÍSICA"
+  ];
 
   // --- Carga Inicial ---
   useEffect(() => {
@@ -91,7 +100,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   };
 
   // Obtener contenido de una celda
-  const getCellContent = (dataset, turno, dia, horaIndex, divisionStr) => {
+  const getCellContent = (dataset, turno, dia, horaIdentifier, divisionStr) => {
     const [curso, division] = divisionStr.split(" ");
     
     // Buscar en el dataset
@@ -105,13 +114,16 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     if (!item) return null;
 
     // Verificar si tiene horario en este día y hora
-    // horaIndex es 1-based (1 a 10)
     const horario = item.horarios.find(h => h.dia === dia);
     if (!horario) return null;
 
     // Verificamos si la hora está en el array de horas
-    // Asumimos que las horas en DB son "1°...", "2°..."
-    const hasHour = horario.horas.some(h => h.startsWith(`${horaIndex}°`));
+    let hasHour = false;
+    if (typeof horaIdentifier === 'number') {
+      hasHour = horario.horas.some(h => h.startsWith(`${horaIdentifier}°`));
+    } else {
+      hasHour = horario.horas.some(h => h.includes(horaIdentifier));
+    }
     
     if (!hasHour) return null;
 
@@ -195,10 +207,10 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     }
   };
 
-  const handleCellClick = (dataset, turno, dia, horaIndex, divisionStr) => {
+  const handleCellClick = (dataset, turno, dia, horaIdentifier, divisionStr) => {
     if (viewMode !== "NEW") return;
 
-    const cellId = { turno, dia, horaIndex, divisionStr };
+    const cellId = { turno, dia, horaIdentifier, divisionStr };
 
     if (!selectedCell) {
       setSelectedCell(cellId);
@@ -256,24 +268,27 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
     if (filteredColumns.length === 0) return <p>No hay datos para mostrar con los filtros actuales.</p>;
 
+    const timeSlots = turno === "MAÑANA" ? horariosManana : horariosTarde;
+
     return (
       <div style={{ overflowX: 'auto', marginBottom: '20px', border: '1px solid #ccc' }}>
         <h4 style={{ backgroundColor: '#333', color: 'white', padding: '5px', margin: 0 }}>{dia} - {turno}</h4>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ backgroundColor: "#f0f0f0" }}>
-              <th style={{ width: '40px', border: '1px solid #999' }}>Hora</th>
+              <th style={{ width: '120px', border: '1px solid #999' }}>horarios/Cursos</th>
               {filteredColumns.map(col => (
                 <th key={col} style={{ border: '1px solid #999', padding: '5px' }}>{col}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filasHorario.map(hora => {
+            {timeSlots.map((slotLabel, index) => {
+              const horaIdentifier = index < 8 ? index + 1 : "EDUCACIÓN FÍSICA";
               // Detección de colisiones en la fila
               const rowDocents = [];
               filteredColumns.forEach(col => {
-                const item = getCellContent(dataset, turno, dia, hora, col);
+                const item = getCellContent(dataset, turno, dia, horaIdentifier, col);
                 if (item) {
                   const docStr = getDocenteString(item);
                   if (docStr) rowDocents.push(docStr);
@@ -284,10 +299,10 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
               const duplicates = rowDocents.filter((item, index) => rowDocents.indexOf(item) !== index);
 
               return (
-                <tr key={hora}>
-                  <td style={{ fontWeight: 'bold', textAlign: 'center', border: '1px solid #999' }}>{hora}°</td>
+                <tr key={index}>
+                  <td style={{ fontWeight: 'bold', textAlign: 'center', border: '1px solid #999', fontSize: '10px' }}>{slotLabel}</td>
                   {filteredColumns.map(col => {
-                    const item = getCellContent(dataset, turno, dia, hora, col);
+                    const item = getCellContent(dataset, turno, dia, horaIdentifier, col);
                     const docStr = item ? getDocenteString(item) : "";
                     const asigStr = item ? item.asignatura : "";
                     
@@ -309,7 +324,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                     }
 
                     // Selección en modo edición
-                    if (selectedCell && selectedCell.turno === turno && selectedCell.dia === dia && selectedCell.horaIndex === hora && selectedCell.divisionStr === col) {
+                    if (selectedCell && selectedCell.turno === turno && selectedCell.dia === dia && selectedCell.horaIdentifier === horaIdentifier && selectedCell.divisionStr === col) {
                       bgColor = "yellow";
                       textShadow = "0 0 5px black";
                     }
@@ -328,7 +343,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                           textAlign: 'center',
                           cursor: isInteractive ? 'pointer' : 'default'
                         }}
-                        onClick={() => isInteractive && handleCellClick(dataset, turno, dia, hora, col)}
+                        onClick={() => isInteractive && handleCellClick(dataset, turno, dia, horaIdentifier, col)}
                       >
                         {item && (
                           <>
