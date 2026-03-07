@@ -61,6 +61,7 @@ export const menuConfig = [
           { name: "LICENCIAS", action: "Licencias" },
           { name: "CRONOGRAMA MESAS DE EXAMEN", action: "CronogramaMesasExamen" },
           { name: "DATOS DE ORGANIGRAMA", action: "DatosOrganigrama" },
+          { name: "SIMULADOR DE HORARIOS", action: "SimuladorHorarios" },
         ],
       },
       {
