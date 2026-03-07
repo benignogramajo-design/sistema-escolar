@@ -154,7 +154,7 @@ const DocentesCodigos = ({ goBack, goHome }) => {
       } catch (e) {}
     }
 
-    if (Array.isArray(p)) {
+    if (Array.isArray(p) && p.length > 0) {
       return p.map((plaza, index) => {
         const plazaText = String(plaza).trim();
         const isRed = plazaText.includes("SIME") || plazaText.includes("D/REC");
