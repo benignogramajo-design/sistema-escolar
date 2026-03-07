@@ -232,7 +232,7 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
 
       {/* --- Tabla --- */}
       <div className="contenido-submenu" style={{ width: "98%", maxWidth: "100%", overflowX: 'auto' }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '12px' }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontFamily: 'Arial', fontSize: '11px' }}>
           <thead>
             <tr style={{ backgroundColor: "#333", color: "white" }}>
               <th style={{ padding: "8px", border: "1px solid #ddd" }}>CAPITULO</th>
@@ -393,8 +393,9 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
 
       {/* --- Vista Previa Impresión --- */}
       {showPrint && (
-        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'white', zIndex: 2000, overflowY: 'auto' }}>
-          <div className="print-container" style={{ padding: '40px', maxWidth: '210mm', margin: '0 auto' }}>
+        <div className="print-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#555', zIndex: 2000, overflowY: 'auto' }}>
+          <div className="print-content" style={{ padding: '0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className="print-page">
             
             {/* Encabezado */}
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -452,6 +453,7 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
             </div>
 
           </div>
+          </div>
 
           {/* Controles Flotantes */}
           <div className="no-print" style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', backgroundColor: '#333', padding: '15px', textAlign: 'center' }}>
@@ -460,14 +462,16 @@ const RegistroDocentesRegimenLicencias = ({ goBack, goHome }) => {
           </div>
 
           <style>{`
+            .print-page { background: white; width: 210mm; min-height: 297mm; padding: 20mm; margin: 20px auto; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
             @media print {
               .no-print { display: none !important; }
+              @page { size: A4 portrait; margin: 10mm; }
+              html, body { height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; background: none !important; }
               body * { visibility: hidden; }
               .print-overlay, .print-overlay * { visibility: visible; }
-              .print-overlay { position: absolute; top: 0; left: 0; width: 100%; }
-              body { background-color: white; }
-              .print-container { padding: 0; margin: 0; width: 100%; max-width: none; }
-              @page { size: A4; margin: 20mm; }
+              .print-overlay { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background-color: white !important; height: auto !important; overflow: visible !important; }
+              .print-content { padding: 0 !important; }
+              .print-page { box-shadow: none !important; margin: 0 !important; width: 100% !important; height: auto !important; min-height: 0 !important; }
             }
           `}</style>
         </div>
