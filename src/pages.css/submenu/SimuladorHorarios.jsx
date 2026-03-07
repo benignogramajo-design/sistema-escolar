@@ -506,7 +506,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
           {viewMode === "LIST" && renderSavedList()}
         </>
-      }
+      )}
     </div>
   );
 };
