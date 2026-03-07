@@ -196,6 +196,7 @@ export const menuConfig = [
       { name: "MIS PLANIFICACIONES", action: "MisPlanificaciones" },
       { name: "SALIDA EDUCATIVA", action: "SalidaEducativa" },
       { name: "NOTIFICACIONES / DERIVACIONES", action: "DocentesNotificacionesDerivaciones" },
+      { name: "REGISTRO DE ASISTENCIA DOCENTE", action: "RegistroAsistenciaDocente" },
     ],
   },
   {
