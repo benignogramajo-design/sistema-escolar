@@ -3,8 +3,41 @@ import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
 import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 import { supabase } from "../../components.css/supabaseClient";
+import logo from "../../assets/logos/Logo.png";
+
+const PrintStyles = () => (
+  <style type="text/css">
+    {`
+      .print-header {
+        display: none;
+      }
+      @media print {
+        body.print-simulation-active { background-color: white !important; }
+        body.print-simulation-active .pagina-submenu { background-image: none !important; padding: 0; min-height: 0; overflow: visible; }
+        body.print-simulation-active .navbar, 
+        body.print-simulation-active h2, 
+        body.print-simulation-active div[style*="background-color: rgba(255,255,255,0.9)"],
+        body.print-simulation-active p[style*="color: white"] {
+          display: none !important;
+        }
+        body.print-simulation-active .contenido-submenu { width: 100% !important; max-width: 100% !important; margin: 0; padding: 0; background-color: transparent; box-shadow: none; }
+        .print-page-container { page-break-after: always; padding: 10mm; }
+        body.print-simulation-active .contenido-submenu > div:last-child > .print-page-container:last-child { page-break-after: auto; }
+        .print-header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .print-header img { width: 60px; margin-right: 20px; }
+        .print-header div h1 { font-size: 16px; margin: 0; color: black; }
+        .print-header div p { font-size: 12px; margin: 2px 0; color: black !important; }
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+      }
+    `}
+  </style>
+);
 
 const SimuladorHorarios = ({ goBack, goHome, user }) => {
+  
   // --- Estados de Datos ---
   const [realSchedule, setRealSchedule] = useState([]); // Datos reales de estructura_horario
   const [simulationData, setSimulationData] = useState([]); // Datos en edición
@@ -128,31 +161,33 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     const curso = parts[0];
     const division = parts[1];
     
-    // Buscar en el dataset
-    const item = dataset.find(d => 
+    // 1. Filtrar todos los items (materias) para este curso/división y turno
+    const itemsForCourse = dataset.filter(d => 
       String(d.curso) === String(curso) && 
       String(d.division) === String(division) && 
       d.turno && d.turno.toUpperCase().includes(turno.toUpperCase()) &&
       d.cargo === "DOCENTE" // Solo materias curriculares
     );
 
-    if (!item) return null;
+    if (itemsForCourse.length === 0) return null;
 
-    // Verificar si tiene horario en este día y hora
-    const horario = item.horarios.find(h => h.dia === dia);
-    if (!horario) return null;
+    // 2. De esos items, encontrar el que tiene clase en esta celda de tiempo específica
+    const itemInSlot = itemsForCourse.find(item => {
+      if (!item.horarios || !Array.isArray(item.horarios)) return false;
+      
+      const horarioDelDia = item.horarios.find(h => h.dia === dia);
+      if (!horarioDelDia) return false;
 
-    // Verificamos si la hora está en el array de horas
-    let hasHour = false;
-    if (typeof horaIdentifier === 'number') {
-      hasHour = horario.horas.some(h => h.startsWith(`${horaIdentifier}°`));
-    } else {
-      hasHour = horario.horas.some(h => h.includes(horaIdentifier));
-    }
-    
-    if (!hasHour) return null;
+      let hasHour = false;
+      if (typeof horaIdentifier === 'number') {
+        hasHour = horarioDelDia.horas.some(h => h.startsWith(`${horaIdentifier}°`));
+      } else { // "EDUCACIÓN FÍSICA"
+        hasHour = horarioDelDia.horas.some(h => h.includes(horaIdentifier));
+      }
+      return hasHour;
+    });
 
-    return item;
+    return itemInSlot || null; // Retorna el item encontrado o null
   };
 
   // Formatear texto del docente según estado
@@ -336,6 +371,18 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   const handleEditSimulation = (sim) => {
     setSimulationData(sim.data); // Cargar datos guardados
     setViewMode("NEW");
+  };
+
+  const handlePrintSimulation = (sim) => {
+    setSimulationData(sim.data);
+    setViewMode("NEW"); // Re-utilizamos la vista de edición para renderizar las tablas a imprimir
+    
+    // Esperamos un momento para que React actualice el DOM
+    setTimeout(() => {
+        document.body.classList.add('print-simulation-active');
+        window.print();
+        document.body.classList.remove('print-simulation-active');
+    }, 500);
   };
 
   // --- Renderizado de Grillas ---
@@ -549,10 +596,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                 <button onClick={() => handleEditSimulation(sim)} style={{ marginRight: '5px', cursor: 'pointer' }}>EDITAR</button>
                 <button onClick={() => handleDeleteSimulation(sim.id)} style={{ marginRight: '5px', cursor: 'pointer', color: 'red' }}>ELIMINAR</button>
                 <button onClick={() => {
-                   // Imprimir simple: Cargar datos en vista y abrir print
-                   setSimulationData(sim.data);
-                   setViewMode("NEW");
-                   setTimeout(() => window.print(), 500);
+                   handlePrintSimulation(sim);
                 }} style={{ cursor: 'pointer' }}>IMPRIMIR</button>
               </td>
             </tr>
@@ -564,6 +608,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
+      <PrintStyles />
       <NavBar goBack={goBack} goHome={goHome} />
       <h2 style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', padding: '10px', borderRadius: '5px' }}>
         {viewMode === "MAIN" && "SIMULADOR DE HORARIOS"}
