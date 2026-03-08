@@ -162,14 +162,21 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   // --- Helpers para formateo de texto en impresión ---
   const formatDocente = (nombre) => {
     if (!nombre || nombre === "VACANTE" || nombre === "---") return nombre;
-    const parts = nombre.split(",");
-    if (parts.length > 1) {
-        const apellido = parts[0].trim();
-        const nombres = parts[1].trim().split(" ");
-        // "Apellido, PrimerNombre"
-        return `${apellido}, ${nombres[0]}`;
-    }
-    return nombre;
+    
+    // Manejar múltiples docentes separados por " - "
+    return nombre.split(" - ").map(d => {
+      const parts = d.split(",");
+      if (parts.length > 1) {
+          const apellido = parts[0].trim();
+          const rest = parts[1].trim();
+          // Extraer primer nombre y mantener etiqueta (T)/(I)/(S) si existe
+          const restParts = rest.split(" ");
+          const primerNombre = restParts[0];
+          const etiqueta = restParts.length > 1 ? ` ${restParts.slice(1).join(" ")}` : "";
+          return `${apellido}, ${primerNombre}${etiqueta}`;
+      }
+      return d;
+    }).join(" - ");
   };
 
   const formatAsignatura = (asig) => {
@@ -278,34 +285,31 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   // Formatear texto del docente según estado
   const getDocenteString = (item) => {
     const { estado } = filters;
-    let result = [];
-
+    const parts = [];
     const titular = item.docente_titular;
     const interino = item.docente_interino;
     const suplentes = item.docentes_suplentes || [];
+    const exists = (d) => d && d.nombre && d.nombre !== "---" && d.nombre !== "VACANTE";
 
-    // Función auxiliar para verificar estado
-    const check = (doc) => {
-      if (!doc || doc.nombre === "---" || doc.nombre === "VACANTE") return false;
-      if (estado === "TODOS") return true;
-      if (estado === "ACTIVOS") return doc.estado === "ACTIVO";
-      if (estado === "NO ACTIVOS") return doc.estado === "NO ACTIVO";
-      return false;
-    };
-
-    // Prioridad: Interino > Titular
-    if (check(interino)) result.push(interino.nombre);
-    else if (check(titular)) result.push(titular.nombre);
-
-    // Suplentes
-    suplentes.forEach(sup => {
-      if (check(sup)) result.push(sup.nombre);
-    });
-
-    if (result.length === 0) return "";
-    
-    // Separados por guión intermedio
-    return result.join(" - ");
+    if (estado === "TODOS") {
+        if (exists(titular)) parts.push(`${titular.nombre} (T)`);
+        if (exists(interino)) parts.push(`${interino.nombre} (I)`);
+        suplentes.forEach(s => { if (exists(s)) parts.push(`${s.nombre} (S)`); });
+        if (parts.length === 0) return "VACANTE";
+        return parts.join(" - ");
+    } else if (estado === "ACTIVOS") {
+        if (exists(titular) && titular.estado === "ACTIVO") parts.push(titular.nombre);
+        if (exists(interino) && interino.estado === "ACTIVO") parts.push(interino.nombre);
+        suplentes.forEach(s => { if (exists(s) && s.estado === "ACTIVO") parts.push(s.nombre); });
+        if (parts.length === 0) return "VACANTE";
+        return parts.join(" - ");
+    } else { // NO ACTIVOS
+        if (exists(titular) && titular.estado === "NO ACTIVO") parts.push(titular.nombre);
+        if (exists(interino) && interino.estado === "NO ACTIVO") parts.push(interino.nombre);
+        suplentes.forEach(s => { if (exists(s) && s.estado === "NO ACTIVO") parts.push(s.nombre); });
+        if (parts.length === 0) return "";
+        return parts.join(" - ");
+    }
   };
 
   // Determinar color de fondo por texto

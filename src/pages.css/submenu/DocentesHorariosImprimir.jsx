@@ -128,14 +128,21 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
   // --- Helpers para formateo de texto en impresión ---
   const formatDocente = (nombre) => {
     if (!nombre || nombre === "VACANTE" || nombre === "---") return nombre;
-    const parts = nombre.split(",");
-    if (parts.length > 1) {
-        const apellido = parts[0].trim();
-        const nombres = parts[1].trim().split(" ");
-        // "Apellido, PrimerNombre"
-        return `${apellido}, ${nombres[0]}`;
-    }
-    return nombre;
+    
+    // Manejar múltiples docentes separados por " - "
+    return nombre.split(" - ").map(d => {
+      const parts = d.split(",");
+      if (parts.length > 1) {
+          const apellido = parts[0].trim();
+          const rest = parts[1].trim();
+          // Extraer primer nombre y mantener etiqueta (T)/(I)/(S) si existe
+          const restParts = rest.split(" ");
+          const primerNombre = restParts[0];
+          const etiqueta = restParts.length > 1 ? ` ${restParts.slice(1).join(" ")}` : "";
+          return `${apellido}, ${primerNombre}${etiqueta}`;
+      }
+      return d;
+    }).join(" - ");
   };
 
   const formatAsignatura = (asig) => {
@@ -266,26 +273,36 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
 
     courseData.forEach(item => {
       // Obtener Docente Activo
-      let docenteNombre = "VACANTE";
       const getDocente = () => {
-        if (item.docentes_suplentes && item.docentes_suplentes.length > 0) {
-           if (filters.estado) {
-             const sup = item.docentes_suplentes.find(s => s.estado === filters.estado);
-             if (sup) return sup.nombre;
-           } else {
-             return item.docentes_suplentes[item.docentes_suplentes.length - 1].nombre;
-           }
-        }
-        if (item.docente_interino && item.docente_interino.nombre !== "---") {
-          if (!filters.estado || item.docente_interino.estado === filters.estado) return item.docente_interino.nombre;
-        }
-        if (item.docente_titular && item.docente_titular.nombre !== "---") {
-          if (!filters.estado || item.docente_titular.estado === filters.estado) return item.docente_titular.nombre;
+        const parts = [];
+        const titular = item.docente_titular;
+        const interino = item.docente_interino;
+        const suplentes = item.docentes_suplentes || [];
+        const exists = (d) => d && d.nombre && d.nombre !== "---" && d.nombre !== "VACANTE";
+
+        if (!filters.estado) { // Sin filtro (TODOS)
+             if (exists(titular)) parts.push(`${titular.nombre} (T)`);
+             if (exists(interino)) parts.push(`${interino.nombre} (I)`);
+             suplentes.forEach(s => { if (exists(s)) parts.push(`${s.nombre} (S)`); });
+             if (parts.length === 0) return "VACANTE";
+             return parts.join(" - ");
+        } else if (filters.estado === "ACTIVO") {
+             if (exists(titular) && titular.estado === "ACTIVO") parts.push(titular.nombre);
+             if (exists(interino) && interino.estado === "ACTIVO") parts.push(interino.nombre);
+             suplentes.forEach(s => { if (exists(s) && s.estado === "ACTIVO") parts.push(s.nombre); });
+             if (parts.length === 0) return "VACANTE";
+             return parts.join(" - ");
+        } else { // NO ACTIVO
+             if (exists(titular) && titular.estado === "NO ACTIVO") parts.push(titular.nombre);
+             if (exists(interino) && interino.estado === "NO ACTIVO") parts.push(interino.nombre);
+             suplentes.forEach(s => { if (exists(s) && s.estado === "NO ACTIVO") parts.push(s.nombre); });
+             if (parts.length === 0) return "";
+             return parts.join(" - ");
         }
         return "VACANTE";
       };
 
-      docenteNombre = getDocente();
+      let docenteNombre = getDocente();
       if (docenteNombre === "---") docenteNombre = "VACANTE";
 
       const cellContent = {
