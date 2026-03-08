@@ -262,7 +262,6 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
       border: "1px solid black", 
       padding: "1px", 
       textAlign: "center", 
-      fontSize: "9px", 
       verticalAlign: "middle",
       overflow: "hidden",
       whiteSpace: "normal",
@@ -283,42 +282,56 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
         <tbody>
           {horariosFijos.map((hora, rowIndex) => (
             <tr key={rowIndex} style={{ height: bodyRowHeight }}>
-              <td style={firstColStyle}>{hora}</td>
-              {gridData[rowIndex].map((cell, colIndex) => (
-                <td key={colIndex} style={{ 
-                  ...cellStyle, 
-                  backgroundColor: cell ? "white" : "#e0e0e0", // Gris si vacío
-                  color: (cell && cell.docente === "VACANTE") ? "red" : "black",
-                  fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
-                }}>
-                  {cell ? (
+              <td style={{ ...firstColStyle, fontSize: "10px" }}>{hora}</td>
+              {gridData[rowIndex].map((cell, colIndex) => {
+                const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
+                const docStr = cell ? formatDocente(cell.docente) : "";
+                const textLength = asigStr.length + docStr.length;
+                const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+
+                return (
+                  <td key={colIndex} style={{ 
+                    ...cellStyle, 
+                    fontSize: fontSize,
+                    backgroundColor: cell ? "white" : "#e0e0e0", // Gris si vacío
+                    color: (cell && cell.docente === "VACANTE") ? "red" : "black",
+                    fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
+                  }}>
+                    {cell ? (
                     <>
-                      <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
-                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
+                      <div style={{marginBottom: '2px'}}>{asigStr}</div>
+                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{docStr}</div>
                     </>
                   ) : ""}
                 </td>
-              ))}
+              );})}
             </tr>
           ))}
           {/* Fila Educación Física */}
           <tr style={{ height: bodyRowHeight }}>
-            <td style={firstColStyle}>EDUCACIÓN FÍSICA</td>
-            {gridData[8].map((cell, colIndex) => (
-              <td key={colIndex} style={{ 
-                ...cellStyle, 
-                backgroundColor: cell ? "white" : "#e0e0e0",
-                color: (cell && cell.docente === "VACANTE") ? "red" : "black",
-                fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
-              }}>
-                {cell ? (
+            <td style={{ ...firstColStyle, fontSize: "10px" }}>EDUCACIÓN FÍSICA</td>
+            {gridData[8].map((cell, colIndex) => {
+              const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
+              const docStr = cell ? formatDocente(cell.docente) : "";
+              const textLength = asigStr.length + docStr.length;
+              const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+
+              return (
+                <td key={colIndex} style={{ 
+                  ...cellStyle, 
+                  fontSize: fontSize,
+                  backgroundColor: cell ? "white" : "#e0e0e0",
+                  color: (cell && cell.docente === "VACANTE") ? "red" : "black",
+                  fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
+                }}>
+                  {cell ? (
                   <>
-                    <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
-                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
+                    <div style={{marginBottom: '2px'}}>{asigStr}</div>
+                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{docStr}</div>
                   </>
                 ) : ""}
               </td>
-            ))}
+            );})}
           </tr>
         </tbody>
       </table>

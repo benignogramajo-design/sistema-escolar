@@ -399,7 +399,6 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     const cellStyle = { 
       border: '1px solid #999', 
       padding: '1px', 
-      fontSize: '9px', 
       verticalAlign: 'middle',
       textAlign: 'center',
       overflow: "hidden",
@@ -408,7 +407,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
       lineHeight: "1.1"
     };
 
-    const firstColStyle = { ...cellStyle, width: '2.5cm', minWidth: '2.5cm', maxWidth: '2.5cm', fontWeight: 'bold' };
+    const firstColStyle = { ...cellStyle, width: '2.5cm', minWidth: '2.5cm', maxWidth: '2.5cm', fontWeight: 'bold', fontSize: '10px' };
     const headerStyle = { ...cellStyle, padding: '5px', fontWeight: 'bold', height: headerHeight };
 
     return (
@@ -416,7 +415,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
         <h4 style={{ backgroundColor: '#333', color: 'white', padding: '5px', margin: 0 }}>{dia} - {turno}</h4>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", tableLayout: 'fixed' }}>
           <thead>
-            <tr style={{ backgroundColor: "#f0f0f0" }}>
+            <tr style={{ backgroundColor: "#f0f0f0", height: headerHeight }}>
               <th style={firstColStyle}>HORARIOS / CURSOS</th>
               {displayColumns.map(col => (
                 <th key={col} style={headerStyle}>{col}</th>
@@ -447,6 +446,11 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                     const docStr = item ? getDocenteString(item) : "";
                     const asigStr = item ? item.asignatura : "";
                     
+                    const formattedAsig = formatAsignatura(asigStr);
+                    const formattedDoc = formatDocente(docStr);
+                    const textLength = formattedAsig.length + formattedDoc.length;
+                    const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+                    
                     // Estilos
                     let bgColor = "transparent";
                     let textColor = "black";
@@ -475,6 +479,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                         key={col} 
                         style={{ 
                           ...cellStyle,
+                          fontSize: fontSize,
                           backgroundColor: bgColor, 
                           color: textColor,
                           textShadow: textShadow,
@@ -484,8 +489,8 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                       >
                         {item && (
                           <>
-                            <div style={{ fontWeight: 'bold', fontSize: '9px' }}>{asigStr}</div>
-                            <div style={{ fontSize: '9px' }}>{formatDocente(docStr)}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: 'inherit' }}>{formattedAsig}</div>
+                            <div style={{ fontSize: 'inherit' }}>{formattedDoc}</div>
                           </>
                         )}
                       </td>
@@ -624,8 +629,12 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   );
 
   // Variables para CSS dinámico de impresión
-  const turnoPrint = filters.turno || "MAÑANA";
-  const isTardePrint = turnoPrint === "TARDE";
+  // Determinar si necesitamos hoja Oficio (Legal) basado en el filtro o el contenido
+  const currentData = viewMode === "NEW" ? simulationData : realSchedule;
+  const hasTardeContent = currentData.some(d => d.turno && d.turno.toUpperCase().includes("TARDE"));
+  
+  const isTardePrint = filters.turno === "TARDE" || (!filters.turno && hasTardeContent);
+  
   const pageSizeCSS = isTardePrint ? "Legal landscape" : "A4 landscape";
   const pageWidthCSS = isTardePrint ? "330mm" : "270mm";
 

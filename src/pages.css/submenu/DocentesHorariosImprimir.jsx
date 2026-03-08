@@ -75,7 +75,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
     // Actualizar turno dinámicamente
     let dynamicTurno = item.turno;
     if (item.cargo === "DOCENTE" && item.curso && item.division) {
-      const found = codigos.find(c => c.curso === item.curso && c.division === item.division);
+      const found = codigos.find(c => String(c.curso) === String(item.curso) && String(c.division) === String(item.division));
       if (found) dynamicTurno = found.turno;
     }
     return { ...item, turno: dynamicTurno };
@@ -154,7 +154,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
 
   // --- Lógica de Impresión (Grilla Semanal por Curso) ---
   const renderPrintGrid = (curso, division, turno) => {
-    const isManana = turno === "Mañana";
+    const isManana = (turno || "").toUpperCase().includes("MAÑANA");
     // Si el turno es "Mañana y Tarde" o indefinido, usamos Mañana por defecto para colores, o lógica mixta.
     // Asumiremos el color basado en si contiene "Mañana" o "Tarde".
     const headerColor = isManana ? "#ffe0b2" : "#c8e6c9"; // Naranja claro / Verde claro
@@ -173,7 +173,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
     const gridData = Array(9).fill(null).map(() => Array(5).fill(null));
 
     // Filtrar datos solo para este curso/división
-    const courseData = filteredData.filter(item => item.curso === curso && item.division === division);
+    const courseData = filteredData.filter(item => String(item.curso) === String(curso) && String(item.division) === String(division));
 
     courseData.forEach(item => {
       // Obtener Docente Activo
@@ -231,7 +231,6 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
       border: "1px solid black", 
       padding: "1px", 
       textAlign: "center", 
-      fontSize: "9px", 
       verticalAlign: "middle",
       overflow: "hidden",
       whiteSpace: "normal",
@@ -252,42 +251,56 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
         <tbody>
           {horariosFijos.map((hora, rowIndex) => (
             <tr key={rowIndex} style={{ height: rowHeight }}>
-              <td style={firstColStyle}>{hora}</td>
-              {gridData[rowIndex].map((cell, colIndex) => (
-                <td key={colIndex} style={{ 
-                  ...cellStyle, 
-                  backgroundColor: cell ? "white" : "#e0e0e0", // Gris si vacío
-                  color: (cell && cell.docente === "VACANTE") ? "red" : "black",
-                  fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
-                }}>
-                  {cell ? (
+              <td style={{ ...firstColStyle, fontSize: "10px" }}>{hora}</td>
+              {gridData[rowIndex].map((cell, colIndex) => {
+                const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
+                const docStr = cell ? formatDocente(cell.docente) : "";
+                const textLength = asigStr.length + docStr.length;
+                const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+
+                return (
+                  <td key={colIndex} style={{ 
+                    ...cellStyle, 
+                    fontSize: fontSize,
+                    backgroundColor: cell ? "white" : "#e0e0e0", // Gris si vacío
+                    color: (cell && cell.docente === "VACANTE") ? "red" : "black",
+                    fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
+                  }}>
+                    {cell ? (
                     <>
-                      <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
-                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
+                      <div style={{marginBottom: '2px'}}>{asigStr}</div>
+                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{docStr}</div>
                     </>
                   ) : ""}
                 </td>
-              ))}
+              );})}
             </tr>
           ))}
           {/* Fila Educación Física */}
           <tr style={{ height: rowHeight }}>
-            <td style={firstColStyle}>EDUCACIÓN FÍSICA</td>
-            {gridData[8].map((cell, colIndex) => (
-              <td key={colIndex} style={{ 
-                ...cellStyle, 
-                backgroundColor: cell ? "white" : "#e0e0e0",
-                color: (cell && cell.docente === "VACANTE") ? "red" : "black",
-                fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
-              }}>
-                {cell ? (
+            <td style={{ ...firstColStyle, fontSize: "10px" }}>EDUCACIÓN FÍSICA</td>
+            {gridData[8].map((cell, colIndex) => {
+              const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
+              const docStr = cell ? formatDocente(cell.docente) : "";
+              const textLength = asigStr.length + docStr.length;
+              const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+
+              return (
+                <td key={colIndex} style={{ 
+                  ...cellStyle, 
+                  fontSize: fontSize,
+                  backgroundColor: cell ? "white" : "#e0e0e0",
+                  color: (cell && cell.docente === "VACANTE") ? "red" : "black",
+                  fontWeight: (cell && cell.docente === "VACANTE") ? "bold" : "normal"
+                }}>
+                  {cell ? (
                   <>
-                    <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
-                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
+                    <div style={{marginBottom: '2px'}}>{asigStr}</div>
+                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{docStr}</div>
                   </>
                 ) : ""}
               </td>
-            ))}
+            );})}
           </tr>
         </tbody>
       </table>
@@ -295,14 +308,17 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
   };
 
   // Obtener lista de Cursos/Divisiones únicos para iterar en la impresión
-  const uniqueCursoDivs = [...new Set(filteredData.map(item => JSON.stringify({ curso: item.curso, division: item.division, turno: item.turno })))].map(s => JSON.parse(s));
+  const uniqueCursoDivs = [...new Set(filteredData
+    .filter(item => item.curso && item.division && item.curso !== "---" && item.division !== "---")
+    .map(item => JSON.stringify({ curso: item.curso, division: item.division, turno: item.turno }))
+  )].map(s => JSON.parse(s));
   // Ordenar
   uniqueCursoDivs.sort((a, b) => {
-    const cA = a.curso || "";
-    const cB = b.curso || "";
+    const cA = String(a.curso || "");
+    const cB = String(b.curso || "");
     const compC = cA.localeCompare(cB, undefined, { numeric: true });
     if (compC !== 0) return compC;
-    return (a.division || "").localeCompare(b.division || "");
+    return String(a.division || "").localeCompare(String(b.division || ""));
   });
 
   return (
