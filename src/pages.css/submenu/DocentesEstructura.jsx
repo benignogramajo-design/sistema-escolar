@@ -114,7 +114,7 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   useEffect(() => {
     if (formData.curso) {
       // Filtrar divisiones basadas en el curso seleccionado
-      const divs = [...new Set(codigos.filter(c => c.curso === formData.curso).map(c => c.division))].sort();
+      const divs = [...new Set(codigos.filter(c => String(c.curso) === String(formData.curso)).map(c => c.division))].sort();
       setAvailableDivisiones(divs);
     } else {
       setAvailableDivisiones([]);
@@ -124,14 +124,16 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   useEffect(() => {
     if (formData.cargo === "DOCENTE" && formData.curso && formData.division) {
       // 1. Determinar Turno
-      const found = codigos.find(c => c.curso === formData.curso && c.division === formData.division);
+      const found = codigos.find(c => String(c.curso) === String(formData.curso) && String(c.division) === String(formData.division));
       if (found) {
         setFormData(prev => ({ ...prev, turno: found.turno }));
       }
 
       // 2. Filtrar Asignaturas
-      const asigs = [...new Set(codigos
-        .filter(c => c.curso === formData.curso && c.division === formData.division)
+      const asigs = [...new Set(codigos.filter(c => 
+          String(c.curso) === String(formData.curso) && 
+          String(c.division) === String(formData.division)
+        )
         .map(c => c.asignatura)
       )].sort();
       setAvailableAsignaturas(asigs);
@@ -159,9 +161,9 @@ const DocentesEstructura = ({ goBack, goHome }) => {
     let found = null;
     if (formData.cargo === "DOCENTE" && formData.curso && formData.division && formData.asignatura) {
       found = codigos.find(c => 
-        c.curso === formData.curso && 
-        c.division === formData.division && 
-        c.asignatura === formData.asignatura
+        String(c.curso) === String(formData.curso) && 
+        String(c.division) === String(formData.division) && 
+        String(c.asignatura) === String(formData.asignatura)
       );
     } else if (formData.cargo !== "DOCENTE" && formData.cargo && formData.turno) {
       found = codigos.find(c => c.cargo === formData.cargo && c.turno === formData.turno);
@@ -187,8 +189,8 @@ const DocentesEstructura = ({ goBack, goHome }) => {
   useEffect(() => {
     if (formData.cargo === "DOCENTE" && formData.curso && formData.division) {
       const efCodigo = codigos.find(c =>
-        c.curso === formData.curso &&
-        c.division === formData.division &&
+        String(c.curso) === String(formData.curso) &&
+        String(c.division) === String(formData.division) &&
         (c.asignatura || '').toUpperCase().includes('EDUCACIÓN FÍSICA')
       );
       if (efCodigo && efCodigo.plazas) {
