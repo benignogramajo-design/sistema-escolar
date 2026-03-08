@@ -141,6 +141,95 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
   const formatAsignatura = (asig) => {
       if (!asig) return "";
       let text = asig;
+      const upperAsig = text.toUpperCase().trim();
+
+      const mapping = {
+        "ADMINISTRACIÓN Y TEORÍA DE LAS ORGANIZACIONES I": "ADIM. Y TEORÍA DE LAS ORG. I",
+        "ADMINISTRACIÓN Y TEORÍA DE LAS ORGANIZACIONES II": "ADIM. Y TEORÍA DE LAS ORG. II",
+        "APLICACIONES INFORMÁTICAS": "APLIC. INFORMATICAS",
+        "ARTE Y ESTÉTICA CONTEMPORÁNEA": "ARTE Y EST. CONTEMP.",
+        "BIOLOGÍA I": "BIOLOGÍA I",
+        "BIOLOGÍA II": "BIOLOGÍA II",
+        "BIOLOGÍA III": "BIOLOGÍA III",
+        "BIOLOGÍA IV": "BIOLOGÍA IV",
+        "CONSTRUCCIÓN DE CIUDADANÍA": "CONST. DE LA CIUD.",
+        "DERECHO": "DERECHO",
+        "ECONOMÍA": "ECONOMÍA",
+        "ECONOMÍA SOCIAL": "ECONOMIA SOC.",
+        "EDUCACIÓN ARTÍSTICA I: PLÁSTICA": "PLÁSTICA I",
+        "EDUCACIÓN ARTÍSTICA II: PLÁSTICA": "PLÁSTICA II",
+        "EDUCACIÓN ARTÍSTICA III: PLÁSTICA": "PLÁSTICA III",
+        "EDUCACIÓN FÍSICA I": "EDUC. FÍSICA I",
+        "EDUCACIÓN FÍSICA II": "EDUC. FÍSICA II",
+        "EDUCACIÓN FÍSICA III": "EDUC. FÍSICA III",
+        "EDUCACIÓN FÍSICA IV": "EDUC. FÍSICA IV",
+        "EDUCACIÓN FÍSICA V": "EDUC. FÍSICA V",
+        "EDUCACIÓN FÍSICA VI": "EDUC. FÍSICA VI",
+        "EDUCACIÓN TECNOLÓGICA I": "EDUC. TECNOLÓGICA I",
+        "EDUCACIÓN TECNOLÓGICA II": "EDUC. TECNOLÓGICA II",
+        "FÍSICA I": "FÍSICA I",
+        "FÍSICA II": "FÍSICA II",
+        "FÍSICA III": "FÍSICA III",
+        "FILOSOFÍA": "FILOSOFÍA",
+        "FORMACIÓN ÉTICA I / RELIGIOSA": "FORM. ÉTICA I / RELIG.",
+        "FORMACIÓN ÉTICA II / RELIGIOSA": "FORM. ÉTICA II / RELIG.",
+        "FORMACIÓN ÉTICA III / RELIGIOSA": "FORM. ÉTICA III / RELIG.",
+        "GEOGRAFÍA I": "GEOGRAFÍA I",
+        "GEOGRAFÍA II": "GEOGRAFÍA II",
+        "GEOGRAFÍA III": "GEOGRAFÍA III",
+        "GEOGRAFÍA IV": "GEOGRAFÍA IV",
+        "GEOGRAFÍA V": "GEOGRAFÍA V",
+        "HISTORIA I": "HISTORIA I",
+        "HISTORIA II": "HISTORIA II",
+        "HISTORIA III": "HISTORIA III",
+        "HISTORIA IV": "HISTORIA IV",
+        "HISTORIA V": "HISTORIA V",
+        "INVESTIGACIÓN Y DESARROLLO TECNOLÓGICO": "INVEST. Y DES. TECNOLÓGICO",
+        "LENGUA EXTRANJERA (FRANCÉS) I": "FRANCÉS I",
+        "LENGUA EXTRANJERA (FRANCÉS) II": "FRANCÉS II",
+        "LENGUA EXTRANJERA (FRANCÉS) III": "FRANCÉS III",
+        "LENGUA EXTRANJERA (FRANCÉS) IV": "FRANCÉS IV",
+        "LENGUA EXTRANJERA (FRANCÉS) V": "FRANCÉS V",
+        "LENGUA EXTRANJERA (FRANCÉS) VI": "FRANCÉS VI",
+        "LENGUA EXTRANJERA (INGLÉS) I": "INGLÉS I",
+        "LENGUA EXTRANJERA (INGLÉS) II": "INGLÉS II",
+        "LENGUA EXTRANJERA (INGLÉS) III": "INGLÉS III",
+        "LENGUA EXTRANJERA (INGLÉS) IV": "INGLÉS IV",
+        "LENGUA EXTRANJERA (INGLÉS) V": "INGLÉS V",
+        "LENGUA EXTRANJERA (INGLÉS) VI": "INGLÉS VI",
+        "LENGUA Y LITERATURA I": "LENGUA Y LIT. I",
+        "LENGUA Y LITERATURA II": "LENGUA Y LIT. II",
+        "LENGUA Y LITERATURA III": "LENGUA Y LIT. III",
+        "LENGUA Y LITERATURA IV": "LENGUA Y LIT. IV",
+        "LENGUA Y LITERATURA V": "LENGUA Y LIT. V",
+        "LENGUA Y LITERATURA VI": "LENGUA Y LIT. VI",
+        "MATEMÁTICA I": "MATEMÁTICA I",
+        "MATEMÁTICA II": "MATEMÁTICA II",
+        "MATEMÁTICA III": "MATEMÁTICA III",
+        "MATEMÁTICA IV": "MATEMÁTICA IV",
+        "MATEMÁTICA V": "MATEMÁTICA V",
+        "MATEMÁTICA VI": "MATEMÁTICA VI",
+        "POLÍTICA Y CIUDADANÍA": "POLITICA Y CIUD.",
+        "PROYECTO TECNOLÓGICO EN INFORMÁTICA": "PROY. TECNOLÓGICO EN INF.",
+        "PROYECTO Y GESTIÓN DE MICROEMPRENDIMIENTO": "PROY. Y GEST. MICROEMP.",
+        "QUÍMICA I": "QUÍMICA I",
+        "QUÍMICA II": "QUÍMICA II",
+        "QUÍMICA III": "QUÍMICA III",
+        "SALUD Y ADOLESCENCIA": "SALUD Y ADOLESC.",
+        "SEGURIDAD Y LEGISLACIÓN EN INFORMÁTICA": "SEG. Y LEGISLACIÓN EN INF.",
+        "SISTEMA DE INFORMACIÓN CONTABLE I": "SIST. DE INF. CONTABLE I",
+        "SISTEMA DE INFORMACIÓN CONTABLE II": "SIST. DE INF. CONTABLE II",
+        "TECNOLOGÍA DE LA CONECTIVIDAD": "TECN. DE LA CONECT.",
+        "TECNOLOGÍA DE LA INFORMACIÓN Y LA COMUNICACIÓN": "T.I.C.",
+        "TECNOLOGÍA DE LOS SISTEMAS INFORMÁTICOS": "TECN. DE LOS SIST. INFORMÁTICOS",
+        "TECNOLOGÍA MULTIMEDIAL": "TECN. MULTIMEDIAL",
+        "TRABAJO Y CIUDADANÍA": "TRABAJO Y CIUD."
+      };
+
+      if (mapping[upperAsig]) {
+        return mapping[upperAsig];
+      }
+
       // Abreviaturas comunes para ahorrar espacio
       text = text.replace(/EDUCACIÓN/gi, "ED.");
       text = text.replace(/FÍSICA/gi, "FÍS.");
@@ -287,7 +376,10 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
                 const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
                 const docStr = cell ? formatDocente(cell.docente) : "";
                 const textLength = asigStr.length + docStr.length;
-                const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+                let fontSize = "12px";
+                if (textLength > 45) fontSize = "9px";
+                else if (textLength > 30) fontSize = "10px";
+                else if (textLength > 15) fontSize = "11px";
 
                 return (
                   <td key={colIndex} style={{ 
@@ -314,7 +406,10 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
               const asigStr = cell ? formatAsignatura(cell.asignatura) : "";
               const docStr = cell ? formatDocente(cell.docente) : "";
               const textLength = asigStr.length + docStr.length;
-              const fontSize = textLength > 40 ? "7px" : (textLength > 25 ? "8px" : "9px");
+              let fontSize = "12px";
+              if (textLength > 45) fontSize = "9px";
+              else if (textLength > 30) fontSize = "10px";
+              else if (textLength > 15) fontSize = "11px";
 
               return (
                 <td key={colIndex} style={{ 
