@@ -125,6 +125,33 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
     });
   };
 
+  // --- Helpers para formateo de texto en impresión ---
+  const formatDocente = (nombre) => {
+    if (!nombre || nombre === "VACANTE" || nombre === "---") return nombre;
+    const parts = nombre.split(",");
+    if (parts.length > 1) {
+        const apellido = parts[0].trim();
+        const nombres = parts[1].trim().split(" ");
+        // "Apellido, PrimerNombre"
+        return `${apellido}, ${nombres[0]}`;
+    }
+    return nombre;
+  };
+
+  const formatAsignatura = (asig) => {
+      if (!asig) return "";
+      let text = asig;
+      // Abreviaturas comunes para ahorrar espacio
+      text = text.replace(/EDUCACIÓN/gi, "ED.");
+      text = text.replace(/FÍSICA/gi, "FÍS.");
+      text = text.replace(/TECNOLÓGICA/gi, "TEC.");
+      text = text.replace(/FORMACIÓN/gi, "FORM.");
+      text = text.replace(/CIUDADANA/gi, "CIUD.");
+      text = text.replace(/CONSTRUCCIÓN/gi, "CONST.");
+      if (text.length > 25) return text.substring(0, 23) + "..";
+      return text;
+  };
+
   // --- Lógica de Impresión (Grilla) ---
   const renderPrintGrid = (diaSeleccionado) => {
     const turnoSeleccionado = filters.turno || "Mañana"; // Default a Mañana si no se selecciona
@@ -228,9 +255,20 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
 
     // Estilos
     const headerColor = isManana ? "#ffe0b2" : "#c8e6c9"; // Naranja claro / Verde claro
-    const cellStyle = { border: "1px solid black", padding: "2px", textAlign: "center", fontSize: "10px", height: "40px", verticalAlign: "middle" };
-    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "18px" };
-    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "120px", fontSize: "12px" };
+    const cellStyle = { 
+      border: "1px solid black", 
+      padding: "1px", 
+      textAlign: "center", 
+      fontSize: "9px", 
+      height: "40px", 
+      verticalAlign: "middle",
+      overflow: "hidden",
+      whiteSpace: "normal",
+      wordWrap: "break-word",
+      lineHeight: "1.1"
+    };
+    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "14px", height: "auto" };
+    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "2.5cm", minWidth: "2.5cm", maxWidth: "2.5cm", fontSize: "10px" };
 
     return (
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
@@ -253,8 +291,8 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
                 }}>
                   {cell ? (
                     <>
-                      <div>{cell.asignatura}</div>
-                      <div>{cell.docente}</div>
+                      <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
+                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
                     </>
                   ) : ""}
                 </td>
@@ -273,8 +311,8 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
               }}>
                 {cell ? (
                   <>
-                    <div>{cell.asignatura}</div>
-                    <div>{cell.docente}</div>
+                    <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
+                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
                   </>
                 ) : ""}
               </td>
@@ -284,6 +322,12 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
       </table>
     );
   };
+
+  // Variables para CSS dinámico de impresión
+  const turnoPrint = filters.turno || "Mañana";
+  const isTardePrint = turnoPrint === "Tarde";
+  const pageSizeCSS = isTardePrint ? "Legal landscape" : "A4 landscape";
+  const pageWidthCSS = isTardePrint ? "330mm" : "270mm"; // Ancho aproximado útil
 
   // --- Renderizado Principal ---
   return (
@@ -407,7 +451,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
           <div className="print-content" style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             
             <div className="print-page">
-              {filters.dia.sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b)).map((dia, index) => (
+              {(filters.dia.length > 0 ? filters.dia : diasSemana).sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b)).map((dia, index) => (
                 <div key={dia} style={{ pageBreakAfter: index < filters.dia.length - 1 ? 'always' : 'auto', marginBottom: '30px' }}>
                   {/* Encabezado */}
                   <div style={{ borderBottom: '2px solid black', marginBottom: '10px', paddingBottom: '5px', color: 'black', textAlign: 'center' }}>
@@ -443,8 +487,8 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
           </div>
           <style>{`
             .print-page {
-              width: 297mm; /* A4 Landscape */
-              min-height: 210mm;
+              width: ${pageWidthCSS};
+              min-height: 190mm;
               padding: 10mm;
               background-color: white;
               box-sizing: border-box;
@@ -473,7 +517,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
               .print-content { display: block !important; padding: 0 !important; }
               .print-page { margin: 0 !important; width: 100% !important; box-shadow: none !important; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
               .print-page:last-child { page-break-after: auto; }
-              @page { size: landscape; margin: 5mm; }
+              @page { size: ${pageSizeCSS}; margin: 5mm; }
             }
           `}</style>
         </div>
