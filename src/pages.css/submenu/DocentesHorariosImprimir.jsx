@@ -125,6 +125,33 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
     });
   };
 
+  // --- Helpers para formateo de texto en impresión ---
+  const formatDocente = (nombre) => {
+    if (!nombre || nombre === "VACANTE" || nombre === "---") return nombre;
+    const parts = nombre.split(",");
+    if (parts.length > 1) {
+        const apellido = parts[0].trim();
+        const nombres = parts[1].trim().split(" ");
+        // "Apellido, PrimerNombre"
+        return `${apellido}, ${nombres[0]}`;
+    }
+    return nombre;
+  };
+
+  const formatAsignatura = (asig) => {
+      if (!asig) return "";
+      let text = asig;
+      // Abreviaturas comunes para ahorrar espacio
+      text = text.replace(/EDUCACIÓN/gi, "ED.");
+      text = text.replace(/FÍSICA/gi, "FÍS.");
+      text = text.replace(/TECNOLÓGICA/gi, "TEC.");
+      text = text.replace(/FORMACIÓN/gi, "FORM.");
+      text = text.replace(/CIUDADANA/gi, "CIUD.");
+      text = text.replace(/CONSTRUCCIÓN/gi, "CONST.");
+      if (text.length > 25) return text.substring(0, 23) + "..";
+      return text;
+  };
+
   // --- Lógica de Impresión (Grilla Semanal por Curso) ---
   const renderPrintGrid = (curso, division, turno) => {
     const isManana = turno === "Mañana";
@@ -197,21 +224,34 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
     });
 
     // Estilos
-    const cellStyle = { border: "1px solid black", padding: "2px", textAlign: "center", fontSize: "10px", height: "40px", verticalAlign: "middle" };
-    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "18px" };
-    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "150px", fontSize: "12px" }; // Fuente 12px para primera columna
+    const headerHeight = '1.5cm';
+    const rowHeight = '1.7cm'; // Ajuste para A4 Landscape
+
+    const cellStyle = { 
+      border: "1px solid black", 
+      padding: "1px", 
+      textAlign: "center", 
+      fontSize: "9px", 
+      verticalAlign: "middle",
+      overflow: "hidden",
+      whiteSpace: "normal",
+      wordWrap: "break-word",
+      lineHeight: "1.1"
+    };
+    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "14px", height: headerHeight };
+    const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "2.5cm", minWidth: "2.5cm", maxWidth: "2.5cm", fontSize: "10px" };
 
     return (
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
         <thead>
-          <tr>
+          <tr style={{ height: headerHeight }}>
             <th style={firstColStyle}>{curso}° {division}</th>
             {diasSemana.map(d => <th key={d} style={headerStyle}>{d.toUpperCase()}</th>)}
           </tr>
         </thead>
         <tbody>
           {horariosFijos.map((hora, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} style={{ height: rowHeight }}>
               <td style={firstColStyle}>{hora}</td>
               {gridData[rowIndex].map((cell, colIndex) => (
                 <td key={colIndex} style={{ 
@@ -222,8 +262,8 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
                 }}>
                   {cell ? (
                     <>
-                      <div>{cell.asignatura}</div>
-                      <div>{cell.docente}</div>
+                      <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
+                      <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
                     </>
                   ) : ""}
                 </td>
@@ -231,7 +271,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
             </tr>
           ))}
           {/* Fila Educación Física */}
-          <tr>
+          <tr style={{ height: rowHeight }}>
             <td style={firstColStyle}>EDUCACIÓN FÍSICA</td>
             {gridData[8].map((cell, colIndex) => (
               <td key={colIndex} style={{ 
@@ -242,8 +282,8 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
               }}>
                 {cell ? (
                   <>
-                    <div>{cell.asignatura}</div>
-                    <div>{cell.docente}</div>
+                    <div style={{marginBottom: '2px'}}>{formatAsignatura(cell.asignatura)}</div>
+                    <div style={{fontWeight: cell.docente === "VACANTE" ? "bold" : "normal"}}>{formatDocente(cell.docente)}</div>
                   </>
                 ) : ""}
               </td>
@@ -450,7 +490,7 @@ const DocentesHorariosImprimir = ({ goBack, goHome }) => {
               .print-content { display: block !important; padding: 0 !important; }
               .print-page { margin: 0 !important; width: 100% !important; box-shadow: none !important; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
               .print-page:last-child { page-break-after: auto; }
-              @page { size: landscape; margin: 5mm; }
+              @page { size: A4 landscape; margin: 5mm; }
             }
           `}</style>
         </div>

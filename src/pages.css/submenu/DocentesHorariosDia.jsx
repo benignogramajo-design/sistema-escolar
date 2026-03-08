@@ -255,19 +255,21 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
 
     // Estilos
     const headerColor = isManana ? "#ffe0b2" : "#c8e6c9"; // Naranja claro / Verde claro
+    const headerHeight = '1.5cm';
+    const bodyRowHeight = isManana ? '1.6cm' : '1.7cm';
+
     const cellStyle = { 
       border: "1px solid black", 
       padding: "1px", 
       textAlign: "center", 
       fontSize: "9px", 
-      height: "40px", 
       verticalAlign: "middle",
       overflow: "hidden",
       whiteSpace: "normal",
       wordWrap: "break-word",
       lineHeight: "1.1"
     };
-    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "14px", height: "auto" };
+    const headerStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", fontSize: "14px", height: headerHeight };
     const firstColStyle = { ...cellStyle, backgroundColor: headerColor, fontWeight: "bold", width: "2.5cm", minWidth: "2.5cm", maxWidth: "2.5cm", fontSize: "10px" };
 
     return (
@@ -280,7 +282,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
         </thead>
         <tbody>
           {horariosFijos.map((hora, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} style={{ height: bodyRowHeight }}>
               <td style={firstColStyle}>{hora}</td>
               {gridData[rowIndex].map((cell, colIndex) => (
                 <td key={colIndex} style={{ 
@@ -300,7 +302,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
             </tr>
           ))}
           {/* Fila Educación Física */}
-          <tr>
+          <tr style={{ height: bodyRowHeight }}>
             <td style={firstColStyle}>EDUCACIÓN FÍSICA</td>
             {gridData[8].map((cell, colIndex) => (
               <td key={colIndex} style={{ 

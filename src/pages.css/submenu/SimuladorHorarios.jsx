@@ -5,36 +5,6 @@ import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 import { supabase } from "../../components.css/supabaseClient";
 import logo from "../../assets/logos/Logo.png";
 
-const PrintStyles = () => (
-  <style type="text/css">
-    {`
-      .print-header {
-        display: none;
-      }
-      @media print {
-        body.print-simulation-active { background-color: white !important; }
-        body.print-simulation-active .pagina-submenu { background-image: none !important; padding: 0; min-height: 0; overflow: visible; }
-        body.print-simulation-active .navbar, 
-        body.print-simulation-active h2, 
-        body.print-simulation-active div[style*="background-color: rgba(255,255,255,0.9)"],
-        body.print-simulation-active p[style*="color: white"] {
-          display: none !important;
-        }
-        body.print-simulation-active .contenido-submenu { width: 100% !important; max-width: 100% !important; margin: 0; padding: 0; background-color: transparent; box-shadow: none; }
-        .print-page-container { page-break-after: always; padding: 5mm; width: 100%; min-height: 95vh; box-sizing: border-box; display: flex; flex-direction: column; }
-        .print-header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .print-header img { width: 60px; margin-right: 20px; }
-        .print-header div h1 { font-size: 16px; margin: 0; color: black; }
-        .print-header div p { font-size: 12px; margin: 2px 0; color: black !important; }
-        @page {
-          size: A4 landscape;
-          margin: 0;
-        }
-      }
-    `}
-  </style>
-);
-
 const SimuladorHorarios = ({ goBack, goHome, user }) => {
   
   // --- Estados de Datos ---
@@ -187,6 +157,33 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     });
 
     return itemInSlot || null; // Retorna el item encontrado o null
+  };
+
+  // --- Helpers para formateo de texto en impresión ---
+  const formatDocente = (nombre) => {
+    if (!nombre || nombre === "VACANTE" || nombre === "---") return nombre;
+    const parts = nombre.split(",");
+    if (parts.length > 1) {
+        const apellido = parts[0].trim();
+        const nombres = parts[1].trim().split(" ");
+        // "Apellido, PrimerNombre"
+        return `${apellido}, ${nombres[0]}`;
+    }
+    return nombre;
+  };
+
+  const formatAsignatura = (asig) => {
+      if (!asig) return "";
+      let text = asig;
+      // Abreviaturas comunes para ahorrar espacio
+      text = text.replace(/EDUCACIÓN/gi, "ED.");
+      text = text.replace(/FÍSICA/gi, "FÍS.");
+      text = text.replace(/TECNOLÓGICA/gi, "TEC.");
+      text = text.replace(/FORMACIÓN/gi, "FORM.");
+      text = text.replace(/CIUDADANA/gi, "CIUD.");
+      text = text.replace(/CONSTRUCCIÓN/gi, "CONST.");
+      if (text.length > 25) return text.substring(0, 23) + "..";
+      return text;
   };
 
   // Formatear texto del docente según estado
@@ -395,15 +392,34 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
     const timeSlots = turno === "MAÑANA" ? horariosManana : horariosTarde;
 
+    // Estilos de impresión
+    const headerHeight = '1.5cm';
+    const bodyRowHeight = turno === "MAÑANA" ? '1.6cm' : '1.7cm';
+    
+    const cellStyle = { 
+      border: '1px solid #999', 
+      padding: '1px', 
+      fontSize: '9px', 
+      verticalAlign: 'middle',
+      textAlign: 'center',
+      overflow: "hidden",
+      whiteSpace: "normal",
+      wordWrap: "break-word",
+      lineHeight: "1.1"
+    };
+
+    const firstColStyle = { ...cellStyle, width: '2.5cm', minWidth: '2.5cm', maxWidth: '2.5cm', fontWeight: 'bold' };
+    const headerStyle = { ...cellStyle, padding: '5px', fontWeight: 'bold', height: headerHeight };
+
     return (
       <div style={{ overflowX: 'auto', marginBottom: '20px', border: '1px solid #ccc' }}>
         <h4 style={{ backgroundColor: '#333', color: 'white', padding: '5px', margin: 0 }}>{dia} - {turno}</h4>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10px", tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ backgroundColor: "#f0f0f0" }}>
-              <th style={{ width: '120px', border: '1px solid #999' }}>HORARIOS / CURSOS</th>
+              <th style={firstColStyle}>HORARIOS / CURSOS</th>
               {displayColumns.map(col => (
-                <th key={col} style={{ border: '1px solid #999', padding: '5px' }}>{col}</th>
+                <th key={col} style={headerStyle}>{col}</th>
               ))}
             </tr>
           </thead>
@@ -424,8 +440,8 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
               const duplicates = rowDocents.filter((item, index) => rowDocents.indexOf(item) !== index);
 
               return (
-                <tr key={index}>
-                  <td style={{ fontWeight: 'bold', textAlign: 'center', border: '1px solid #999', fontSize: '10px' }}>{slotLabel}</td>
+                <tr key={index} style={{ height: bodyRowHeight }}>
+                  <td style={firstColStyle}>{slotLabel}</td>
                   {displayColumns.map(col => {
                     const item = getCellContent(dataset, turno, dia, horaIdentifier, col);
                     const docStr = item ? getDocenteString(item) : "";
@@ -458,14 +474,10 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                       <td 
                         key={col} 
                         style={{ 
-                          border: '1px solid #999', 
-                          padding: '2px', 
+                          ...cellStyle,
                           backgroundColor: bgColor, 
                           color: textColor,
                           textShadow: textShadow,
-                          height: '40px',
-                          verticalAlign: 'middle',
-                          textAlign: 'center',
                           cursor: isInteractive ? 'pointer' : 'default'
                         }}
                         onClick={() => isInteractive && handleCellClick(dataset, turno, dia, horaIdentifier, col)}
@@ -473,7 +485,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                         {item && (
                           <>
                             <div style={{ fontWeight: 'bold', fontSize: '9px' }}>{asigStr}</div>
-                            <div style={{ fontSize: '9px' }}>{docStr}</div>
+                            <div style={{ fontSize: '9px' }}>{formatDocente(docStr)}</div>
                           </>
                         )}
                       </td>
@@ -611,9 +623,14 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
     </div>
   );
 
+  // Variables para CSS dinámico de impresión
+  const turnoPrint = filters.turno || "MAÑANA";
+  const isTardePrint = turnoPrint === "TARDE";
+  const pageSizeCSS = isTardePrint ? "Legal landscape" : "A4 landscape";
+  const pageWidthCSS = isTardePrint ? "330mm" : "270mm";
+
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
-      <PrintStyles />
       <NavBar goBack={goBack} goHome={goHome} />
       <h2 style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', padding: '10px', borderRadius: '5px' }}>
         {viewMode === "MAIN" && "SIMULADOR DE HORARIOS"}
@@ -645,6 +662,36 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
           {viewMode === "LIST" && renderSavedList()}
         </>
       )}
+      <style>{`
+        .print-header { display: none; }
+        @media print {
+          body.print-simulation-active { background-color: white !important; }
+          body.print-simulation-active .pagina-submenu { background-image: none !important; padding: 0; min-height: 0; overflow: visible; }
+          body.print-simulation-active .navbar, 
+          body.print-simulation-active h2, 
+          body.print-simulation-active div[style*="background-color: rgba(255,255,255,0.9)"],
+          body.print-simulation-active p[style*="color: white"] {
+            display: none !important;
+          }
+          body.print-simulation-active .contenido-submenu { width: 100% !important; max-width: 100% !important; margin: 0; padding: 0; background-color: transparent; box-shadow: none; }
+          
+          .print-page-container { 
+            page-break-after: always; 
+            padding: 5mm; 
+            width: ${pageWidthCSS}; 
+            min-height: 190mm; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+          }
+          .print-header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+          .print-header img { width: 60px; margin-right: 20px; }
+          .print-header div h1 { font-size: 16px; margin: 0; color: black; }
+          .print-header div p { font-size: 12px; margin: 2px 0; color: black !important; }
+          
+          @page { size: ${pageSizeCSS}; margin: 5mm; }
+        }
+      `}</style>
     </div>
   );
 };
