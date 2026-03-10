@@ -784,7 +784,8 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
           body.print-simulation-active .navbar, 
           body.print-simulation-active h2, 
           body.print-simulation-active .simulador-filtros,
-          body.print-simulation-active p[style*="color: white"] {
+          body.print-simulation-active p[style*="color: white"],
+          body.print-simulation-active .print-header {
             display: none !important;
           }
           body.print-simulation-active .contenido-submenu { width: 100% !important; max-width: 100% !important; margin: 0; padding: 0; background-color: transparent; box-shadow: none; }
