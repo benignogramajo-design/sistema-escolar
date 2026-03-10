@@ -316,13 +316,13 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   const getBackgroundColor = (text) => {
     if (!text) return "transparent";
     const lowerText = text.toLowerCase();
-    
+
     if (filters.texto1 && lowerText.includes(filters.texto1.toLowerCase())) return "#90EE90"; // Verde claro
     if (filters.texto2 && lowerText.includes(filters.texto2.toLowerCase())) return "#87CEEB"; // Celeste
-    if (filters.texto3 && lowerText.includes(filters.texto3.toLowerCase())) return "#FFFFE0"; // Amarillo claro
+    if (filters.texto3 && lowerText.includes(filters.texto3.toLowerCase())) return "yellow"; // Amarillo fuerte
     if (filters.texto4 && lowerText.includes(filters.texto4.toLowerCase())) return "#FFDAB9"; // Naranja claro (Peach)
     if (filters.texto5 && lowerText.includes(filters.texto5.toLowerCase())) return "#FF00FF"; // Fucsia (Magenta)
-    
+
     return "transparent";
   };
 
@@ -487,8 +487,10 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
 
     // Estilos de impresión
     const headerHeight = '1.5cm';
-    const bodyRowHeight = turno === "MAÑANA" ? '1.6cm' : '1.7cm';
-    
+    // A4 landscape height: 210mm. Margin: 5mm. Available: 200mm. Header: 15mm. Body: 185mm. 185/9 rows = ~2.05cm
+    // Legal landscape height: 216mm. Margin: 5mm. Available: 206mm. Header: 15mm. Body: 191mm. 191/9 rows = ~2.12cm
+    const bodyRowHeight = turno === "MAÑANA" ? '2.05cm' : '2.12cm';
+
     const cellStyle = { 
       border: '1px solid #999', 
       padding: '1px', 
@@ -551,6 +553,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                     let bgColor = "transparent";
                     let textColor = "black";
                     let textShadow = "none";
+                    const docDivStyle = { fontSize: 'inherit' };
 
                     // 1. Filtros de Texto
                     const color1 = getBackgroundColor(docStr);
@@ -559,9 +562,15 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                     else if (color2 !== "transparent") bgColor = color2;
 
                     // 2. Colisión (Prioridad sobre filtros de texto)
-                    if (docStr && duplicates.includes(docStr)) {
+                    if (docStr && docStr !== "VACANTE" && duplicates.includes(docStr)) {
                       bgColor = "#FF3333"; // Rojo fluorescente
                       textColor = "black";
+                    }
+
+                    // 3. Estilo para VACANTE
+                    if (docStr === "VACANTE") {
+                      docDivStyle.color = "red";
+                      docDivStyle.fontWeight = "bold";
                     }
 
                     // Selección en modo edición
@@ -576,8 +585,8 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                         style={{ 
                           ...cellStyle,
                           fontSize: fontSize,
-                          backgroundColor: bgColor, 
-                          color: textColor,
+                          backgroundColor: bgColor,
+                          color: textColor, // Color de texto general de la celda
                           textShadow: textShadow,
                           cursor: isInteractive ? 'pointer' : 'default'
                         }}
@@ -586,7 +595,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
                         {item && (
                           <>
                             <div style={{ fontWeight: 'bold', fontSize: 'inherit' }}>{formattedAsig}</div>
-                            <div style={{ fontSize: 'inherit' }}>{formattedDoc}</div>
+                            <div style={docDivStyle}>{formattedDoc}</div>
                           </>
                         )}
                       </td>
@@ -604,7 +613,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
   // --- Renderizado de Vistas ---
 
   const renderFilters = (showSaveCancel = false) => (
-    <div style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+    <div className="simulador-filtros" style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'center' }}>
         
         {/* Filtros Básicos */}
@@ -639,7 +648,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
         {/* Filtros de Texto con Color */}
         <input placeholder="TEXTO 1 (Verde)" value={filters.texto1} onChange={e => setFilters({...filters, texto1: e.target.value})} style={{ padding: '5px', border: '2px solid #90EE90' }} />
         <input placeholder="TEXTO 2 (Celeste)" value={filters.texto2} onChange={e => setFilters({...filters, texto2: e.target.value})} style={{ padding: '5px', border: '2px solid #87CEEB' }} />
-        <input placeholder="TEXTO 3 (Amarillo)" value={filters.texto3} onChange={e => setFilters({...filters, texto3: e.target.value})} style={{ padding: '5px', border: '2px solid #FFFFE0' }} />
+        <input placeholder="TEXTO 3 (Amarillo)" value={filters.texto3} onChange={e => setFilters({...filters, texto3: e.target.value})} style={{ padding: '5px', border: '2px solid yellow' }} />
         <input placeholder="TEXTO 4 (Naranja)" value={filters.texto4} onChange={e => setFilters({...filters, texto4: e.target.value})} style={{ padding: '5px', border: '2px solid #FFDAB9' }} />
         <input placeholder="TEXTO 5 (Fucsia)" value={filters.texto5} onChange={e => setFilters({...filters, texto5: e.target.value})} style={{ padding: '5px', border: '2px solid #FF00FF' }} />
 
@@ -774,7 +783,7 @@ const SimuladorHorarios = ({ goBack, goHome, user }) => {
           body.print-simulation-active .pagina-submenu { background-image: none !important; padding: 0; min-height: 0; overflow: visible; }
           body.print-simulation-active .navbar, 
           body.print-simulation-active h2, 
-          body.print-simulation-active div[style*="background-color: rgba(255,255,255,0.9)"],
+          body.print-simulation-active .simulador-filtros,
           body.print-simulation-active p[style*="color: white"] {
             display: none !important;
           }
