@@ -145,6 +145,24 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     fetchData();
   }, []);
 
+  // --- Lógica del Formulario ---
+  useEffect(() => {
+    if (formData.cargo !== 'DOCENTE') {
+        setFormData(prev => ({
+            ...prev,
+            cursos_data: [{
+                curso: "---",
+                division: "---",
+                turno: "",
+                asignatura: "---",
+                modalidad: "",
+                dias_horarios: [{ dia: "", horario: "" }],
+                plazas: "",
+            }]
+        }));
+    }
+  }, [formData.cargo]);
+
   useEffect(() => {
     if (formData.docente_propuesto_id && formData.docente_propuesto_id !== 'VACANTE ENVIADO A JUNTA') {
       const docente = docentes.find(d => d.id === parseInt(formData.docente_propuesto_id));
@@ -188,11 +206,64 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
 
   // Handler para cambios en cursos múltiples
   const handleCursoChange = (index, field, value) => {
-    const newCursos = [...formData.cursos_data];
-    newCursos[index][field] = value;
-    if (field === 'curso' || field === 'division') {
-        newCursos[index].modalidad = getModalidad(newCursos[index].curso, newCursos[index].division);
+    const newCursos = JSON.parse(JSON.stringify(formData.cursos_data));
+    const cursoItem = newCursos[index];
+    cursoItem[field] = value;
+    
+    if (field === 'curso') {
+        cursoItem.division = "";
+        cursoItem.asignatura = "";
+        cursoItem.turno = "";
+        cursoItem.plazas = "";
+        cursoItem.dias_horarios = [{ dia: '', horario: '' }];
     }
+    if (field === 'division') {
+        cursoItem.asignatura = "";
+        cursoItem.plazas = "";
+        cursoItem.dias_horarios = [{ dia: '', horario: '' }];
+        // Autocomplete turno
+        const match = codigos.find(c => c.curso === cursoItem.curso && c.division === value);
+        cursoItem.turno = match ? match.turno : "";
+    }
+    if (field === 'asignatura') {
+        // Plazas
+        const matchPlazas = codigos.find(c => 
+            c.curso === cursoItem.curso &&
+            c.division === cursoItem.division &&
+            c.asignatura === value
+        );
+        if (matchPlazas && matchPlazas.plazas) {
+            let plazasData = matchPlazas.plazas;
+            if (typeof plazasData === 'string') {
+                try { plazasData = JSON.parse(plazasData); } catch(e) { plazasData = []; }
+            }
+            cursoItem.plazas = Array.isArray(plazasData) ? plazasData.join(' - ') : '';
+        } else {
+            cursoItem.plazas = '';
+        }
+
+        // Horarios
+        const estructuraMatch = estructura.find(e => 
+            e.cargo === 'DOCENTE' &&
+            e.curso === cursoItem.curso &&
+            e.division === cursoItem.division &&
+            e.asignatura === value
+        );
+        if (estructuraMatch && estructuraMatch.horarios) {
+            const horariosStr = estructuraMatch.horarios.map(h => {
+                const horas = (h.horas || []).map(hr => hr.split(' ')[0]).join(', ');
+                return `${h.dia}: ${horas}`;
+            }).join('; ');
+            cursoItem.dias_horarios[0].horario = horariosStr;
+        } else {
+            cursoItem.dias_horarios[0].horario = '';
+        }
+    }
+
+    if (field === 'curso' || field === 'division') {
+        cursoItem.modalidad = getModalidad(cursoItem.curso, cursoItem.division);
+    }
+
     setFormData(prev => ({ ...prev, cursos_data: newCursos }));
   };
 
@@ -201,6 +272,26 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     setSelectedId(null);
     setFormData(createInitialState());
     setShowForm(true);
+  };
+
+  const handleNonDocenteHorarioChange = (dhIndex, field, value) => {
+    const newCursos = JSON.parse(JSON.stringify(formData.cursos_data));
+    newCursos[0].dias_horarios[dhIndex][field] = value;
+    setFormData(prev => ({ ...prev, cursos_data: newCursos }));
+  };
+
+  const addNonDocenteHorario = () => {
+    const newCursos = JSON.parse(JSON.stringify(formData.cursos_data));
+    newCursos[0].dias_horarios.push({ dia: '', horario: '' });
+    setFormData(prev => ({ ...prev, cursos_data: newCursos }));
+  };
+
+  const removeNonDocenteHorario = (dhIndex) => {
+    const newCursos = JSON.parse(JSON.stringify(formData.cursos_data));
+    if (newCursos[0].dias_horarios.length > 1) {
+        newCursos[0].dias_horarios.splice(dhIndex, 1);
+        setFormData(prev => ({ ...prev, cursos_data: newCursos }));
+    }
   };
 
   const handleEdit = (item) => {
@@ -498,6 +589,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
 
   const getUniqueOptions = (field) => [...new Set(seguimientos.map(item => item[field]).filter(Boolean))].sort();
 
+  const uniqueCursos = [...new Set(codigos.map(c => c.curso).filter(Boolean))].sort();
+
   // Lógica para documentación adjunta
   const getDocumentationOptions = () => {
     const { causal, cursos_data } = formData;
@@ -635,28 +728,68 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
               <label>FECHA OFRECIMIENTO: <input type="date" name="fecha_ofrecimiento" value={formData.fecha_ofrecimiento || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
               <label>FECHA DESIGNACIÓN: <input type="date" name="fecha_designacion" value={formData.fecha_designacion || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
 
-              <label>CARGO: <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%' }}><option value="">Seleccione...</option>{cargosList.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
-              <label>DOCENTE DUEÑO: <select name="docente_dueno_id" value={formData.docente_dueno_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="SIN DOCENTES">SIN DOCENTES</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label style={{ gridColumn: '1 / -1' }}>CARGO: <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%' }}><option value="">Seleccione...</option>{cargosList.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
+              <label>DOCENTE DUEÑO: <select name="docente_dueno_id" value={formData.docente_dueno_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="SIN DOCENTES">SIN DOCENTES</option>{docentes.map(d => <option key={d.id} value={d.id}>{`${d.apellido}, ${d.nombre}`}</option>)}</select></label>
               <label>CARÁCTER DUEÑO: <select name="caracter_dueno" value={formData.caracter_dueno} onChange={handleInputChange} style={{ width: '100%' }}><option value="TITULAR">TITULAR</option><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
-              <label>DOCENTE PROPUESTO: <select name="docente_propuesto_id" value={formData.docente_propuesto_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="VACANTE ENVIADO A JUNTA">VACANTE ENVIADO A JUNTA</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label>DOCENTE PROPUESTO: <select name="docente_propuesto_id" value={formData.docente_propuesto_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="VACANTE ENVIADO A JUNTA">VACANTE ENVIADO A JUNTA</option>{docentes.map(d => <option key={d.id} value={d.id}>{`${d.apellido}, ${d.nombre}`}</option>)}</select></label>
               <label>CARÁCTER PROPUESTO: <select name="caracter_propuesto" value={formData.caracter_propuesto} onChange={handleInputChange} style={{ width: '100%' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
 
-              {formData.cursos_data.map((cursoItem, idx) => (
-                  <div key={idx} style={{ gridColumn: '1 / -1', border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                          <label>CURSO: <input value={cursoItem.curso} onChange={e => handleCursoChange(idx, 'curso', e.target.value)} style={{ width: '100%' }} /></label>
-                          <label>DIVISIÓN: <input value={cursoItem.division} onChange={e => handleCursoChange(idx, 'division', e.target.value)} style={{ width: '100%' }} /></label>
-                          <label>TURNO: <input value={cursoItem.turno} onChange={e => handleCursoChange(idx, 'turno', e.target.value)} style={{ width: '100%' }} /></label>
-                          <label style={{ gridColumn: '1 / -1' }}>MODALIDAD: <input value={cursoItem.modalidad} readOnly style={{ width: '100%', backgroundColor: '#eee' }} /></label>
-                          <label style={{ gridColumn: '1 / -1' }}>HORARIOS: <input value={cursoItem.dias_horarios[0].horario} onChange={e => {
-                              const newCursos = [...formData.cursos_data];
-                              newCursos[idx].dias_horarios[0].horario = e.target.value;
-                              setFormData(prev => ({...prev, cursos_data: newCursos}));
-                          }} placeholder="Ej: Lun 8:00, Mar 10:00" style={{ width: '100%' }} /></label>
-                          <label>PLAZAS: <input value={cursoItem.plazas} onChange={e => handleCursoChange(idx, 'plazas', e.target.value)} style={{ width: '100%' }} /></label>
+              {formData.cursos_data.map((cursoItem, idx) => {
+                  const isDocente = formData.cargo === 'DOCENTE';
+                  const availableDivisions = isDocente && cursoItem.curso 
+                      ? [...new Set(codigos.filter(c => c.curso === cursoItem.curso).map(c => c.division))].sort()
+                      : [];
+                  const availableAsignaturas = isDocente && cursoItem.curso && cursoItem.division
+                      ? [...new Set(codigos.filter(c => c.curso === cursoItem.curso && c.division === cursoItem.division).map(c => c.asignatura))].sort()
+                      : [];
+
+                  return (
+                      <div key={idx} style={{ gridColumn: '1 / -1', border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                              <label>CURSO: 
+                                  {isDocente ? (
+                                      <select value={cursoItem.curso} onChange={e => handleCursoChange(idx, 'curso', e.target.value)} style={{ width: '100%' }}>
+                                          <option value="">Seleccione...</option>
+                                          {uniqueCursos.map(c => <option key={c} value={c}>{c}</option>)}
+                                      </select>
+                                  ) : (
+                                      <input value="---" readOnly style={{ width: '100%', backgroundColor: '#eee' }} />
+                                  )}
+                              </label>
+                              <label>DIVISIÓN: 
+                                  {isDocente ? (
+                                      <select value={cursoItem.division} onChange={e => handleCursoChange(idx, 'division', e.target.value)} style={{ width: '100%' }} disabled={!cursoItem.curso}>
+                                          <option value="">Seleccione...</option>
+                                          {availableDivisions.map(d => <option key={d} value={d}>{d}</option>)}
+                                      </select>
+                                  ) : (
+                                      <input value="---" readOnly style={{ width: '100%', backgroundColor: '#eee' }} />
+                                  )}
+                              </label>
+                              <label>TURNO: <input value={cursoItem.turno} readOnly style={{ width: '100%', backgroundColor: '#eee' }} /></label>
+                              
+                              <label style={{ gridColumn: '1 / -1' }}>ASIGNATURA:
+                                  {isDocente ? (
+                                      <select value={cursoItem.asignatura} onChange={e => handleCursoChange(idx, 'asignatura', e.target.value)} style={{ width: '100%' }} disabled={!cursoItem.division}>
+                                          <option value="">Seleccione...</option>
+                                          {availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}
+                                      </select>
+                                  ) : (
+                                      <input value="---" readOnly style={{ width: '100%', backgroundColor: '#eee' }} />
+                                  )}
+                              </label>
+
+                              <label style={{ gridColumn: '1 / -1' }}>MODALIDAD: <input value={cursoItem.modalidad} readOnly style={{ width: '100%', backgroundColor: '#eee' }} /></label>
+                              <label style={{ gridColumn: '1 / -1' }}>HORARIOS: <input value={cursoItem.dias_horarios[0].horario} onChange={e => {
+                                  const newCursos = [...formData.cursos_data];
+                                  newCursos[idx].dias_horarios[0].horario = e.target.value;
+                                  setFormData(prev => ({...prev, cursos_data: newCursos}));
+                              }} placeholder="Ej: Lun 8:00, Mar 10:00" style={{ width: '100%' }} /></label>
+                              <label>PLAZAS: <input value={cursoItem.plazas} onChange={e => handleCursoChange(idx, 'plazas', e.target.value)} style={{ width: '100%' }} /></label>
+                          </div>
                       </div>
-                  </div>
-              ))}
+                  );
+              })}
               {formData.cargo === "DOCENTE" && (
                   <button type="button" onClick={() => setFormData(prev => ({...prev, cursos_data: [...prev.cursos_data, { curso: "", division: "", turno: "", modalidad: "", dias_horarios: [{dia:"", horario:""}], plazas: "" }] }))} style={{ gridColumn: '1 / -1', padding: '5px' }}>+ AGREGAR OTRO CURSO</button>
               )}
@@ -733,14 +866,13 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                       <tr style={{ backgroundColor: "#f2f2f2", color: "black" }}>
                         <th style={{ border: '1px solid black', padding: '5px' }}>F. OFREC.</th>
                         <th style={{ border: '1px solid black', padding: '5px' }}>F. DESIG.</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>CARGO</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>CURSO</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>ASIGNATURA</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>DOCENTE</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>CAUSAL</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>DOCENTE PROPUESTO</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>DESDE</th>
-                        <th style={{ border: '1px solid black', padding: '5px' }}>HASTA</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>F. INGRESO DES</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>CIRCUITO</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>AGRUP.</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>C.U.E.</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>ESCUELA</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>CARACTERISTICAS</th>
+                        <th style={{ border: '1px solid black', padding: '5px' }}>MODALIDAD</th>
                         <th style={{ border: '1px solid black', padding: '5px' }}>ESTADO</th>
                       </tr>
                     </thead>
@@ -748,17 +880,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                       {filteredData.map(item => {
                         const cursoInfo = item.cursos_data && item.cursos_data[0] ? `${item.cursos_data[0].curso} ${item.cursos_data[0].division} - ${item.cursos_data[0].turno}` : `${item.curso || ''} ${item.division || ''} - ${item.turno || ''}`;
                         const asignaturaInfo = item.cursos_data && item.cursos_data[0] ? item.cursos_data[0].asignatura : item.asignatura;
-                        return (<tr key={item.id} style={{ color: getRowColor(item.estado) }}>
+                        return (<tr key={item.id} >
                            <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_ofrecimiento)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_designacion)}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.cargo}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{cursoInfo}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{asignaturaInfo}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.causal}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.desde)}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.hasta)}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.en_direccion_nivel?.value)}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>1</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>17</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>9001717/00</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>Esc. Sec. Gob. Garmendia</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.caracteristicas}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.cursos_data?.[0]?.modalidad}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.estado}</td>
                         </tr>
                       )})}
@@ -824,31 +955,64 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       <div className="contenido-submenu" style={{ width: "98%", maxWidth: "100%", overflowX: 'auto' }}>
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '11px' }}>
           <thead>
-            <tr style={{ backgroundColor: "#333", color: "white" }}>
-              <th>F. OFREC.</th><th>F. DESIG.</th><th>F. SEGUIM.</th><th>CARGO</th><th>CURSO</th>
-              <th>ASIGNATURA</th><th>DOCENTE</th><th>CAUSAL</th><th>DOCENTE PROPUESTO</th><th>DESDE</th><th>HASTA</th><th>ESTADO</th><th>VISTA</th>
+            <tr style={{ backgroundColor: "#333", color: "white", fontSize: '10px' }}>
+              <th>FECHA DE INGRESO DES</th>
+              <th>CIRCUITO</th>
+              <th>AGRUPAMIENTO</th>
+              <th>C.U.E.</th>
+              <th>ESCUELA</th>
+              <th>CARACTERISTICAS</th>
+              <th>MODALIDAD O BACHILLER CON ORIENTACION EN</th>
+              <th>CARÁCTER</th>
+              <th>APELLIDO Y NOMBRE DEL DOCENTE DUEÑO / OBS</th>
+              <th>CAUSAL DE LA VACANTE</th>
+              <th>CARÁCTER</th>
+              <th>APELLIDO Y NOMBRE DEL DOCENTE PROPUESTO / OBS</th>
+              <th>CARGO Y/O MATERIA</th>
+              <th>NRO PLAZAS</th>
+              <th>TURNO</th>
+              <th>HS CAT</th>
+              <th>CURSO DIV</th>
+              <th>DESDE</th>
+              <th>HASTA</th>
+              <th>OBSERVACIONES-DES</th>
+              <th>ESTADO</th>
+              <th>VISTA</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
+              <tr><td colSpan="22" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
             ) : filteredData.length > 0 ? (
               filteredData.map(item => {
-                const cursoInfo = item.cursos_data && item.cursos_data[0] ? `${item.cursos_data[0].curso} ${item.cursos_data[0].division} - ${item.cursos_data[0].turno}` : `${item.curso || ''} ${item.division || ''} - ${item.turno || ''}`;
-                const asignaturaInfo = item.cursos_data && item.cursos_data[0] ? item.cursos_data[0].asignatura : item.asignatura;
+                const cursoData = item.cursos_data?.[0] || {};
+                const cargoMateria = item.cargo === 'DOCENTE' ? (cursoData.asignatura || item.asignatura || '---') : item.cargo;
+                const cursoDiv = item.cargo === 'DOCENTE' ? `${cursoData.curso || item.curso || ''} ${cursoData.division || item.division || ''}`.trim() : '---';
+                const hsCatMatch = codigos.find(c => c.curso === (cursoData.curso || item.curso) && c.division === (cursoData.division || item.division) && c.asignatura === (cursoData.asignatura || item.asignatura));
+                const lastObs = (item.en_direccion_nivel?.observations || []).filter(o => o.text?.trim()).slice(-1)[0];
+
                 return (<tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
-                  <td>{formatDate(item.fecha_ofrecimiento)}</td>
-                  <td>{formatDate(item.fecha_designacion)}</td>
-                  <td>{formatDate(item.fecha_seguimiento)}</td>
-                  <td>{item.cargo}</td>
-                  <td>{cursoInfo}</td>
-                  <td>{asignaturaInfo}</td>
-                  <td>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
+                  <td>{formatDate(item.en_direccion_nivel?.value)}</td>
+                  <td>1</td>
+                  <td>17</td>
+                  <td>9001717/00</td>
+                  <td>Esc. Sec. Gob. Garmendia</td>
+                  <td>{item.caracteristicas}</td>
+                  <td>{cursoData.modalidad || '---'}</td>
+                  <td>{item.caracter_dueno}</td>
+                  <td>{getDocenteName(item.docente_dueno_id)}</td>
                   <td>{item.causal}</td>
-                  <td>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
+                  <td>{item.caracter_propuesto}</td>
+                  <td>{getDocenteName(item.docente_propuesto_id)}</td>
+                  <td>{cargoMateria}</td>
+                  <td>{cursoData.plazas || item.plazas || '---'}</td>
+                  <td>{cursoData.turno || item.turno || '---'}</td>
+                  <td>{hsCatMatch?.carga_horaria || '---'}</td>
+                  <td>{cursoDiv}</td>
                   <td>{formatDate(item.desde)}</td>
                   <td>{formatDate(item.hasta)}</td>
-                  <td>{item.estado}</td>
+                  <td>{lastObs ? `${formatDate(lastObs.date)} - ${lastObs.text}` : '---'}</td>
+                  <td style={{color: getRowColor(item.estado), fontWeight: 'bold'}}>{item.estado}</td>
                   <td onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: false })} style={{ backgroundColor: 'lightblue', color: 'black', fontSize: '10px', padding: '2px 5px', marginRight: '5px' }}>VER</button>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: true })} style={{ backgroundColor: 'yellow', color: 'black', fontSize: '10px', padding: '2px 5px' }}>IMPRIMIR</button>
@@ -856,7 +1020,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 </tr>)
               })
             ) : (
-              <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>No se encontraron registros.</td></tr>
+              <tr><td colSpan="22" style={{ textAlign: 'center', padding: '20px' }}>No se encontraron registros.</td></tr>
             )}
           </tbody>
         </table>
