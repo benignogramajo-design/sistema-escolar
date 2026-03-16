@@ -526,18 +526,61 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
           <tr>
             <td>
               <div style={{ padding: '10px', lineHeight: '1.6' }}>
-                <p><strong>Fecha Ofrecimiento:</strong> {formatDate(data.fecha_ofrecimiento)}</p>
-                <p><strong>Fecha Designación:</strong> {formatDate(data.fecha_designacion)}</p>
+                <p><strong>Características:</strong> {data.caracteristicas}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div><p><strong>Fecha Ofrecimiento:</strong> {formatDate(data.fecha_ofrecimiento)}</p></div>
+                    <div><p><strong>Fecha Designación:</strong> {formatDate(data.fecha_designacion)}</p></div>
+                </div>
+
                 <p><strong>Cargo:</strong> {data.cargo}</p>
-                <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
-                <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
-                <p><strong>Curso/Div - Turno:</strong> {data.cursos_data?.[0]?.curso} {data.cursos_data?.[0]?.division} - {data.cursos_data?.[0]?.turno}</p>
-                <p><strong>Asignatura:</strong> {data.cursos_data?.[0]?.asignatura}</p>
-                <p><strong>Carácter Dueño:</strong> {data.caracter_dueno}</p>
-                <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
-                <p><strong>Plazas:</strong> {data.cursos_data?.[0]?.plazas}</p>
-                <p><strong>Causal:</strong> {data.causal}</p>
-                <p><strong>Desde:</strong> {formatDate(data.desde)} <strong>Hasta:</strong> {formatDate(data.hasta)}</p>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', backgroundColor: '#f9f9f9', padding: '5px', borderRadius: '5px', marginBottom: '5px' }}>
+                    <div>
+                        <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
+                        <p><strong>Carácter:</strong> {data.caracter_dueno}</p>
+                    </div>
+                    <div>
+                        <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
+                        <p><strong>Carácter:</strong> {data.caracter_propuesto}</p>
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '10px', marginBottom: '10px' }}>
+                    <strong>Detalle de Cursos/Asignaturas:</strong>
+                    {data.cursos_data && data.cursos_data.length > 0 ? (
+                        data.cursos_data.map((c, i) => (
+                            <div key={i} style={{ border: '1px solid #ddd', padding: '5px', marginTop: '5px', borderRadius: '4px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '5px' }}>
+                                    <div><strong>Curso:</strong> {c.curso} <strong>Div:</strong> {c.division}</div>
+                                    <div><strong>Turno:</strong> {c.turno}</div>
+                                    <div><strong>Plazas:</strong> {c.plazas}</div>
+                                </div>
+                                <p style={{margin: '5px 0'}}><strong>Asignatura:</strong> {c.asignatura}</p>
+                                <p style={{margin: '5px 0'}}><strong>Modalidad:</strong> {c.modalidad}</p>
+                                <p style={{margin: '5px 0'}}><strong>Horarios:</strong> {Array.isArray(c.dias_horarios) ? c.dias_horarios.map(dh => `${dh.dia} ${dh.horario}`).join('; ') : ''}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No hay cursos registrados.</p>
+                    )}
+                </div>
+
+                <div style={{ backgroundColor: '#f0f0f0', padding: '5px', borderRadius: '5px', marginBottom: '10px' }}>
+                    <p><strong>Causal:</strong> {data.causal}</p>
+                    
+                    {data.causal === "CPF CON RESOLUCION" && (
+                        <p><strong>Resolución:</strong> {data.cpf_resolucion_nro} del {formatDate(data.cpf_resolucion_fecha)}</p>
+                    )}
+                    {data.causal === "CPF CON EXPTE" && (
+                        <p><strong>Expediente:</strong> {data.cpf_expte_nro} / {data.cpf_expte_reparticion} - {data.cpf_expte_letra} - {data.cpf_expte_anio}</p>
+                    )}
+                    {data.causal && data.causal.trim() === "LICENCIA" && (
+                        <p><strong>Detalle Licencia:</strong> {data.causal_licencia_tipo} {data.causal_licencia_tipo === 'OTROS' ? `(${data.causal_licencia_otro})` : ''}</p>
+                    )}
+                    
+                    <p><strong>Vigencia:</strong> Desde {formatDate(data.desde)} Hasta {formatDate(data.hasta)}</p>
+                </div>
+
                 <hr style={{ borderTop: '1px solid #ccc' }} />
                 {renderSection("Enviado a Dirección de Nivel", data.en_direccion_nivel)}
                 {renderSection("Enviado a Junta", data.en_junta)}
@@ -545,9 +588,22 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 {renderSection("En la Institución", data.en_institucion)}
                 {renderSection("Fecha de Cobro", data.fecha_cobro_docente)}
                 <hr style={{ borderTop: '1px solid #ccc' }} />
-                <p><strong>Fecha Seguimiento:</strong> {formatDate(data.fecha_seguimiento)}</p>
-                <p><strong>Estado:</strong> {data.estado}</p>
-                <p><strong>Documentación Adjunta:</strong> {(data.documentacion_adjunta || []).join(", ")}</p>
+                
+                <p><strong>Fecha Seguimiento (Último Mov.):</strong> {formatDate(data.fecha_seguimiento)}</p>
+                <p><strong>Estado Actual:</strong> <span style={{fontWeight:'bold', color: getRowColor(data.estado)}}>{data.estado}</span></p>
+                
+                <div style={{ marginTop: '10px' }}>
+                    <strong>Documentación Adjunta:</strong>
+                    {data.documentacion_adjunta && data.documentacion_adjunta.length > 0 ? (
+                        <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+                            {data.documentacion_adjunta.map((doc, i) => (
+                                <li key={i}>{doc}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <span> Ninguna</span>
+                    )}
+                </div>
               </div>
             </td>
           </tr>
