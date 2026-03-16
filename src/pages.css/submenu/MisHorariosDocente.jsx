@@ -145,7 +145,7 @@ const MisHorariosDocente = ({ goBack, goHome, user }) => {
   const renderTable = (titulo, grid) => (
     <div style={{ marginBottom: '20px' }}>
       <h4 style={{ textAlign: 'center', backgroundColor: '#eee', padding: '5px', border: '1px solid #999', borderBottom: 'none', margin: 0 }}>{titulo}</h4>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', backgroundColor: 'white' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', backgroundColor: 'white', tableLayout: 'fixed' }}>
         <thead>
           <tr style={{ backgroundColor: '#f2f2f2' }}>
             <th style={{ border: '1px solid #999', padding: '4px' }}>HORARIO</th>
@@ -168,7 +168,7 @@ const MisHorariosDocente = ({ goBack, goHome, user }) => {
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
       <h2>MIS HORARIOS</h2>
-      <div className="contenido-submenu">
+      <div className="contenido-submenu" style={{ width: "95%", maxWidth: "100%" }}>
         {!user ? (
           <p>Por favor, inicie sesión para ver sus horarios.</p>
         ) : loading ? (
