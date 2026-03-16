@@ -74,6 +74,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     hasta: "", estado: ""
   });
 
+  // --- Actualizar Modalidad Automáticamente cuando cambia curso/division ---
+  const getModalidad = (curso, division) => {
+    const c = parseInt(curso);
+    if (c >= 1 && c <= 3) return "CICLO BASICO";
+    if (c >= 4 && c <= 6) {
+      return division === "C" ? "RESOLUCION N° 300/5 - ORIENTACION EN INFORMATICA" : "RESOLUCION N° 297/5 - ORIENTACION EN ECONOMIA Y ADMINISTRACION";
+    }
+    return "";
+  };
+
   const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
   const cargosList = [
     "DIRECTOR/A", "SECRETARIO", "AYUDANTE DE SECRETARIA", "PRECEPTOR",
@@ -174,6 +184,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       }
       return { ...prev, [section]: newSectionData };
     });
+  };
+
+  // Handler para cambios en cursos múltiples
+  const handleCursoChange = (index, field, value) => {
+    const newCursos = [...formData.cursos_data];
+    newCursos[index][field] = value;
+    if (field === 'curso' || field === 'division') {
+        newCursos[index].modalidad = getModalidad(newCursos[index].curso, newCursos[index].division);
+    }
+    setFormData(prev => ({ ...prev, cursos_data: newCursos }));
   };
 
   const handleNew = () => {
@@ -372,6 +392,10 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     const docente = docentes.find(d => d.id == id);
     return docente ? `${docente.apellido}, ${docente.nombre}` : id;
   };
+  
+  const getDocenteDetails = (id) => {
+    return docentes.find(d => d.id == id);
+  };
 
   // --- Renderizado ---
   const renderDetailContent = (data) => {
@@ -474,6 +498,60 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
 
   const getUniqueOptions = (field) => [...new Set(seguimientos.map(item => item[field]).filter(Boolean))].sort();
 
+  // Lógica para documentación adjunta
+  const getDocumentationOptions = () => {
+    const { causal, cursos_data } = formData;
+    let options = ["OTRA DOCUMENTACIÓN"];
+    const isATE = cursos_data.some(c => (c.asignatura || "").toUpperCase().includes("ACOMPAÑAMIENTO A LAS TRAYECTORIAS ESCOLARES") || (c.asignatura || "").toUpperCase().includes("ATE"));
+    
+    const commonDocs = [
+        "ACTA DE OFRECIMIENTO", "ACTA DE TOMA", "ACTA DE TOMA ANTERIOR", 
+        "DDJJ ACTUALIZADA DEL DOCENTE", "F501", "DECRETO 586", 
+        "RESOLUCIÓN MINISTERIAL N° 2063 MED 22", "RESOLUCIÓN MINISTERIAL N° 008", 
+        "RESOLUCIÓN MINISTERIAL N° 1465 MED 26"
+    ];
+
+    if (causal === "CPF CON RESOLUCION") {
+        options = [...options, "CPF CON RESOLUCION", "ACTA DE RECONVERSIÓN PROFE INTERINO", ...commonDocs];
+    } else if (causal === "CPF CON EXPTE") {
+        options = [...options, "CPF CON EXPTE", "ACTA DE RECONVERSIÓN PROFE INTERINO", ...commonDocs];
+    } else if (causal === "LICENCIA ") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "ACTA DE NACIMIENTO DEL HIJO/A", "CERTIFICADO DE A.R.T.", "CERTIFICADO MÉDICO", "CERTIFICADO MÉDICO DEL SESOP", "CONSTANCIA DE ATENCIÓN DE SESOP", "CÓDIGO ESPECIAL 2020 SESOP"];
+    } else if (causal === "RENUNCIA") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "BAJA INFORMADA DE SIME", "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "NOTA DE RENUNCIA"];
+    } else if (causal === "CONTINUIDAD") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "ACTA DE CONTINUIDAD DIDÁCTICA", "ACTA DE REINTEGRO DEL DUEÑO", "CERTIFICADO DE A.R.T.", "CERTIFICADO MÉDICO", "CERTIFICADO MÉDICO DEL SESOP", "CONSTANCIA DE ATENCIÓN DE SESOP", "CÓDIGO ESPECIAL 2020 SESOP"];
+    } else if (causal === "ADSCRIPCION") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "CONSTANCIA DE ADSCRIPCIÓN", "NOTA DE ADSCRIPCIÓN", "RESOLUCIÓN DE ADSCRIPCIÓN"];
+    } else if (causal === "REUBICACION") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "ACTA DE LA ESCUELA DONDE QUEDA CONSTANCIA DE LA REUBICACIÓN"];
+    } else if (causal === "JUBILACION") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "BAJA INFORMADA DE SIME", "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "NOTIFICACIÓN DEL ANSES", "RESOLUCIÓN DE JUBILACIÓN"];
+    } else if (causal === "FALLECIMIENTO") {
+        options = [...options, "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE RECONVERSIÓN PROFE SUPLENTE", ...commonDocs, "BAJA INFORMADA DE SIME", "ACTA DE CESE DEFINITIVO DE LA ESCUELA"];
+    } else if (causal === "OTROS") {
+        // Lista completa para 'OTROS' (simplificada aquí, agregar el resto según requerimiento)
+        options = [...options, "CPF CON RESOLUCION", "CPF CON EXPTE", "ACTA DE RECONVERSIÓN PROFE DUEÑO", ...commonDocs, "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "ACTA DE LICENCIA DEL ART 33", "PROYECTO ATE", "ANEXO 1 PLANILLA DE REORGANIZACIÓN DE HORAS CÁTEDRA DE ATE."];
+    }
+
+    if (isATE) {
+        options = [...new Set([...options, "ANEXO 1 PLANILLA DE REORGANIZACIÓN DE HORAS CÁTEDRA DE ATE.", "ANEXO 2 PLANILLA DE RECEPCIÓN DE PROYECTOS DE ATE.", "ANEXO 3 ACTAS DE RESULTADOS DE PROYECTOS PRESENTADOS Y PROPUESTA DOCENTE.", "ANEXO 4: F501", "ANEXO 5: RÚBRICA DE EVALUACIÓN DE PROYECTOS DE ATE.", "PROYECTO ATE"])];
+    }
+
+    return options;
+  };
+
+  const toggleDocumentation = (doc) => {
+    setFormData(prev => {
+        const currentDocs = prev.documentacion_adjuntada || [];
+        if (currentDocs.includes(doc)) {
+            return { ...prev, documentacion_adjuntada: currentDocs.filter(d => d !== doc) };
+        } else {
+            return { ...prev, documentacion_adjuntada: [...currentDocs, doc] };
+        }
+    });
+  };
+
   return (
     <div className="pagina-submenu" style={{ backgroundImage: `url(${fondo})` }}>
       <NavBar goBack={goBack} goHome={goHome} />
@@ -506,14 +584,122 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ textAlign: 'center' }}>{mode === 'create' ? 'Nuevo Seguimiento' : 'Modificar Seguimiento'}</h3>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>              
-              {/* AQUI VA EL NUEVO FORMULARIO */}
-              <p>Formulario en construcción...</p>
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              
+              <label style={{ gridColumn: '1 / -1' }}>CARACTERISTICAS:
+                <select name="caracteristicas" value={formData.caracteristicas} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}>
+                    <option value="">Seleccione...</option>
+                    <option value="PLANEA CON DOC. DESIGNADO">PLANEA CON DOC. DESIGNADO</option>
+                    <option value="PLANEA SIN DOC. DESIGNADO">PLANEA SIN DOC. DESIGNADO</option>
+                    <option value="ATE CON DOC. DESIGNADO">ATE CON DOC. DESIGNADO</option>
+                    <option value="ATE SIN DOC. DESIGNADO">ATE SIN DOC. DESIGNADO</option>
+                </select>
+              </label>
+
+              <label style={{ gridColumn: '1 / -1' }}>CAUSAL:
+                <select name="causal" value={formData.causal} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}>
+                    <option value="">Seleccione...</option>
+                    {["CPF CON RESOLUCION", "CPF CON EXPTE", "LICENCIA ", "RENUNCIA", "CONTINUIDAD", "ADSCRIPCION", "REUBICACION", "TRASLADO POR RAZONES DE SALUD", "JUBILACION", "FALLECIMIENTO", "OTROS"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+
+              {formData.causal === "CPF CON RESOLUCION" && (
+                  <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <label>FECHA DE RESOLUCIÓN: <input type="date" name="cpf_resolucion_fecha" value={formData.cpf_resolucion_fecha || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+                      <label>N° DE RESOLUCIÓN (MEd): <input type="text" name="cpf_resolucion_nro" value={formData.cpf_resolucion_nro} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+                  </div>
+              )}
+
+              {formData.causal === "CPF CON EXPTE" && (
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '10px' }}>
+                      <input placeholder="N° EXP" name="cpf_expte_nro" value={formData.cpf_expte_nro} onChange={handleInputChange} style={{ flex: 1 }} /> /
+                      <input placeholder="COD REP" name="cpf_expte_reparticion" value={formData.cpf_expte_reparticion} onChange={handleInputChange} style={{ flex: 1 }} /> -
+                      <input placeholder="LETRA" name="cpf_expte_letra" value={formData.cpf_expte_letra} onChange={handleInputChange} style={{ flex: 1 }} /> -
+                      <input placeholder="AÑO" name="cpf_expte_anio" value={formData.cpf_expte_anio} onChange={handleInputChange} style={{ flex: 1 }} />
+                  </div>
+              )}
+
+              {formData.causal === "LICENCIA " && (
+                  <label style={{ gridColumn: '1 / -1' }}>TIPO DE LICENCIA:
+                      <select name="causal_licencia_tipo" value={formData.causal_licencia_tipo} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}>
+                          <option value="">Seleccione...</option>
+                          {["SESOP CORTO TRATAMIENTO", "SESOP LARGO TRATAMIENTO", "LIC 9254", "LIC 2457-ART", "LIC ART 6 EXTENSION HORARIA", "ART 15 - CAMBIO FUNCION", "ART 19 - MATERNIDAD", "ART 30 - CARGO ELECTIVO", "ART 33 - MAYOR JERARQUIA", "ART 33 - MAYOR REMUNERACIÓN", "ART 33 - CONCENTRACIÓN HORARIA ", "ART 35 - SIN GOCE DE HABERES", "OTROS"].map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      {formData.causal_licencia_tipo === "OTROS" && <input placeholder="Especifique..." name="causal_licencia_otro" value={formData.causal_licencia_otro} onChange={handleInputChange} style={{ width: '100%', marginTop: '5px' }} />}
+                  </label>
+              )}
+
+              <label>DESDE: <input type="date" name="desde" value={formData.desde || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+              <label>HASTA: <input name="hasta" value={formData.hasta} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+
+              <label>FECHA OFRECIMIENTO: <input type="date" name="fecha_ofrecimiento" value={formData.fecha_ofrecimiento || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+              <label>FECHA DESIGNACIÓN: <input type="date" name="fecha_designacion" value={formData.fecha_designacion || ''} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+
+              <label>CARGO: <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%' }}><option value="">Seleccione...</option>{cargosList.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
+              <label>DOCENTE DUEÑO: <select name="docente_dueno_id" value={formData.docente_dueno_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="SIN DOCENTES">SIN DOCENTES</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label>CARÁCTER DUEÑO: <select name="caracter_dueno" value={formData.caracter_dueno} onChange={handleInputChange} style={{ width: '100%' }}><option value="TITULAR">TITULAR</option><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
+              <label>DOCENTE PROPUESTO: <select name="docente_propuesto_id" value={formData.docente_propuesto_id} onChange={handleInputChange} style={{ width: '100%' }}><option value="VACANTE ENVIADO A JUNTA">VACANTE ENVIADO A JUNTA</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
+              <label>CARÁCTER PROPUESTO: <select name="caracter_propuesto" value={formData.caracter_propuesto} onChange={handleInputChange} style={{ width: '100%' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
+
+              {formData.cursos_data.map((cursoItem, idx) => (
+                  <div key={idx} style={{ gridColumn: '1 / -1', border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                          <label>CURSO: <input value={cursoItem.curso} onChange={e => handleCursoChange(idx, 'curso', e.target.value)} style={{ width: '100%' }} /></label>
+                          <label>DIVISIÓN: <input value={cursoItem.division} onChange={e => handleCursoChange(idx, 'division', e.target.value)} style={{ width: '100%' }} /></label>
+                          <label>TURNO: <input value={cursoItem.turno} onChange={e => handleCursoChange(idx, 'turno', e.target.value)} style={{ width: '100%' }} /></label>
+                          <label style={{ gridColumn: '1 / -1' }}>MODALIDAD: <input value={cursoItem.modalidad} readOnly style={{ width: '100%', backgroundColor: '#eee' }} /></label>
+                          <label style={{ gridColumn: '1 / -1' }}>HORARIOS: <input value={cursoItem.dias_horarios[0].horario} onChange={e => {
+                              const newCursos = [...formData.cursos_data];
+                              newCursos[idx].dias_horarios[0].horario = e.target.value;
+                              setFormData(prev => ({...prev, cursos_data: newCursos}));
+                          }} placeholder="Ej: Lun 8:00, Mar 10:00" style={{ width: '100%' }} /></label>
+                          <label>PLAZAS: <input value={cursoItem.plazas} onChange={e => handleCursoChange(idx, 'plazas', e.target.value)} style={{ width: '100%' }} /></label>
+                      </div>
+                  </div>
+              ))}
+              {formData.cargo === "DOCENTE" && (
+                  <button type="button" onClick={() => setFormData(prev => ({...prev, cursos_data: [...prev.cursos_data, { curso: "", division: "", turno: "", modalidad: "", dias_horarios: [{dia:"", horario:""}], plazas: "" }] }))} style={{ gridColumn: '1 / -1', padding: '5px' }}>+ AGREGAR OTRO CURSO</button>
+              )}
+
+              <label style={{ gridColumn: '1 / -1' }}>ESTADO:
+                  <select name="estado" value={formData.estado} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}>
+                      <option value="">Seleccione...</option>
+                      {["VISADO EN JUNTA", "SIN CUBRIR", "CUBIERTO", "CUBIERTO 2063 CON DOCENTE", "CUBIERTO POR CONTINUIDAD", "CUBIERTO ATE", "CUBIERTO REINTEGRADA", "PUBLICADO", "DEVUELTO POR JUNTA A LA ESCUELA"].map(e => <option key={e} value={e}>{e}</option>)}
+                  </select>
+              </label>
+
+              {/* Seguimiento */}
               {renderObservationInputs('en_direccion_nivel')}
               {renderObservationInputs('en_junta')}
               {renderObservationInputs('en_novedades')}
               {renderObservationInputs('en_institucion')}
               {renderObservationInputs('fecha_cobro_docente')}
+
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
+                  {/* Formulario de Datos Personales */}
+                  {selectedDocenteDetails && (
+                      <div style={{ border: '1px solid black', padding: '10px', width: '100%', fontSize: '12px' }}>
+                          <h4>FORMULARIO DE DATOS PERSONALES para JUNTA</h4>
+                          <p><strong>APELLIDOS Y NOMBRES:</strong> {selectedDocenteDetails.apellido}, {selectedDocenteDetails.nombre}</p>
+                          <p><strong>CUIL/DNI:</strong> ___ - {selectedDocenteDetails.dni} - ___</p>
+                          <p><strong>CORREO:</strong> {selectedDocenteDetails.mail}</p>
+                          <p><strong>CELULAR:</strong> {selectedDocenteDetails.celular}</p>
+                          <p><strong>ESCUELA:</strong> Escuela Secundaria Gobernador Garmendia</p>
+                          <p><strong>CIRCUITO:</strong> Circuito N°1 - Agrupamiento N°17</p>
+                          <p><strong>CARGO:</strong> {formData.cargo}</p>
+                          <p><strong>FECHA DE TOMA:</strong> {formData.fecha_designacion}</p>
+                      </div>
+                  )}
+              </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                  <label>DOCUMENTACIÓN ADJUNTADA:</label>
+                  <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
+                      {getDocumentationOptions().map(doc => (
+                          <div key={doc}><label><input type="checkbox" checked={formData.documentacion_adjunta.includes(doc)} onChange={() => toggleDocumentation(doc)} /> {doc}</label></div>
+                      ))}
+                  </div>
+              </div>
 
               <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                 <button type="submit" style={{ padding: '10px 20px' }}>Guardar</button>

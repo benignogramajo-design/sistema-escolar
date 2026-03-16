@@ -324,7 +324,7 @@ const DocentesHorariosDia = ({ goBack, goHome }) => {
         return "VACANTE";
       };
 
-      const docenteNombre = getDocente();
+      let docenteNombre = getDocente();
       if (docenteNombre === "---") docenteNombre = "VACANTE";
 
       const cellContent = {
