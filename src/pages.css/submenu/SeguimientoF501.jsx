@@ -956,28 +956,28 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "rgba(255,255,255,0.9)", fontSize: '11px' }}>
           <thead>
             <tr style={{ backgroundColor: "#333", color: "white", fontSize: '10px' }}>
-              <th>FECHA DE INGRESO DES</th>
-              <th>CIRCUITO</th>
-              <th>AGRUPAMIENTO</th>
-              <th>C.U.E.</th>
-              <th>ESCUELA</th>
-              <th>CARACTERISTICAS</th>
-              <th>MODALIDAD O BACHILLER CON ORIENTACION EN</th>
-              <th>CARÁCTER</th>
-              <th>APELLIDO Y NOMBRE DEL DOCENTE DUEÑO / OBS</th>
-              <th>CAUSAL DE LA VACANTE</th>
-              <th>CARÁCTER</th>
-              <th>APELLIDO Y NOMBRE DEL DOCENTE PROPUESTO / OBS</th>
-              <th>CARGO Y/O MATERIA</th>
-              <th>NRO PLAZAS</th>
-              <th>TURNO</th>
-              <th>HS CAT</th>
-              <th>CURSO DIV</th>
-              <th>DESDE</th>
-              <th>HASTA</th>
-              <th>OBSERVACIONES-DES</th>
-              <th>ESTADO</th>
-              <th>VISTA</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>FECHA DE INGRESO DES</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CIRCUITO</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>AGRUPAMIENTO</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>C.U.E.</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>ESCUELA</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CARACTERISTICAS</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>MODALIDAD O BACHILLER CON ORIENTACION EN</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CARÁCTER</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>APELLIDO Y NOMBRE DEL DOCENTE DUEÑO / OBS</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CAUSAL DE LA VACANTE</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CARÁCTER</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>APELLIDO Y NOMBRE DEL DOCENTE PROPUESTO / OBS</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CARGO Y/O MATERIA</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>NRO PLAZAS</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>TURNO</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>HS CAT</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>CURSO DIV</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>DESDE</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>HASTA</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>OBSERVACIONES-DES</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>ESTADO</th>
+              <th style={{ border: '1px solid black', padding: '5px', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: '180px', whiteSpace: 'nowrap' }}>VISTA</th>
             </tr>
           </thead>
           <tbody>
@@ -992,28 +992,28 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 const lastObs = (item.en_direccion_nivel?.observations || []).filter(o => o.text?.trim()).slice(-1)[0];
 
                 return (<tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
-                  <td>{formatDate(item.en_direccion_nivel?.value)}</td>
-                  <td>1</td>
-                  <td>17</td>
-                  <td>9001717/00</td>
-                  <td>Esc. Sec. Gob. Garmendia</td>
-                  <td>{item.caracteristicas}</td>
-                  <td>{cursoData.modalidad || '---'}</td>
-                  <td>{item.caracter_dueno}</td>
-                  <td>{getDocenteName(item.docente_dueno_id)}</td>
-                  <td>{item.causal}</td>
-                  <td>{item.caracter_propuesto}</td>
-                  <td>{getDocenteName(item.docente_propuesto_id)}</td>
-                  <td>{cargoMateria}</td>
-                  <td>{cursoData.plazas || item.plazas || '---'}</td>
-                  <td>{cursoData.turno || item.turno || '---'}</td>
-                  <td>{hsCatMatch?.carga_horaria || '---'}</td>
-                  <td>{cursoDiv}</td>
-                  <td>{formatDate(item.desde)}</td>
-                  <td>{formatDate(item.hasta)}</td>
-                  <td>{lastObs ? `${formatDate(lastObs.date)} - ${lastObs.text}` : '---'}</td>
-                  <td style={{color: getRowColor(item.estado), fontWeight: 'bold'}}>{item.estado}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.en_direccion_nivel?.value)}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>1</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>17</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>9001717/00</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>Esc. Sec. Gob. Garmendia</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{item.caracteristicas}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{cursoData.modalidad || '---'}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{item.caracter_dueno}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_dueno_id)}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{item.causal}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{item.caracter_propuesto}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_propuesto_id)}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{cargoMateria}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{cursoData.plazas || item.plazas || '---'}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{cursoData.turno || item.turno || '---'}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{hsCatMatch?.carga_horaria || '---'}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{cursoDiv}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.desde)}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.hasta)}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }}>{lastObs ? `${formatDate(lastObs.date)} - ${lastObs.text}` : '---'}</td>
+                  <td style={{ border: '1px solid black', padding: '5px', color: getRowColor(item.estado), fontWeight: 'bold' }}>{item.estado}</td>
+                  <td style={{ border: '1px solid black', padding: '5px' }} onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: false })} style={{ backgroundColor: 'lightblue', color: 'black', fontSize: '10px', padding: '2px 5px', marginRight: '5px' }}>VER</button>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: true })} style={{ backgroundColor: 'yellow', color: 'black', fontSize: '10px', padding: '2px 5px' }}>IMPRIMIR</button>
                   </td>
