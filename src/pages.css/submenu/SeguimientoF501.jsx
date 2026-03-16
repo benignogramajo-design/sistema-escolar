@@ -67,6 +67,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
 
   const [selectedDocenteDetails, setSelectedDocenteDetails] = useState(null);
+  const [customDocInput, setCustomDocInput] = useState("");
+  const [docSelections, setDocSelections] = useState({}); // To store selections for items with dropdowns
   // --- Estado de Filtros ---
   const [filters, setFilters] = useState({
     fecha: "", mes: "", anio: "", cargo: "", curso: "", division: "",
@@ -634,15 +636,74 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     return options;
   };
 
+  const resolveDocLabel = (doc) => {
+    const due = getDocenteName(formData.docente_dueno_id);
+    const prop = getDocenteName(formData.docente_propuesto_id);
+    const cargoInfo = `${formData.cargo || ''} - ${formData.cursos_data[0]?.asignatura || ''} - ${formData.cursos_data[0]?.curso || ''} ${formData.cursos_data[0]?.division || ''} - ${formData.cursos_data[0]?.turno || ''}`;
+
+    if (doc === "CPF CON RESOLUCION") return `CPF CON RESOLUCION ${formatDate(formData.cpf_resolucion_fecha)} - ${formData.cpf_resolucion_nro || ''}`;
+    if (doc === "CPF CON EXPTE") return `CPF CON EXPTE ${formData.cpf_expte_nro || ''}/${formData.cpf_expte_reparticion || ''}-${formData.cpf_expte_letra || ''}-${formData.cpf_expte_anio || ''}`;
+    
+    // Items que continúan con DOCENTE DUEÑO
+    const itemsDueno = [
+        "ACTA DE RECONVERSIÓN PROFE DUEÑO", "ACTA DE LA ESCUELA POR RENUNCIA", "ACTA DE LICENCIA DEL ART 33", 
+        "ACTA DE NACIMIENTO DEL HIJO/A", "ACTA DE REINTEGRO DEL DUEÑO", "ACTA DE TOMA ART 33 (CARGO DIRECTIVO O TOMA DE NUEVAS HORAS", 
+        "CERTIFICADO DE A.R.T.", "CERTIFICADO MÉDICO", "CERTIFICADO MÉDICO DEL SESOP", "CONSTANCIA DE ADSCRIPCIÓN", 
+        "CONSTANCIA DE ATENCIÓN DE SESOP", "CÓDIGO ESPECIAL 2020 SESOP", "NOTA DE ADSCRIPCIÓN", "NOTA DE RENUNCIA", 
+        "NOTIFICACIÓN DEL ANSES", "NUEVA LICENCIA DEL DUEÑO (ART33)", "RESOLUCIÓN DE ADSCRIPCIÓN", "RESOLUCIÓN DE JUBILACIÓN"
+    ];
+    if (itemsDueno.includes(doc)) return `${doc} ${due}`;
+
+    // Items que continúan con DOCENTE PROPUESTO
+    const itemsPropuesto = [
+        "ACTA DE RECONVERSIÓN PROFE SUPLENTE", "ACTA DE TOMA", "ACTA DE TOMA ANTERIOR", 
+        "DDJJ ACTUALIZADA DEL DOCENTE", "BAJA INFORMADA DE SIME", "ACTA DE CONTINUIDAD DIDÁCTICA"
+    ];
+    if (itemsPropuesto.includes(doc)) return `${doc} ${prop}`;
+
+    // Items que continúan con CARGO/ASIG...
+    if (doc === "ACTA DE OFRECIMIENTO" || doc === "F501" || doc === "ANEXO 4: F501") return `${doc} ${cargoInfo}`;
+
+    // Items con selección (Dropdown) - Retornamos base, el render manejará la selección
+    // "ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "ACTA DE CESE DEL REEMPLAZANTE", "ACTA DE SOLICITUD CAMBIO DE FUNCIÓN"
+    
+    return doc;
+  };
+
   const toggleDocumentation = (doc) => {
+    const resolvedLabel = resolveDocLabel(doc);
+    
+    // Si es un item con dropdown, usamos el valor seleccionado si existe
+    const itemsWithDropdown = ["ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "ACTA DE CESE DEL REEMPLAZANTE", "ACTA DE SOLICITUD CAMBIO DE FUNCIÓN"];
+    let finalValue = resolvedLabel;
+
+    if (itemsWithDropdown.includes(doc)) {
+        const selection = docSelections[doc];
+        if (!selection) {
+            alert("Por favor seleccione una opción del desplegable para este documento.");
+            return;
+        }
+        finalValue = `${doc} ${selection}`;
+    }
+
     setFormData(prev => {
-        const currentDocs = prev.documentacion_adjuntada || [];
-        if (currentDocs.includes(doc)) {
-            return { ...prev, documentacion_adjuntada: currentDocs.filter(d => d !== doc) };
+        const currentDocs = prev.documentacion_adjunta || [];
+        if (currentDocs.includes(finalValue)) {
+            return { ...prev, documentacion_adjunta: currentDocs.filter(d => d !== finalValue) };
         } else {
-            return { ...prev, documentacion_adjuntada: [...currentDocs, doc] };
+            return { ...prev, documentacion_adjunta: [...currentDocs, finalValue] };
         }
     });
+  };
+
+  const addCustomDoc = () => {
+      if (customDocInput.trim()) {
+          setFormData(prev => ({
+              ...prev,
+              documentacion_adjunta: [...prev.documentacion_adjunta, customDocInput.trim()]
+          }));
+          setCustomDocInput("");
+      }
   };
 
   return (
@@ -828,9 +889,71 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
               <div style={{ gridColumn: '1 / -1' }}>
                   <label>DOCUMENTACIÓN ADJUNTADA:</label>
                   <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px' }}>
-                      {getDocumentationOptions().map(doc => (
-                          <div key={doc}><label><input type="checkbox" checked={formData.documentacion_adjunta.includes(doc)} onChange={() => toggleDocumentation(doc)} /> {doc}</label></div>
-                      ))}
+                      {/* Lista generada automáticamente */}
+                      {getDocumentationOptions().filter(d => d !== "OTRA DOCUMENTACIÓN").map(doc => {
+                          const itemsWithDropdown = ["ACTA DE RECONVERSIÓN PROFE INTERINO", "ACTA DE CESE DEFINITIVO DE LA ESCUELA", "ACTA DE CESE DEL REEMPLAZANTE", "ACTA DE SOLICITUD CAMBIO DE FUNCIÓN"];
+                          const isDropdown = itemsWithDropdown.includes(doc);
+                          let label = resolveDocLabel(doc);
+                          let isChecked = false;
+                          
+                          if (isDropdown) {
+                              const selection = docSelections[doc];
+                              const valToCheck = selection ? `${doc} ${selection}` : doc; // Check logic simplified
+                              isChecked = formData.documentacion_adjunta.some(d => d.startsWith(doc));
+                          } else {
+                              isChecked = formData.documentacion_adjunta.includes(label);
+                          }
+
+                          return (
+                              <div key={doc} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <label style={{flex: 1}}>
+                                      <input type="checkbox" checked={isChecked} onChange={() => toggleDocumentation(doc)} /> 
+                                      {label}
+                                  </label>
+                                  {isDropdown && (
+                                      <select 
+                                        value={docSelections[doc] || ""} 
+                                        onChange={e => setDocSelections(prev => ({...prev, [doc]: e.target.value}))}
+                                        style={{ fontSize: '11px', padding: '2px' }}
+                                        onClick={e => e.stopPropagation()}
+                                      >
+                                          <option value="">Seleccione...</option>
+                                          <option value={getDocenteName(formData.docente_dueno_id)}>{getDocenteName(formData.docente_dueno_id)}</option>
+                                          <option value={getDocenteName(formData.docente_propuesto_id)}>{getDocenteName(formData.docente_propuesto_id)}</option>
+                                      </select>
+                                  )}
+                              </div>
+                          );
+                      })}
+                      
+                      {/* Sección para OTRA DOCUMENTACIÓN y documentos personalizados ya agregados */}
+                      <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '5px' }}>
+                          <strong>OTRA DOCUMENTACIÓN:</strong>
+                          <div style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
+                              <input 
+                                  placeholder="Escriba otra documentación..." 
+                                  value={customDocInput} 
+                                  onChange={e => setCustomDocInput(e.target.value)} 
+                                  style={{ flex: 1, padding: '5px' }}
+                              />
+                              <button type="button" onClick={addCustomDoc} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>+</button>
+                          </div>
+                          {/* Listar documentos personalizados (aquellos que no están en la lista estándar generada o fueron agregados manualmente) */}
+                          {formData.documentacion_adjunta.map((doc, idx) => {
+                              // Simple check: if resolveDocLabel(doc base) isn't in standard list roughly
+                              // For simplicity, we just list ALL checked docs here as chips to allow removal
+                              return (
+                                  <div key={idx} style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#e0e0e0', borderRadius: '15px', padding: '2px 8px', margin: '2px', fontSize: '11px' }}>
+                                      <span>{doc}</span>
+                                      <button 
+                                          type="button" 
+                                          onClick={() => setFormData(prev => ({...prev, documentacion_adjunta: prev.documentacion_adjunta.filter(d => d !== doc)}))}
+                                          style={{ marginLeft: '5px', background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontWeight: 'bold' }}
+                                      >x</button>
+                                  </div>
+                              );
+                          })}
+                      </div>
                   </div>
               </div>
 
