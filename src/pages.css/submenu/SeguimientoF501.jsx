@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import NavBar from "../../components.css/NavBar";
 import "../../styles/pages.css";
+import * as XLSX from 'xlsx';
 import fondo from "../../assets/fondos/Fondo PERSONAL INSTITUCIONAL.jpg";
 import { supabase } from "../../components.css/supabaseClient";
 import logo from "../../assets/logos/Logo.png";
@@ -22,30 +23,42 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
 
   // --- Estado del Formulario ---
   const createInitialState = () => ({
+    caracteristicas: "",
+    causal: "",
+    causal_licencia_tipo: "",
+    causal_licencia_otro: "",
+    cpf_resolucion_fecha: null,
+    cpf_resolucion_nro: "",
+    cpf_expte_nro: "",
+    cpf_expte_reparticion: "",
+    cpf_expte_letra: "",
+    cpf_expte_anio: "",
+    desde: null,
+    hasta: "",
     fecha_ofrecimiento: null,
     fecha_designacion: null,
     cargo: "",
     docente_dueno_id: "SIN DOCENTES",
-    docente_propuesto_id: "VACANTE ENVIADO A JUNTA",
-    curso: "",
-    division: "",
-    turno: "",
-    asignatura: "",
-    dias_horarios: [{ dia: "", horario: "" }],
     caracter_dueno: "TITULAR",
+    docente_propuesto_id: "VACANTE ENVIADO A JUNTA",
     caracter_propuesto: "INTERINO",
-    plazas: "",
-    causal: "",
-    desde: null,
-    hasta: "",
+    cursos_data: [{
+      curso: "",
+      division: "",
+      turno: "",
+      asignatura: "",
+      modalidad: "",
+      dias_horarios: [{ dia: "", horario: "" }],
+      plazas: "",
+    }],
+    estado: "",
     en_direccion_nivel: { value: "", observations: [] },
     en_junta: { value: "", observations: [] },
     en_novedades: { value: "", observations: [] },
     en_institucion: { value: "", observations: [] },
     fecha_cobro_docente: { value: "", observations: [] },
-    documentacion_adjunta: [""],
+    documentacion_adjunta: [],
     fecha_seguimiento: null,
-    estado: "",
   });
   const [formData, setFormData] = useState(createInitialState());
 
@@ -53,6 +66,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   const [availableDivisions, setAvailableDivisions] = useState([]);
   const [availableAsignaturas, setAvailableAsignaturas] = useState([]);
 
+  const [selectedDocenteDetails, setSelectedDocenteDetails] = useState(null);
   // --- Estado de Filtros ---
   const [filters, setFilters] = useState({
     fecha: "", mes: "", anio: "", cargo: "", curso: "", division: "",
@@ -95,7 +109,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         { data: estData, error: estError },
       ] = await Promise.all([
         supabase.from('seguimiento_f501').select('*').order('fecha_seguimiento', { ascending: false }),
-        supabase.from('datos_de_legajo_docentes').select('id, apellido, nombre').order('apellido'),
+        supabase.from('datos_de_legajo_docentes').select('id, apellido, nombre, dni, mail, celular').order('apellido'),
         supabase.from('codigos').select('*'),
         supabase.from('estructura_horario').select('*'),
       ]);
@@ -106,7 +120,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       if (estError) throw estError;
 
       setSeguimientos(segData || []);
-      setDocentes(docData.map(d => ({ id: d.id, nombre: `${d.apellido}, ${d.nombre}` })) || []);
+      setDocentes(docData || []);
       setCodigos(codData || []);
       setEstructura(estData || []);
     } catch (err) {
@@ -121,130 +135,14 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     fetchData();
   }, []);
 
-  // --- Lógica de Formulario y Campos Automáticos ---
-  const updateStatusAndDate = useCallback(() => {
-    setFormData(prev => {
-      const newFormData = { ...prev };
-      let latestDate = null;
-      let latestSource = "";
-      let latestIsObservation = false;
-      let isPendiente = false;
-
-      const sections = [
-        { key: 'en_direccion_nivel', status: 'ENVIADO A D.E.S.', obsStatus: 'EN CORRECCIÓN DE D.E.S.' },
-        { key: 'en_junta', status: 'EN JUNTA', obsStatus: 'EN CORRECCIÓN DE JUNTA' },
-        { key: 'en_novedades', status: 'EN NOVEDADES SALARIALES', obsStatus: 'EN CORRECCIÓN DE NOVEDADES SALARIALES' },
-        { key: 'en_institucion', status: 'EN LA INSTITUCION', obsStatus: 'EN LA INSTITUCION' },
-        { key: 'fecha_cobro_docente', status: 'DOCENTE COBRANDO', obsStatus: 'DOCENTE COBRANDO' },
-      ];
-
-      sections.forEach(section => {
-        const data = newFormData[section.key];
-        if (data) {
-          if (data.value && data.value !== 'PENDIENTE') {
-            const currentDate = new Date(data.value);
-            if (!latestDate || currentDate > latestDate) {
-              latestDate = currentDate;
-              latestSource = section.key;
-              latestIsObservation = false;
-            }
-          } else if (data.value === 'PENDIENTE') {
-            isPendiente = true;
-          }
-          if (data.observations) {
-            data.observations.forEach(obs => {
-              if (obs.date) {
-                const obsDate = new Date(obs.date);
-                if (!latestDate || obsDate >= latestDate) {
-                  latestDate = obsDate;
-                  latestSource = section.key;
-                  latestIsObservation = true;
-                }
-              }
-            });
-          }
-        }
-      });
-
-      newFormData.fecha_seguimiento = latestDate ? latestDate.toISOString().split('T')[0] : null;
-
-      const finalSection = sections.find(s => s.key === latestSource);
-      if (finalSection) {
-        newFormData.estado = latestIsObservation ? finalSection.obsStatus : finalSection.status;
-      } else {
-        newFormData.estado = isPendiente ? "PENDIENTE" : "";
-      }
-
-      return newFormData;
-    });
-  }, []);
-
   useEffect(() => {
-    updateStatusAndDate();
-  }, [
-    formData.en_direccion_nivel, formData.en_junta, formData.en_novedades,
-    formData.en_institucion, formData.fecha_cobro_docente, updateStatusAndDate
-  ]);
-
-  useEffect(() => {
-    const { cargo, curso, division, asignatura } = formData;
-    if (cargo !== 'DOCENTE') {
-      setFormData(prev => ({ ...prev, curso: '---', division: '---', asignatura: '---', turno: '' }));
-      setAvailableDivisions([]);
-      setAvailableAsignaturas([]);
-      return;
-    }
-
-    if (curso && curso !== '---') {
-      const divs = [...new Set(codigos.filter(c => c.curso === curso).map(c => c.division))].sort();
-      setAvailableDivisions(divs);
+    if (formData.docente_propuesto_id && formData.docente_propuesto_id !== 'VACANTE ENVIADO A JUNTA') {
+      const docente = docentes.find(d => d.id === parseInt(formData.docente_propuesto_id));
+      setSelectedDocenteDetails(docente || null);
     } else {
-      setAvailableDivisions([]);
+      setSelectedDocenteDetails(null);
     }
-
-    if (curso && curso !== '---' && division && division !== '---') {
-      const asigs = [...new Set(codigos.filter(c => c.curso === curso && c.division === division).map(c => c.asignatura))].sort();
-      const turno = codigos.find(c => c.curso === curso && c.division === division)?.turno || "";
-      setAvailableAsignaturas(asigs);
-      setFormData(prev => ({ ...prev, turno }));
-
-      if (asignatura && asignatura !== '---') {
-        const found = codigos.find(c => c.curso === curso && c.division === division && c.asignatura === asignatura);
-        let plazas = found?.plazas || [];
-        if (typeof plazas === 'string') {
-          try { plazas = JSON.parse(plazas); } catch (e) { plazas = []; }
-        }
-        const plazasArray = Array.isArray(plazas) ? plazas : [];
-
-        // Auto-completar Horarios desde Estructura
-        const structFound = estructura.find(e => 
-          e.cargo === cargo && 
-          e.curso === curso && 
-          e.division === division && 
-          e.asignatura === asignatura
-        );
-        let newHorarios = [];
-        if (structFound) {
-          let hData = structFound.horarios;
-          if (typeof hData === 'string') { try { hData = JSON.parse(hData); } catch (e) { hData = []; } }
-          if (Array.isArray(hData)) {
-            newHorarios = hData.map(h => ({
-              dia: h.dia,
-              horario: Array.isArray(h.horas) ? h.horas.join(", ") : (h.horario_texto || "")
-            }));
-          }
-        }
-        if (newHorarios.length === 0) newHorarios = [{ dia: "", horario: "" }];
-
-        setFormData(prev => ({ ...prev, plazas: plazasArray.join(" - "), dias_horarios: newHorarios }));
-      } else {
-        setFormData(prev => ({ ...prev, plazas: "", dias_horarios: [{ dia: "", horario: "" }] }));
-      }
-    } else {
-      setAvailableAsignaturas([]);
-      setFormData(prev => ({ ...prev, plazas: "", dias_horarios: [{ dia: "", horario: "" }] }));
-    }
-  }, [formData.cargo, formData.curso, formData.division, formData.asignatura, codigos, estructura]);
+  }, [formData.docente_propuesto_id, docentes]);
 
   // --- Handlers ---
   const handleFilterChange = (e) => {
@@ -255,17 +153,6 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleDynamicListChange = (listName, index, value) => {
-    setFormData(prev => {
-      const newList = [...prev[listName]];
-      newList[index] = value;
-      if (index === newList.length - 1 && value.trim() !== "") {
-        newList.push("");
-      }
-      return { ...prev, [listName]: newList };
-    });
   };
 
   const handleObservationChange = (section, field, value, obsIndex = null) => {
@@ -302,17 +189,35 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     // Asegurar que los campos JSON y arrays tengan valores por defecto si son null
     const safeData = {
       ...createInitialState(),
-      ...item,
+      ...item, // Carga los datos del registro
+      // Convierte datos de formato antiguo a nuevo si es necesario
+      cursos_data: (item.cursos_data && item.cursos_data.length > 0)
+        ? item.cursos_data
+        : [{
+            curso: item.curso || "",
+            division: item.division || "",
+            turno: item.turno || "",
+            asignatura: item.asignatura || "",
+            modalidad: "", // Se calculará
+            dias_horarios: item.dias_horarios && item.dias_horarios.length > 0 ? item.dias_horarios : [{ dia: "", horario: "" }],
+            plazas: item.plazas || "",
+          }],
       en_direccion_nivel: item.en_direccion_nivel || { value: "", observations: [] },
       en_junta: item.en_junta || { value: "", observations: [] },
       en_novedades: item.en_novedades || { value: "", observations: [] },
       en_institucion: item.en_institucion || { value: "", observations: [] },
       fecha_cobro_docente: item.fecha_cobro_docente || { value: "", observations: [] },
-      documentacion_adjunta: item.documentacion_adjunta ? [...item.documentacion_adjunta, ""] : [""],
-      dias_horarios: item.dias_horarios && item.dias_horarios.length > 0 ? item.dias_horarios : [{ dia: "", horario: "" }],
+      documentacion_adjunta: item.documentacion_adjunta || [],
       caracter_dueno: item.caracter_dueno || "TITULAR",
       caracter_propuesto: item.caracter_propuesto || "INTERINO",
     };
+    // Limpiar campos que ya no existen en la estructura principal
+    delete safeData.curso;
+    delete safeData.division;
+    delete safeData.turno;
+    delete safeData.asignatura;
+    delete safeData.dias_horarios;
+    delete safeData.plazas;
     // Añadir un campo de observación vacío si es necesario
     ['en_direccion_nivel', 'en_junta', 'en_novedades', 'en_institucion', 'fecha_cobro_docente'].forEach(key => {
         if (safeData[key].value && (!safeData[key].observations || safeData[key].observations.length === 0 || safeData[key].observations[safeData[key].observations.length - 1].text !== '')) {
@@ -352,9 +257,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
       fecha_ofrecimiento: formData.fecha_ofrecimiento || null,
       fecha_designacion: formData.fecha_designacion || null,
       desde: formData.desde || null,
-      hasta: cleanField(formData.hasta),
-      documentacion_adjunta: formData.documentacion_adjunta.filter(d => d.trim() !== ''),
-      dias_horarios: formData.dias_horarios.filter(d => d.dia && d.horario),
+      hasta: cleanField(formData.hasta)
     };
 
     // Limpiar observaciones vacías antes de guardar
@@ -382,6 +285,36 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     }
   };
 
+  const handleExcelExport = () => {
+    const headers = ["F. OFREC.", "F. DESIG.", "F. SEGUIM.", "CARGO", "CURSO", "ASIGNATURA", "DOCENTE", "CAUSAL", "DOCENTE PROPUESTO", "DESDE", "HASTA", "ESTADO"];
+    
+    const rows = filteredData.map(item => {
+        const cursoInfo = item.cursos_data && item.cursos_data[0] 
+            ? `${item.cursos_data[0].curso || ''} ${item.cursos_data[0].division || ''} - ${item.cursos_data[0].turno || ''}`
+            : `${item.curso || ''} ${item.division || ''} - ${item.turno || ''}`;
+        const asignaturaInfo = item.cursos_data && item.cursos_data[0] ? item.cursos_data[0].asignatura : item.asignatura;
+
+        return [
+            formatDate(item.fecha_ofrecimiento),
+            formatDate(item.fecha_designacion),
+            formatDate(item.fecha_seguimiento),
+            item.cargo,
+            cursoInfo,
+            asignaturaInfo,
+            `${getDocenteName(item.docente_dueno_id)} - ${item.caracter_dueno}`,
+            item.causal,
+            `${getDocenteName(item.docente_propuesto_id)} - ${item.caracter_propuesto}`,
+            formatDate(item.desde),
+            formatDate(item.hasta),
+            item.estado
+        ];
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "SeguimientoF501");
+    XLSX.writeFile(workbook, "Seguimiento_F501.xlsx");
+};
   const handleRowClick = (item) => {
     if (mode === 'edit') handleEdit(item);
     else if (mode === 'delete') handleDelete(item.id);
@@ -394,14 +327,15 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
     const itemAnio = item.fecha_seguimiento ? itemDate.getUTCFullYear().toString() : "";
 
     return (
-      (!filters.fecha || item.fecha_seguimiento === filters.fecha) &&
+      (!filters.fecha || (item.fecha_seguimiento && item.fecha_seguimiento.startsWith(filters.fecha))) &&
       (!filters.mes || itemMes === filters.mes) &&
       (!filters.anio || itemAnio === filters.anio) &&
       (!filters.cargo || item.cargo === filters.cargo) &&
-      (!filters.curso || item.curso === filters.curso) &&
-      (!filters.division || item.division === filters.division) &&
-      (!filters.turno || item.turno === filters.turno) &&
-      (!filters.asignatura || (item.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase())) &&
+      // Updated to check inside cursos_data for new records
+      (!filters.curso || (item.cursos_data && item.cursos_data.some(c => c.curso === filters.curso)) || item.curso === filters.curso) &&
+      (!filters.division || (item.cursos_data && item.cursos_data.some(c => c.division === filters.division)) || item.division === filters.division) &&
+      (!filters.turno || (item.cursos_data && item.cursos_data.some(c => c.turno === filters.turno)) || item.turno === filters.turno) &&
+      (!filters.asignatura || (item.cursos_data && item.cursos_data.some(c => (c.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase()))) || (item.asignatura || "").toLowerCase().includes(filters.asignatura.toLowerCase())) &&
       (!filters.causal || (item.causal || "").toLowerCase().includes(filters.causal.toLowerCase())) &&
       (!filters.desde || item.desde === filters.desde) &&
       (!filters.hasta || item.hasta === filters.hasta) &&
@@ -433,7 +367,11 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
   });
 
   // --- Helpers de Visualización ---
-  const getDocenteName = (id) => docentes.find(d => d.id == id)?.nombre || id;
+  const getDocenteName = (id) => {
+    if (!id) return id;
+    const docente = docentes.find(d => d.id == id);
+    return docente ? `${docente.apellido}, ${docente.nombre}` : id;
+  };
 
   // --- Renderizado ---
   const renderDetailContent = (data) => {
@@ -476,16 +414,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                 <p><strong>Cargo:</strong> {data.cargo}</p>
                 <p><strong>Docente Dueño:</strong> {docenteDueno}</p>
                 <p><strong>Docente Propuesto:</strong> {docentePropuesto}</p>
-                <p><strong>Curso/Div - Turno:</strong> {data.curso} {data.division} - {data.turno}</p>
-                <p><strong>Asignatura:</strong> {data.asignatura}</p>
+                <p><strong>Curso/Div - Turno:</strong> {data.cursos_data?.[0]?.curso} {data.cursos_data?.[0]?.division} - {data.cursos_data?.[0]?.turno}</p>
+                <p><strong>Asignatura:</strong> {data.cursos_data?.[0]?.asignatura}</p>
                 <p><strong>Carácter Dueño:</strong> {data.caracter_dueno}</p>
                 <p><strong>Carácter Propuesto:</strong> {data.caracter_propuesto}</p>
-                <p><strong>Plazas:</strong> {data.plazas}</p>
+                <p><strong>Plazas:</strong> {data.cursos_data?.[0]?.plazas}</p>
                 <p><strong>Causal:</strong> {data.causal}</p>
                 <p><strong>Desde:</strong> {formatDate(data.desde)} <strong>Hasta:</strong> {formatDate(data.hasta)}</p>
                 <hr style={{ borderTop: '1px solid #ccc' }} />
-                {renderSection("En Dirección de Nivel", data.en_direccion_nivel)}
-                {renderSection("En Junta", data.en_junta)}
+                {renderSection("Enviado a Dirección de Nivel", data.en_direccion_nivel)}
+                {renderSection("Enviado a Junta", data.en_junta)}
                 {renderSection("En Novedades Salariales", data.en_novedades)}
                 {renderSection("En la Institución", data.en_institucion)}
                 {renderSection("Fecha de Cobro", data.fecha_cobro_docente)}
@@ -503,7 +441,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
 
   const renderObservationInputs = (sectionName) => (
     <div style={{ gridColumn: '1 / -1', border: '1px solid #eee', padding: '10px', borderRadius: '5px' }}>
-      <label style={{ fontWeight: 'bold' }}>{sectionName.replace(/_/g, ' ').toUpperCase()}:</label>
+      <label style={{ fontWeight: 'bold' }}>{sectionName.replace('en_direccion_nivel', 'ENVIADO A DIRECCION NIVEL').replace('en_junta', 'ENVIADO A JUNTA').replace('en_novedades', 'EN NOVEDADES').replace('en_institucion', 'CARGADO EN EL SIME INSTITUCIONAL').replace('fecha_cobro_docente', 'FECHA COBRO DOCENTE').replace(/_/g, ' ').toUpperCase()}:</label>
       <div style={{ display: 'flex', gap: '10px' }}>
         <input type="date" value={formData[sectionName]?.value === 'PENDIENTE' ? '' : formData[sectionName]?.value || ''} onChange={e => handleObservationChange(sectionName, 'value', e.target.value)} style={{ flex: 1, padding: '5px' }} />
         <button type="button" onClick={() => handleObservationChange(sectionName, 'value', formData[sectionName]?.value === 'PENDIENTE' ? '' : 'PENDIENTE')} style={{ backgroundColor: formData[sectionName]?.value === 'PENDIENTE' ? 'orange' : '#eee' }}>PENDIENTE</button>
@@ -560,6 +498,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <button onClick={() => setMode(prev => prev === 'edit' ? 'view' : 'edit')} style={{ backgroundColor: mode === 'edit' ? 'orange' : 'green', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>MODIFICAR</button>
         <button onClick={() => setMode(prev => prev === 'delete' ? 'view' : 'delete')} style={{ backgroundColor: mode === 'delete' ? 'orange' : 'red', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>ELIMINAR</button>
         <button onClick={() => setShowDetail({ show: true, data: null, isPrint: true })} style={{ backgroundColor: 'yellow', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>IMPRIMIR</button>
+        <button onClick={handleExcelExport} style={{ backgroundColor: 'limegreen', color: 'black', padding: '10px 20px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>DESCARGAR EXCEL</button>
       </div>
 
       {/* --- Formulario Modal --- */}
@@ -567,87 +506,14 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ textAlign: 'center' }}>{mode === 'create' ? 'Nuevo Seguimiento' : 'Modificar Seguimiento'}</h3>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              <label>Fecha Ofrecimiento: <input type="date" name="fecha_ofrecimiento" value={formData.fecha_ofrecimiento || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
-              <label>Fecha Designación: <input type="date" name="fecha_designacion" value={formData.fecha_designacion || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
-              <label>Cargo: <select name="cargo" value={formData.cargo} onChange={handleInputChange} required style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{cargosList.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
-              
-              <label>Docente Dueño: <select name="docente_dueno_id" value={formData.docente_dueno_id} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="SIN DOCENTES">SIN DOCENTES</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
-              <label>Carácter Dueño: <select name="caracter_dueno" value={formData.caracter_dueno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="TITULAR">TITULAR</option><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
-              
-              <label style={{ gridColumn: '1 / -1' }}>Docente Propuesto: <select name="docente_propuesto_id" value={formData.docente_propuesto_id} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="VACANTE ENVIADO A JUNTA">VACANTE ENVIADO A JUNTA</option>{docentes.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}</select></label>
-              <label style={{ gridColumn: '1 / -1' }}>Carácter Propuesto: <select name="caracter_propuesto" value={formData.caracter_propuesto} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }}><option value="INTERINO">INTERINO</option><option value="SUPLENTE">SUPLENTE</option></select></label>
-              
-              <label>Curso: <input name="curso" value={formData.curso} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE'} style={{ width: '100%', padding: '5px' }} /></label>
-              <label>División: <select name="division" value={formData.division} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.curso} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableDivisions.map(d => <option key={d} value={d}>{d}</option>)}</select></label>
-              <label>Turno: <input name="turno" value={formData.turno} readOnly style={{ width: '100%', padding: '5px', backgroundColor: '#eee' }} /></label>
-              <label>Asignatura: <select name="asignatura" value={formData.asignatura} onChange={handleInputChange} disabled={formData.cargo !== 'DOCENTE' || !formData.division} style={{ width: '100%', padding: '5px' }}><option value="">Seleccione...</option>{availableAsignaturas.map(a => <option key={a} value={a}>{a}</option>)}</select></label>
-              <label>Plazas: <input type="text" name="plazas" value={formData.plazas} onChange={handleInputChange} disabled={!formData.division} style={{ width: '100%', padding: '5px' }} /></label>
-              
-              <div style={{ gridColumn: '1 / -1', border: '1px solid #eee', padding: '10px', borderRadius: '5px' }}>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>HORARIOS:</label>
-                {formData.dias_horarios.map((item, index) => (
-                  <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
-                    <select 
-                      value={item.dia} 
-                      onChange={(e) => {
-                        const newHorarios = [...formData.dias_horarios];
-                        newHorarios[index].dia = e.target.value;
-                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
-                      }}
-                      style={{ padding: '5px' }}
-                    >
-                      <option value="">Día...</option>
-                      {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                    <input 
-                      type="text" 
-                      placeholder="Horario" 
-                      value={item.horario} 
-                      onChange={(e) => {
-                        const newHorarios = [...formData.dias_horarios];
-                        newHorarios[index].horario = e.target.value;
-                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
-                      }}
-                      style={{ flex: 1, padding: '5px' }} 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const newHorarios = formData.dias_horarios.filter((_, i) => i !== index);
-                        setFormData(prev => ({ ...prev, dias_horarios: newHorarios }));
-                      }}
-                      style={{ backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', padding: '0 10px' }}
-                    >
-                      X
-                    </button>
-                  </div>
-                ))}
-                <button 
-                  type="button" 
-                  onClick={() => setFormData(prev => ({ ...prev, dias_horarios: [...prev.dias_horarios, { dia: "", horario: "" }] }))}
-                  style={{ backgroundColor: '#eee', border: '1px solid #ccc', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer', marginTop: '5px' }}
-                >
-                  + Agregar Horario
-                </button>
-              </div>
-
-              <label style={{ gridColumn: '1 / -1' }}>Causal: <input name="causal" value={formData.causal} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
-              <label>Desde: <input type="date" name="desde" value={formData.desde || ''} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
-              <label>Hasta: <input name="hasta" value={formData.hasta} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
-              
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>              
+              {/* AQUI VA EL NUEVO FORMULARIO */}
+              <p>Formulario en construcción...</p>
               {renderObservationInputs('en_direccion_nivel')}
               {renderObservationInputs('en_junta')}
               {renderObservationInputs('en_novedades')}
               {renderObservationInputs('en_institucion')}
               {renderObservationInputs('fecha_cobro_docente')}
-
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label>Documentación Adjunta:</label>
-                {formData.documentacion_adjunta.map((doc, i) => (
-                  <input key={i} type="text" value={doc} onChange={e => handleDynamicListChange('documentacion_adjunta', i, e.target.value)} style={{ width: '100%', padding: '5px', marginTop: '5px' }} />
-                ))}
-              </div>
 
               <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                 <button type="submit" style={{ padding: '10px 20px' }}>Guardar</button>
@@ -693,13 +559,15 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map(item => (
-                        <tr key={item.id} style={{ color: getRowColor(item.estado) }}>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_ofrecimiento)}</td>
+                      {filteredData.map(item => {
+                        const cursoInfo = item.cursos_data && item.cursos_data[0] ? `${item.cursos_data[0].curso} ${item.cursos_data[0].division} - ${item.cursos_data[0].turno}` : `${item.curso || ''} ${item.division || ''} - ${item.turno || ''}`;
+                        const asignaturaInfo = item.cursos_data && item.cursos_data[0] ? item.cursos_data[0].asignatura : item.asignatura;
+                        return (<tr key={item.id} style={{ color: getRowColor(item.estado) }}>
+                           <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_ofrecimiento)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.fecha_designacion)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.cargo}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.curso} {item.division} - {item.turno}</td>
-                          <td style={{ border: '1px solid black', padding: '5px' }}>{item.asignatura}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{cursoInfo}</td>
+                          <td style={{ border: '1px solid black', padding: '5px' }}>{asignaturaInfo}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.causal}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
@@ -707,7 +575,7 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                           <td style={{ border: '1px solid black', padding: '5px' }}>{formatDate(item.hasta)}</td>
                           <td style={{ border: '1px solid black', padding: '5px' }}>{item.estado}</td>
                         </tr>
-                      ))}
+                      )})}
                     </tbody>
                   </table>
                 </>
@@ -779,14 +647,16 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
             {loading ? (
               <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
             ) : filteredData.length > 0 ? (
-              filteredData.map(item => (
-                <tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
+              filteredData.map(item => {
+                const cursoInfo = item.cursos_data && item.cursos_data[0] ? `${item.cursos_data[0].curso} ${item.cursos_data[0].division} - ${item.cursos_data[0].turno}` : `${item.curso || ''} ${item.division || ''} - ${item.turno || ''}`;
+                const asignaturaInfo = item.cursos_data && item.cursos_data[0] ? item.cursos_data[0].asignatura : item.asignatura;
+                return (<tr key={item.id} onClick={() => handleRowClick(item)} style={{ cursor: (mode === 'edit' || mode === 'delete') ? 'pointer' : 'default', color: getRowColor(item.estado), fontWeight: 'bold' }}>
                   <td>{formatDate(item.fecha_ofrecimiento)}</td>
                   <td>{formatDate(item.fecha_designacion)}</td>
                   <td>{formatDate(item.fecha_seguimiento)}</td>
                   <td>{item.cargo}</td>
-                  <td>{item.curso} {item.division} - {item.turno}</td>
-                  <td>{item.asignatura}</td>
+                  <td>{cursoInfo}</td>
+                  <td>{asignaturaInfo}</td>
                   <td>{getDocenteName(item.docente_dueno_id)} - {item.caracter_dueno}</td>
                   <td>{item.causal}</td>
                   <td>{getDocenteName(item.docente_propuesto_id)} - {item.caracter_propuesto}</td>
@@ -797,8 +667,8 @@ const SeguimientoF501 = ({ goBack, goHome, user }) => {
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: false })} style={{ backgroundColor: 'lightblue', color: 'black', fontSize: '10px', padding: '2px 5px', marginRight: '5px' }}>VER</button>
                     <button onClick={() => setShowDetail({ show: true, data: item, isPrint: true })} style={{ backgroundColor: 'yellow', color: 'black', fontSize: '10px', padding: '2px 5px' }}>IMPRIMIR</button>
                   </td>
-                </tr>
-              ))
+                </tr>)
+              })
             ) : (
               <tr><td colSpan="13" style={{ textAlign: 'center', padding: '20px' }}>No se encontraron registros.</td></tr>
             )}
