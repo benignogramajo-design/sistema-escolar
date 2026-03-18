@@ -304,20 +304,20 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
 
             {/* VISTA PREVIA CERTIFICADO INDIVIDUAL */}
             {printMode === "record" && recordToPrint && (
-              <div style={{ fontFamily: 'Arial', color: 'black', height: '100%', position: 'relative' }}>
+              <div style={{ fontFamily: 'Arial', color: 'black', height: '100%', position: 'relative', padding: '10mm' }}>
                 {/* Header Logos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <img src={logoMinisterio} alt="Ministerio" style={{ width: '150px', height: 'auto', objectFit: 'contain' }} />
-                    <img src={logoEscuela} alt="Escuela" style={{ width: '120px', height: 'auto', objectFit: 'contain' }} />
+                    <img src={logoMinisterio} alt="Ministerio" style={{ width: '6cm', height: '3cm', objectFit: 'contain' }} />
+                    <img src={logoEscuela} alt="Escuela" style={{ width: '10cm', height: '3cm', objectFit: 'contain' }} />
                 </div>
 
                 {/* Titulo */}
-                <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '30px 0', textTransform: 'uppercase' }}>
+                <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '20px 0', textTransform: 'uppercase' }}>
                     {recordToPrint.tipo_constancia}
                 </h1>
 
                 {/* Cuerpo del Certificado */}
-                <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.5', paddingLeft: '1.5cm' }}>
+                <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15', paddingLeft: '1.5cm' }}>
                     {(() => {
                         // Preparar variables comunes
                         const alumno = `${recordToPrint.apellido_alumno} ${recordToPrint.nombre_alumno}`.toUpperCase();
@@ -335,39 +335,39 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                         if (recordToPrint.tipo_constancia === "CONSTANCIA DE ESCOLARIDAD") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '20px'}}>
-                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, hace constar que “{alumno}”, Nacido/a en “{lugarNac}”, el día {nacParts.dia}” del mes de “{nacParts.mes}” del año “{nacParts.anio}”, con tipo y Nº de documento, DNI N° “{recordToPrint.dni_alumno}”, es alumno/a de la institución en “{recordToPrint.curso}” ° año – Nivel Secundario durante este ciclo lectivo.
+                                    <p style={{marginBottom: '1.2em'}}>
+                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, hace constar que {alumno}, Nacido/a en {lugarNac}, el día {nacParts.dia} del mes de {nacParts.mes} del año {nacParts.anio}, con tipo y Nº de documento, DNI N° {recordToPrint.dni_alumno}, es alumno/a de la institución en {recordToPrint.curso}° año – Nivel Secundario durante este ciclo lectivo.
                                     </p>
                                     <p>
-                                        GOBERNADOR GARMENDIA, TUCUMAN, “{emiParts.dia}” del mes de “{emiParts.mes}” del año “{emiParts.anio}”.
+                                        GOBERNADOR GARMENDIA, TUCUMAN, {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.
                                     </p>
                                 </>
                             );
                         } else if (recordToPrint.tipo_constancia === "INICIO CICLO LECTIVO") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '20px'}}>
-                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a “{alumno}”, DNI Nº “{recordToPrint.dni_alumno}”, ha iniciado el “{iniParts.dia}” del mes de “{iniParts.mes}” del año “{iniParts.anio}” el “{recordToPrint.curso}” ° AÑO como alumno/a regular el ciclo lectivo correspondiente al año “{iniParts.anio}” en Nivel SECUNDARIO, en este Establecimiento Educativo.
+                                    <p style={{marginBottom: '1.2em'}}>
+                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a {alumno}, DNI Nº {recordToPrint.dni_alumno}, ha iniciado el {iniParts.dia} del mes de {iniParts.mes} del año {iniParts.anio} el {recordToPrint.curso}° AÑO como alumno/a regular el ciclo lectivo correspondiente al año {iniParts.anio} en Nivel SECUNDARIO, en este Establecimiento Educativo.
                                     </p>
-                                    <p style={{marginBottom: '20px'}}>
-                                        Este Certificado se extiende en Garmendia - Burruyacú a los “{emiParts.dia}” del mes de “{emiParts.mes}” del año “{emiParts.anio}”.para ser presentado por el/la Sr/a. “{tutor}” DNI Nº “{recordToPrint.dni_tutor}” ante “{presentado}” con el objetivo de “{objetivo}”.
+                                    <p style={{marginBottom: '1.2em'}}>
+                                        Este Certificado se extiende en Garmendia - Burruyacú a los {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.para ser presentado por el/la Sr/a. {tutor} DNI Nº {recordToPrint.dni_tutor} ante {presentado} con el objetivo de {objetivo}.
                                     </p>
                                     <p>
-                                        Nº de Boleta del Beneficiario: “{recordToPrint.nro_boleta}”.
+                                        Nº de Boleta del Beneficiario: {recordToPrint.nro_boleta}.
                                     </p>
                                 </>
                             );
                         } else if (recordToPrint.tipo_constancia === "FINALIZACIÓN CICLO LECTIVO") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '20px'}}>
-                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a “{alumno}”, DNI Nº “{recordToPrint.dni_alumno}”, ha finalizado el “{finParts.dia}” del mes de “{finParts.mes}” del año “{finParts.anio}” el “{recordToPrint.curso}” ° AÑO el ciclo lectivo correspondiente al año “{finParts.anio}” en Nivel SECUNDARIO, en este Establecimiento Educativo.
+                                    <p style={{marginBottom: '1.2em'}}>
+                                        La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a {alumno}, DNI Nº {recordToPrint.dni_alumno}, ha finalizado el {finParts.dia} del mes de {finParts.mes} del año {finParts.anio} el {recordToPrint.curso}° AÑO el ciclo lectivo correspondiente al año {finParts.anio} en Nivel SECUNDARIO, en este Establecimiento Educativo.
                                     </p>
-                                    <p style={{marginBottom: '20px'}}>
-                                        Este Certificado se extiende en Garmendia - Burruyacú a los “{emiParts.dia}” del mes de “{emiParts.mes}” del año “{emiParts.anio}”.para ser presentado por el/la Sr/a. “{tutor}” DNI Nº “{recordToPrint.dni_tutor}” ante “{presentado}” con el objetivo de “{objetivo}”.
+                                    <p style={{marginBottom: '1.2em'}}>
+                                        Este Certificado se extiende en Garmendia - Burruyacú a los {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.para ser presentado por el/la Sr/a. {tutor} DNI Nº {recordToPrint.dni_tutor} ante {presentado} con el objetivo de {objetivo}.
                                     </p>
                                     <p>
-                                        Nº de Boleta del Beneficiario: “{recordToPrint.nro_boleta}”.
+                                        Nº de Boleta del Beneficiario: {recordToPrint.nro_boleta}.
                                     </p>
                                 </>
                             );
@@ -376,12 +376,14 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                 </div>
 
                 {/* Footer Firmas */}
-                <div style={{ marginTop: '150px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: '1.5cm', paddingRight: '1cm' }}>
-                    <div style={{ borderTop: '1px solid transparent', padding: '10px' }}>
-                        <p style={{fontWeight: 'bold'}}>SELLO DEL ESTABLECIMIENTO</p>
+                <div style={{ marginTop: '4cm', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: '1.5cm', paddingRight: '0cm' }}>
+                    <div style={{ width: '5cm', textAlign: 'center' }}>
+                        <div style={{ borderTop: '1px dotted black', marginBottom: '5px' }}></div>
+                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal' }}>SELLO DEL ESTABLECIMIENTO</p>
                     </div>
-                    <div style={{ borderTop: '1px solid black', padding: '10px', textAlign: 'center' }}>
-                        <p style={{fontWeight: 'bold'}}>FIRMA Y SELLO DEL DIRECTOR/A o RESPONSABLE</p>
+                    <div style={{ width: '7cm', textAlign: 'center' }}>
+                        <div style={{ borderTop: '1px dotted black', marginBottom: '5px' }}></div>
+                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal' }}>FIRMA Y SELLO DEL DIRECTOR/A o RESPONSABLE</p>
                     </div>
                 </div>
 
