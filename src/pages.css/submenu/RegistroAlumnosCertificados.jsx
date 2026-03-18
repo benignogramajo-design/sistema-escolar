@@ -403,8 +403,9 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
           .print-page { width: 210mm; min-height: 297mm; padding: 1.5cm; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.3); box-sizing: border-box; }
           @media print {
             .no-print { display: none !important; }
-            .print-overlay { position: absolute; z-index: 9999; background-color: white !important; }
-            .print-page { box-shadow: none; margin: 0; width: 100%; padding: 0; }
+            .print-overlay { position: absolute; z-index: 9999; background-color: white !important; overflow: visible; height: auto; }
+            .print-page { box-shadow: none; margin: 0; width: 100%; padding: 0; height: auto; }
+            html, body { overflow: visible !important; height: auto !important; }
             @page { size: A4; margin: 1.27cm; }
             body { background: white; }
           }
