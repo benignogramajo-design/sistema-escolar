@@ -304,20 +304,20 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
 
             {/* VISTA PREVIA CERTIFICADO INDIVIDUAL */}
             {printMode === "record" && recordToPrint && (
-              <div style={{ fontFamily: 'Arial', color: 'black', height: '100%', position: 'relative', padding: '10mm' }}>
+              <div style={{ fontFamily: 'Arial', color: 'black', height: '100%', position: 'relative' }}>
                 {/* Header Logos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                     <img src={logoMinisterio} alt="Ministerio" style={{ width: '6cm', height: '3cm', objectFit: 'contain' }} />
-                    <img src={logoEscuela} alt="Escuela" style={{ width: '10cm', height: '3cm', objectFit: 'contain' }} />
+                    <img src={logoEscuela} alt="Escuela" style={{ width: '8cm', height: '2.5cm', objectFit: 'contain' }} />
                 </div>
 
                 {/* Titulo */}
-                <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '20px 0', textTransform: 'uppercase' }}>
+                <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '20px 0', textTransform: 'uppercase', color: 'black' }}>
                     {recordToPrint.tipo_constancia}
                 </h1>
 
                 {/* Cuerpo del Certificado */}
-                <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15', paddingLeft: '1.5cm' }}>
+                <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15' }}>
                     {(() => {
                         // Preparar variables comunes
                         const alumno = `${recordToPrint.apellido_alumno} ${recordToPrint.nombre_alumno}`.toUpperCase();
@@ -335,10 +335,10 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                         if (recordToPrint.tipo_constancia === "CONSTANCIA DE ESCOLARIDAD") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '1.2em'}}>
+                                    <p style={{marginBottom: '1.2em', textIndent: '1.5cm'}}>
                                         La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, hace constar que {alumno}, Nacido/a en {lugarNac}, el día {nacParts.dia} del mes de {nacParts.mes} del año {nacParts.anio}, con tipo y Nº de documento, DNI N° {recordToPrint.dni_alumno}, es alumno/a de la institución en {recordToPrint.curso}° año – Nivel Secundario durante este ciclo lectivo.
                                     </p>
-                                    <p>
+                                    <p style={{textIndent: '1.5cm'}}>
                                         GOBERNADOR GARMENDIA, TUCUMAN, {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.
                                     </p>
                                 </>
@@ -346,13 +346,13 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                         } else if (recordToPrint.tipo_constancia === "INICIO CICLO LECTIVO") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '1.2em'}}>
+                                    <p style={{marginBottom: '1.2em', textIndent: '1.5cm'}}>
                                         La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a {alumno}, DNI Nº {recordToPrint.dni_alumno}, ha iniciado el {iniParts.dia} del mes de {iniParts.mes} del año {iniParts.anio} el {recordToPrint.curso}° AÑO como alumno/a regular el ciclo lectivo correspondiente al año {iniParts.anio} en Nivel SECUNDARIO, en este Establecimiento Educativo.
                                     </p>
-                                    <p style={{marginBottom: '1.2em'}}>
+                                    <p style={{marginBottom: '1.2em', textIndent: '1.5cm'}}>
                                         Este Certificado se extiende en Garmendia - Burruyacú a los {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.para ser presentado por el/la Sr/a. {tutor} DNI Nº {recordToPrint.dni_tutor} ante {presentado} con el objetivo de {objetivo}.
                                     </p>
-                                    <p>
+                                    <p style={{textIndent: '1.5cm'}}>
                                         Nº de Boleta del Beneficiario: {recordToPrint.nro_boleta}.
                                     </p>
                                 </>
@@ -360,13 +360,13 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                         } else if (recordToPrint.tipo_constancia === "FINALIZACIÓN CICLO LECTIVO") {
                             return (
                                 <>
-                                    <p style={{marginBottom: '1.2em'}}>
+                                    <p style={{marginBottom: '1.2em', textIndent: '1.5cm'}}>
                                         La Dirección de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, CUE N° 9001717/00, certifica que el/la alumno/a {alumno}, DNI Nº {recordToPrint.dni_alumno}, ha finalizado el {finParts.dia} del mes de {finParts.mes} del año {finParts.anio} el {recordToPrint.curso}° AÑO el ciclo lectivo correspondiente al año {finParts.anio} en Nivel SECUNDARIO, en este Establecimiento Educativo.
                                     </p>
-                                    <p style={{marginBottom: '1.2em'}}>
+                                    <p style={{marginBottom: '1.2em', textIndent: '1.5cm'}}>
                                         Este Certificado se extiende en Garmendia - Burruyacú a los {emiParts.dia} del mes de {emiParts.mes} del año {emiParts.anio}.para ser presentado por el/la Sr/a. {tutor} DNI Nº {recordToPrint.dni_tutor} ante {presentado} con el objetivo de {objetivo}.
                                     </p>
-                                    <p>
+                                    <p style={{textIndent: '1.5cm'}}>
                                         Nº de Boleta del Beneficiario: {recordToPrint.nro_boleta}.
                                     </p>
                                 </>
@@ -376,14 +376,14 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
                 </div>
 
                 {/* Footer Firmas */}
-                <div style={{ marginTop: '4cm', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: '1.5cm', paddingRight: '0cm' }}>
+                <div style={{ marginTop: '4cm', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <div style={{ width: '5cm', textAlign: 'center' }}>
                         <div style={{ borderTop: '1px dotted black', marginBottom: '5px' }}></div>
-                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal' }}>SELLO DEL ESTABLECIMIENTO</p>
+                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal', color: 'black' }}>SELLO DEL ESTABLECIMIENTO</p>
                     </div>
                     <div style={{ width: '7cm', textAlign: 'center' }}>
                         <div style={{ borderTop: '1px dotted black', marginBottom: '5px' }}></div>
-                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal' }}>FIRMA Y SELLO DEL DIRECTOR/A o RESPONSABLE</p>
+                        <p style={{ fontSize: '10pt', margin: 0, fontWeight: 'normal', color: 'black' }}>FIRMA Y SELLO DEL DIRECTOR/A o RESPONSABLE</p>
                     </div>
                 </div>
 
@@ -398,14 +398,14 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
           </div>
         </div>
         <style>{`
-          .print-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; backgroundColor: white; z-index: 2000; overflow-y: auto; display: flex; flex-direction: column; }
+          .print-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto; display: flex; flex-direction: column; }
           .print-content { flex: 1; padding: 20px; display: flex; flex-direction: column; alignItems: center; }
-          .print-page { width: 210mm; min-height: 297mm; padding: 20mm; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.3); box-sizing: border-box; }
+          .print-page { width: 210mm; min-height: 297mm; padding: 1.5cm; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.3); box-sizing: border-box; }
           @media print {
             .no-print { display: none !important; }
-            .print-overlay { position: absolute; z-index: 9999; }
-            .print-page { box-shadow: none; margin: 0; width: 100%; }
-            @page { size: A4; margin: 10mm; }
+            .print-overlay { position: absolute; z-index: 9999; background-color: white !important; }
+            .print-page { box-shadow: none; margin: 0; width: 100%; padding: 0; }
+            @page { size: A4; margin: 1.27cm; }
             body { background: white; }
           }
         `}</style>
