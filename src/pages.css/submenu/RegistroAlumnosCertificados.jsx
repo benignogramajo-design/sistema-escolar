@@ -421,22 +421,10 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
 
       {/* --- Filtros --- */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '8px' }}>
-        <select name="alumno" value={filters.alumno} onChange={(e) => setFilters({...filters, alumno: e.target.value})} style={{ padding: '5px' }}>
-            <option value="">APELLIDO Y NOMBRE DEL ALUMNO</option>
-            {getUniqueOptions("alumno").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select name="dni_alumno" value={filters.dni_alumno} onChange={(e) => setFilters({...filters, dni_alumno: e.target.value})} style={{ padding: '5px' }}>
-            <option value="">DNI DEL ALUMNO</option>
-            {getUniqueOptions("dni_alumno").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select name="tutor" value={filters.tutor} onChange={(e) => setFilters({...filters, tutor: e.target.value})} style={{ padding: '5px' }}>
-            <option value="">APELLIDO Y NOMBRE DEL TUTOR</option>
-            {getUniqueOptions("tutor").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
-        <select name="dni_tutor" value={filters.dni_tutor} onChange={(e) => setFilters({...filters, dni_tutor: e.target.value})} style={{ padding: '5px' }}>
-            <option value="">DNI DEL TUTOR</option>
-            {getUniqueOptions("dni_tutor").map(op => <option key={op} value={op}>{op}</option>)}
-        </select>
+        <input type="text" name="alumno" placeholder="APELLIDO Y NOMBRE DEL ALUMNO" value={filters.alumno} onChange={(e) => setFilters({...filters, alumno: e.target.value})} style={{ padding: '5px' }} />
+        <input type="text" name="dni_alumno" placeholder="DNI DEL ALUMNO" value={filters.dni_alumno} onChange={(e) => setFilters({...filters, dni_alumno: e.target.value})} style={{ padding: '5px' }} />
+        <input type="text" name="tutor" placeholder="APELLIDO Y NOMBRE DEL TUTOR" value={filters.tutor} onChange={(e) => setFilters({...filters, tutor: e.target.value})} style={{ padding: '5px' }} />
+        <input type="text" name="dni_tutor" placeholder="DNI DEL TUTOR" value={filters.dni_tutor} onChange={(e) => setFilters({...filters, dni_tutor: e.target.value})} style={{ padding: '5px' }} />
         <select name="constancia" value={filters.constancia} onChange={(e) => setFilters({...filters, constancia: e.target.value})} style={{ padding: '5px' }}>
             <option value="">CONSTANCIA</option>
             {getUniqueOptions("tipo_constancia").map(op => <option key={op} value={op}>{op}</option>)}
