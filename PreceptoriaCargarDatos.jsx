@@ -27,7 +27,9 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
     fecha_nacimiento: "", edad: "",
     domicilio: "", localidad: "",
     discapacidad: "NO",
-    tutores: [{ ...initialTutor }]
+    tutores: [{ ...initialTutor }],
+    fecha_egreso: null,
+    ciclo_lectivo_pendiente: ""
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -35,7 +37,7 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
   // --- Estado de Filtros ---
   const [filters, setFilters] = useState({
     curso: "", division: "", turno: "",
-    apellido_nombre: "", dni: "", estado: ""
+    apellido_nombre: "", dni: "", estado: []
   });
 
   // --- Constantes ---
@@ -181,12 +183,32 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
       (!f.division || a.division === f.division) &&
       (!f.turno || a.turno === f.turno) &&
       (!f.dni || String(a.dni).includes(f.dni)) &&
-      (!f.estado || a.estado_alumno === f.estado) &&
+      (!f.estado || f.estado.length === 0 || f.estado.includes(a.estado_alumno)) &&
       (!f.apellido_nombre || fullName.includes(f.apellido_nombre.toLowerCase()))
     );
+  }).sort((a, b) => {
+    // 1. Ordenar por CURSO (numérico)
+    const cursoA = parseInt(a.curso) || 0;
+    const cursoB = parseInt(b.curso) || 0;
+    if (cursoA !== cursoB) return cursoA - cursoB;
+
+    // 2. Ordenar por DIVISIÓN
+    const divA = (a.division || "").toUpperCase();
+    const divB = (b.division || "").toUpperCase();
+    if (divA !== divB) return divA.localeCompare(divB);
+
+    // 3. Ordenar por APELLIDO Y NOMBRE
+    const nameA = `${a.apellido} ${a.nombre}`.toLowerCase();
+    const nameB = `${b.apellido} ${b.nombre}`.toLowerCase();
+    if (nameA !== nameB) return nameA.localeCompare(nameB);
+
+    // 4. Ordenar por ESTADO
+    const estA = (a.estado_alumno || "").toLowerCase();
+    const estB = (b.estado_alumno || "").toLowerCase();
+    return estA.localeCompare(estB);
   });
 
-  const uniqueEstados = [...new Set(alumnos.map(a => a.estado_alumno).filter(Boolean))];
+  const estadosPosibles = ["REGULAR", "REPITENTE", "EGRESADO", "PENDIENTE DE EGRESO"];
 
   // --- Excel Export ---
   const handleExcelExport = () => {
@@ -239,10 +261,20 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
             </select>
             <input placeholder="APELLIDO Y NOMBRE" value={filters.apellido_nombre} onChange={e => setFilters({...filters, apellido_nombre: e.target.value})} style={{ padding: '8px', width: '200px' }} />
             <input placeholder="DNI" value={filters.dni} onChange={e => setFilters({...filters, dni: e.target.value})} style={{ padding: '8px', width: '120px' }} />
-            <select value={filters.estado} onChange={e => setFilters({...filters, estado: e.target.value})} style={{ padding: '8px' }}>
-              <option value="">ESTADO</option>
-              {uniqueEstados.map(e => <option key={e} value={e}>{e}</option>)}
-            </select>
+            
+            {/* Filtro de Estado Multi-selección */}
+            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '80px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px', backgroundColor: 'white', borderRadius: '4px', minWidth: '150px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold' }}>ESTADO (Múltiple):</span>
+              {estadosPosibles.map(est => (
+                <label key={est} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={filters.estado.includes(est)} 
+                    onChange={e => setFilters({...filters, estado: e.target.checked ? [...filters.estado, est] : filters.estado.filter(s => s !== est)})} 
+                  /> {est}
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* --- Botones de Acción --- */}
@@ -261,8 +293,8 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                 <tr style={{ backgroundColor: "#333", color: "white" }}>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>CURSO Y DIVISIÓN</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>TURNO</th>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE</th>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DNI</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE del ALUMNO</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DNI DEL ALUMNO</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>CELULAR</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>ESTADO</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>DISCAPACIDAD</th>
@@ -293,7 +325,17 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                         <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.apellido}, {a.nombre}</td>
                         <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.dni}</td>
                         <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.celular}</td>
-                        <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>{a.estado_alumno}</td>
+                        <td style={{ 
+                          padding: "8px", 
+                          border: "1px solid #ddd", 
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: a.estado_alumno === 'REPITENTE' ? 'red' : 
+                                 a.estado_alumno === 'EGRESADO' ? 'green' : 
+                                 a.estado_alumno === 'PENDIENTE DE EGRESO' ? 'blue' : 'black'
+                        }}>
+                          {a.estado_alumno}
+                        </td>
                         <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>{a.discapacidad}</td>
                         <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.apellido ? `${tutor.apellido} ${tutor.nombre}` : '-'}</td>
                         <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.dni || '-'}</td>
@@ -320,7 +362,7 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
             </h2>
             
             <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
-              <label>Estado: <select name="estado_alumno" value={formData.estado_alumno} onChange={handleInputChange}><option value="REGULAR">REGULAR</option><option value="REPITENTE">REPITENTE</option><option value="EGRESADO">EGRESADO</option></select></label>
+              <label>Estado: <select name="estado_alumno" value={formData.estado_alumno} onChange={handleInputChange}>{estadosPosibles.map(e => <option key={e} value={e}>{e}</option>)}</select></label>
               <label>Curso: <select name="curso" value={formData.curso} onChange={handleInputChange}><option value="">-</option>{cursosList.map(c=><option key={c} value={c}>{c}</option>)}</select></label>
               <label>División: <select name="division" value={formData.division} onChange={handleInputChange}><option value="">-</option>{divisionesList.map(d=><option key={d} value={d}>{d}</option>)}</select></label>
               <label>Turno: <input name="turno" value={formData.turno} readOnly style={{backgroundColor:'#eee'}} /></label>
@@ -331,6 +373,18 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
               <label>Fecha Nac: <input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} /></label>
               <label>Edad: <input name="edad" value={formData.edad} readOnly style={{backgroundColor:'#eee'}} /></label>
               <label>Discapacidad: <select name="discapacidad" value={formData.discapacidad} onChange={handleInputChange}><option value="NO">NO</option><option value="SI">SI</option></select></label>
+
+              {/* Campos condicionales según Estado */}
+              {formData.estado_alumno === 'EGRESADO' && (
+                <label>FECHA DE EGRESO: 
+                  <input type="date" name="fecha_egreso" value={formData.fecha_egreso || ""} onChange={handleInputChange} required />
+                </label>
+              )}
+              {formData.estado_alumno === 'PENDIENTE DE EGRESO' && (
+                <label>CICLO LECTIVO: 
+                  <input type="text" name="ciclo_lectivo_pendiente" value={formData.ciclo_lectivo_pendiente || ""} onChange={handleInputChange} placeholder="Ej: 2025" required />
+                </label>
+              )}
 
               <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
                 <h3>Tutores</h3>
