@@ -42,8 +42,10 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
   // --- Filters State ---
   const [filters, setFilters] = useState({
     curso: "", division: "", turno: "",
-    apellido_nombre: "", dni: "", estado: []
+    apellido_nombre: "", dni: "", estado: [],
+    anio: ""
   });
+  const [showEstadoFilter, setShowEstadoFilter] = useState(false);
 
   // --- Constants for Lists ---
   const cursosList = ["1", "2", "3", "4", "5", "6"];
@@ -227,13 +229,19 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
     const f = filters;
     const fullName = `${a.apellido} ${a.nombre}`.toLowerCase();
     
+    const yearMatch = !f.anio || (
+      (a.estado_alumno === 'EGRESADO' && a.fecha_egreso && a.fecha_egreso.startsWith(f.anio)) ||
+      (a.estado_alumno === 'PENDIENTE DE EGRESO' && a.ciclo_lectivo_pendiente && String(a.ciclo_lectivo_pendiente).includes(f.anio))
+    );
+
     return (
       (!f.curso || a.curso === f.curso) &&
       (!f.division || a.division === f.division) &&
       (!f.turno || a.turno === f.turno) &&
       (!f.dni || String(a.dni).includes(f.dni)) &&
       (!f.estado || f.estado.length === 0 || f.estado.includes(a.estado_alumno)) &&
-      (!f.apellido_nombre || fullName.includes(f.apellido_nombre.toLowerCase()))
+      (!f.apellido_nombre || fullName.includes(f.apellido_nombre.toLowerCase())) &&
+      yearMatch
     );
   }).sort((a, b) => {
     // 1. CURSO Y DIVISIÓN
@@ -322,19 +330,31 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
             </select>
             <input placeholder="APELLIDO Y NOMBRE" value={filters.apellido_nombre} onChange={e => setFilters({...filters, apellido_nombre: e.target.value})} style={{ padding: '8px', width: '200px' }} />
             <input placeholder="DNI" value={filters.dni} onChange={e => setFilters({...filters, dni: e.target.value})} style={{ padding: '8px', width: '120px' }} />
+            <input placeholder="AÑO" value={filters.anio} onChange={e => setFilters({...filters, anio: e.target.value})} style={{ padding: '8px', width: '80px' }} />
             
-            {/* Filtro de Estado Multi-selección */}
-            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '80px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px', backgroundColor: 'white', borderRadius: '4px', minWidth: '150px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 'bold' }}>ESTADO (Múltiple):</span>
-              {estadosPosibles.map(est => (
-                <label key={est} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={filters.estado.includes(est)} 
-                    onChange={e => setFilters({...filters, estado: e.target.checked ? [...filters.estado, est] : filters.estado.filter(s => s !== est)})} 
-                  /> {est}
-                </label>
-              ))}
+            {/* Filtro de Estado Multi-selección (Desplegable) */}
+            <div style={{ position: 'relative', minWidth: '150px' }}>
+              <button 
+                type="button"
+                onClick={() => setShowEstadoFilter(!showEstadoFilter)} 
+                style={{ width: '100%', padding: '8px', textAlign: 'left', cursor: 'pointer', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px', fontSize: '12px' }}
+              >
+                {filters.estado.length === 0 ? "ESTADOS" : `ESTADOS (${filters.estado.length})`}
+              </button>
+              {showEstadoFilter && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px', zIndex: 10, padding: '5px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+                  {estadosPosibles.map(est => (
+                    <label key={est} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', padding: '4px 2px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={filters.estado.includes(est)} 
+                        onChange={e => setFilters({...filters, estado: e.target.checked ? [...filters.estado, est] : filters.estado.filter(s => s !== est)})} 
+                      /> {est}
+                    </label>
+                  ))}
+                  <button type="button" onClick={() => setShowEstadoFilter(false)} style={{ width: '100%', fontSize: '10px', marginTop: '5px', cursor: 'pointer', border: 'none', backgroundColor: '#f0f0f0', padding: '3px' }}>Cerrar</button>
+                </div>
+              )}
             </div>
           </div>
 
