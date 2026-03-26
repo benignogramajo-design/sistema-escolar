@@ -32,7 +32,9 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
     domicilio: "", localidad: "", departamento: "", provincia: "", lugar_nacimiento: "",
     discapacidad: "NO", certificado_medico: "NO", diagnostico: "", docente_integrador: "NO",
     documentacion: [], // Array de strings
-    tutores: [{ ...initialTutor }] // Array de objetos tutor
+    tutores: [{ ...initialTutor }], // Array de objetos tutor
+    fecha_egreso: null,
+    ciclo_lectivo_pendiente: ""
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -40,12 +42,13 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
   // --- Filters State ---
   const [filters, setFilters] = useState({
     curso: "", division: "", turno: "",
-    apellido_nombre: "", dni: "", estado: ""
+    apellido_nombre: "", dni: "", estado: []
   });
 
   // --- Constants for Lists ---
   const cursosList = ["1", "2", "3", "4", "5", "6"];
   const divisionesList = ["A", "B", "C", "D"];
+  const estadosPosibles = ["REGULAR", "REPITENTE", "EGRESADO", "PENDIENTE DE EGRESO"];
   const turnosList = ["MAÑANA", "TARDE"];
   const documentacionList = [
     "CERTIFICADO DE EDUCACIÓN PRIMARIA", "DNI", "CUIL", "ACTA DE NACIMIENTO",
@@ -162,7 +165,14 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
     const item = alumnos.find(a => a.id === selectedId);
     if (item) {
       setModalMode("edit");
-      setFormData(item);
+      // Asegurar estructura de tutores al editar
+      const safeItem = {
+        ...item,
+        tutores: (item.tutores && Array.isArray(item.tutores) && item.tutores.length > 0) 
+          ? item.tutores 
+          : [{ ...initialTutor }]
+      };
+      setFormData(safeItem);
       setShowModal(true);
     }
   };
@@ -222,9 +232,28 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
       (!f.division || a.division === f.division) &&
       (!f.turno || a.turno === f.turno) &&
       (!f.dni || String(a.dni).includes(f.dni)) &&
-      (!f.estado || a.estado_alumno === f.estado) &&
+      (!f.estado || f.estado.length === 0 || f.estado.includes(a.estado_alumno)) &&
       (!f.apellido_nombre || fullName.includes(f.apellido_nombre.toLowerCase()))
     );
+  }).sort((a, b) => {
+    // 1. CURSO Y DIVISIÓN
+    const cursoA = parseInt(a.curso) || 0;
+    const cursoB = parseInt(b.curso) || 0;
+    if (cursoA !== cursoB) return cursoA - cursoB;
+    
+    const divA = (a.division || "").toUpperCase();
+    const divB = (b.division || "").toUpperCase();
+    if (divA !== divB) return divA.localeCompare(divB);
+
+    // 2. APELLIDO Y NOMBRE del ALUMNO
+    const nameA = `${a.apellido} ${a.nombre}`.toLowerCase();
+    const nameB = `${b.apellido} ${b.nombre}`.toLowerCase();
+    if (nameA !== nameB) return nameA.localeCompare(nameB);
+
+    // 3. ESTADO
+    const estA = (a.estado_alumno || "").toLowerCase();
+    const estB = (b.estado_alumno || "").toLowerCase();
+    return estA.localeCompare(estB);
   });
 
   const uniqueEstados = [...new Set(alumnos.map(a => a.estado_alumno).filter(Boolean))];
@@ -293,10 +322,20 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
             </select>
             <input placeholder="APELLIDO Y NOMBRE" value={filters.apellido_nombre} onChange={e => setFilters({...filters, apellido_nombre: e.target.value})} style={{ padding: '8px', width: '200px' }} />
             <input placeholder="DNI" value={filters.dni} onChange={e => setFilters({...filters, dni: e.target.value})} style={{ padding: '8px', width: '120px' }} />
-            <select value={filters.estado} onChange={e => setFilters({...filters, estado: e.target.value})} style={{ padding: '8px' }}>
-              <option value="">ESTADO</option>
-              {uniqueEstados.map(e => <option key={e} value={e}>{e}</option>)}
-            </select>
+            
+            {/* Filtro de Estado Multi-selección */}
+            <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '80px', overflowY: 'auto', border: '1px solid #ccc', padding: '5px', backgroundColor: 'white', borderRadius: '4px', minWidth: '150px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold' }}>ESTADO (Múltiple):</span>
+              {estadosPosibles.map(est => (
+                <label key={est} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={filters.estado.includes(est)} 
+                    onChange={e => setFilters({...filters, estado: e.target.checked ? [...filters.estado, est] : filters.estado.filter(s => s !== est)})} 
+                  /> {est}
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* --- Botones de Acción --- */}
@@ -315,16 +354,24 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                 <tr style={{ backgroundColor: "#333", color: "white" }}>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>CURSO Y DIVISIÓN</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>TURNO</th>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE</th>
-                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DNI</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE del ALUMNO</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DNI DEL ALUMNO</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>CELULAR</th>
                   <th style={{ padding: "8px", border: "1px solid #ddd" }}>ESTADO</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DISCAPACIDAD</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>APELLIDO Y NOMBRE DEL TUTOR</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>DNI DEL TUTOR</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>CELULAR DEL TUTOR</th>
+                  <th style={{ padding: "8px", border: "1px solid #ddd" }}>PARENTESCO</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
+                  <tr><td colSpan="11" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
                 ) : filteredAlumnos.length > 0 ? (
-                  filteredAlumnos.map((a) => (
+                  filteredAlumnos.map((a) => {
+                    const tutor = (a.tutores && a.tutores.length > 0) ? a.tutores[0] : {};
+                    return (
                     <tr 
                       key={a.id} 
                       onClick={() => setSelectedId(a.id)}
@@ -338,11 +385,27 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                       <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>{a.turno}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.apellido}, {a.nombre}</td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.dni}</td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>{a.estado_alumno}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{a.celular}</td>
+                      <td style={{ 
+                        padding: "8px", 
+                        border: "1px solid #ddd", 
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        color: a.estado_alumno === 'REPITENTE' ? 'red' : 
+                               a.estado_alumno === 'EGRESADO' ? 'green' : 
+                               a.estado_alumno === 'PENDIENTE DE EGRESO' ? 'blue' : 'black'
+                      }}>
+                        {a.estado_alumno}
+                      </td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd", textAlign: 'center' }}>{a.discapacidad}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.apellido ? `${tutor.apellido} ${tutor.nombre}` : '-'}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.dni || '-'}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.celular || '-'}</td>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>{tutor.parentesco === 'OTRO' ? tutor.parentesco_otro : (tutor.parentesco || '-')}</td>
                     </tr>
-                  ))
+                  )})
                 ) : (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No hay registros.</td></tr>
+                  <tr><td colSpan="11" style={{ textAlign: 'center', padding: '20px' }}>No hay registros.</td></tr>
                 )}
               </tbody>
             </table>
@@ -366,9 +429,7 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                   <label>ESTADO:
                     <select name="estado_alumno" value={formData.estado_alumno} onChange={handleInputChange} style={{ width: '100%' }}>
-                      <option value="REGULAR">REGULAR</option>
-                      <option value="REPITENTE">REPITENTE</option>
-                      <option value="EGRESADO">EGRESADO</option>
+                      {estadosPosibles.map(e => <option key={e} value={e}>{e}</option>)}
                     </select>
                   </label>
                   <label>CURSO:
@@ -389,6 +450,18 @@ const PreceptoriaCargarDatos = ({ goBack, goHome }) => {
                   <label>AÑO INGRESO:<input name="anio_ingreso" value={formData.anio_ingreso} onChange={handleInputChange} style={{ width: '100%' }} /></label>
                   <label>LIBRO MATRIZ:<input name="libro_matriz" value={formData.libro_matriz} onChange={handleInputChange} style={{ width: '100%' }} /></label>
                   <label>N° FOLIO:<input name="folio" value={formData.folio} onChange={handleInputChange} style={{ width: '100%' }} /></label>
+
+                  {/* Campos condicionales según Estado */}
+                  {formData.estado_alumno === 'EGRESADO' && (
+                    <label style={{ gridColumn: 'span 2' }}>FECHA DE EGRESO: 
+                      <input type="date" name="fecha_egreso" value={formData.fecha_egreso || ""} onChange={handleInputChange} required style={{ width: '100%' }} />
+                    </label>
+                  )}
+                  {formData.estado_alumno === 'PENDIENTE DE EGRESO' && (
+                    <label style={{ gridColumn: 'span 2' }}>CICLO LECTIVO: 
+                      <input type="text" name="ciclo_lectivo_pendiente" value={formData.ciclo_lectivo_pendiente || ""} onChange={handleInputChange} placeholder="Ej: 2025" required style={{ width: '100%' }} />
+                    </label>
+                  )}
                 </div>
               </div>
 
