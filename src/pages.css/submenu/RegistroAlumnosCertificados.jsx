@@ -16,6 +16,7 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
   // --- Estados de UI ---
   const [mode, setMode] = useState("view"); // 'view', 'create', 'edit', 'delete'
   const [showForm, setShowForm] = useState(false);
+  const [autoFill, setAutoFill] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false); // Para botón VER
   const [selectedId, setSelectedId] = useState(null);
   
@@ -143,15 +144,57 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
   };
 
   // --- Manejadores ---
+  const performAutocomplete = async (dni) => {
+    if (!dni) return;
+    try {
+      const { data, error } = await supabase
+        .from('registro_alumnos')
+        .select('*')
+        .eq('dni', dni)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData(prev => ({
+          ...prev,
+          apellido_alumno: data.apellido || "",
+          nombre_alumno: data.nombre || "",
+          fecha_nacimiento_alumno: data.fecha_nacimiento || "",
+          lugar_nacimiento_alumno: data.lugar_nacimiento || "",
+          curso: data.curso || "",
+          division: data.division || ""
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          apellido_alumno: "---SIN DATOS ENCONTRADOS---",
+          nombre_alumno: "---SIN DATOS ENCONTRADOS---",
+          fecha_nacimiento_alumno: "",
+          lugar_nacimiento_alumno: "---SIN DATOS ENCONTRADOS---",
+          curso: "",
+          division: ""
+        }));
+      }
+    } catch (err) {
+      console.error("Error en autocompletar:", err.message);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === "dni_alumno" && autoFill && value.length >= 7) {
+      performAutocomplete(value);
+    }
   };
 
   const handleNew = () => {
     setMode("create");
     setFormData(initialFormState);
     setShowForm(true);
+    setAutoFill(false);
     setSelectedId(null);
   };
 
@@ -170,6 +213,7 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
       setFormData(item);
       setSelectedId(item.id);
       setShowForm(true);
+      setAutoFill(false);
     } else if (mode === "delete") {
       if (window.confirm("¿Está seguro de eliminar este registro?")) {
         deleteRecord(item.id);
