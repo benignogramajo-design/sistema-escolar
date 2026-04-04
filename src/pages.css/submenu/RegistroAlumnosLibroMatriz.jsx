@@ -138,14 +138,17 @@ const RegistroAlumnosLibroMatriz = ({ goBack, goHome }) => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
+      const { id, created_at, ...payload } = formData;
       if (modalMode === "create") {
-        await supabase.from('registro_alumnos_libro_matriz').insert([formData]);
+        const { error } = await supabase.from('registro_alumnos_libro_matriz').insert([payload]);
+        if (error) throw error;
       } else {
-        await supabase.from('registro_alumnos_libro_matriz').update(formData).eq('id', selectedId);
+        const { error } = await supabase.from('registro_alumnos_libro_matriz').update(payload).eq('id', selectedId);
+        if (error) throw error;
       }
       setShowModal(false);
       fetchData();
-    } catch (e) { alert("Error al guardar"); }
+    } catch (err) { alert("Error al guardar: " + err.message); console.error(err); }
   };
 
   const handleDelete = async () => {
@@ -158,31 +161,33 @@ const RegistroAlumnosLibroMatriz = ({ goBack, goHome }) => {
   };
 
   // --- Filtrado y Ordenamiento ---
-  const filteredData = data.filter(d => {
-    const fullName = `${d.apellido} ${d.nombre}`.toLowerCase();
-    // Verificamos si alguno de los libros/folios coincide
-    const hasLibroMatch = d.libros_folios?.some(lf => lf.libro.includes(filters.libro));
-    const hasFolioMatch = d.libros_folios?.some(lf => lf.folio.includes(filters.folio));
+  const filteredData = (data || [])
+    .filter((d) => {
+      const fullName = `${d.apellido || ""} ${d.nombre || ""}`.toLowerCase();
+      // Verificamos si alguno de los libros/folios coincide
+      const hasLibroMatch = d.libros_folios?.some((lf) => (lf.libro || "").includes(filters.libro));
+      const hasFolioMatch = d.libros_folios?.some((lf) => (lf.folio || "").includes(filters.folio));
 
-    return (
-      (!filters.nombre || fullName.includes(filters.nombre.toLowerCase())) &&
-      (!filters.dni || d.dni.includes(filters.dni)) &&
-      (!filters.libro || hasLibroMatch) &&
-      (!filters.folio || hasFolioMatch) &&
-      (!filters.anio_ingreso || d.anio_ingreso.includes(filters.anio_ingreso)) &&
-      (!filters.ciclo_lectivo || d.ciclo_lectivo.includes(filters.ciclo_lectivo)) &&
-      (!filters.fecha_egreso || d.fecha_egreso === filters.fecha_egreso)
-    );
-  }).sort((a, b) => {
-    // Ordenar por el primer Libro y luego el primer Folio
-    const lA = a.libros_folios?.[0]?.libro || "";
-    const lB = b.libros_folios?.[0]?.libro || "";
-    if (lA !== lB) return lA.localeCompare(lB, undefined, { numeric: true });
-    
-    const fA = a.libros_folios?.[0]?.folio || "";
-    const fB = b.libros_folios?.[0]?.folio || "";
-    return fA.localeCompare(fB, undefined, { numeric: true });
-  });
+      return (
+        (!filters.nombre || fullName.includes(filters.nombre.toLowerCase())) &&
+        (!filters.dni || (d.dni || "").includes(filters.dni)) &&
+        (!filters.libro || hasLibroMatch) &&
+        (!filters.folio || hasFolioMatch) &&
+        (!filters.anio_ingreso || (d.anio_ingreso || "").includes(filters.anio_ingreso)) &&
+        (!filters.ciclo_lectivo || (d.ciclo_lectivo || "").includes(filters.ciclo_lectivo)) &&
+        (!filters.fecha_egreso || d.fecha_egreso === filters.fecha_egreso)
+      );
+    })
+    .sort((a, b) => {
+      // Ordenar por el primer Libro y luego el primer Folio
+      const lA = (a.libros_folios && a.libros_folios[0]?.libro) || "";
+      const lB = (b.libros_folios && b.libros_folios[0]?.libro) || "";
+      if (lA !== lB) return lA.localeCompare(lB, undefined, { numeric: true });
+
+      const fA = (a.libros_folios && a.libros_folios[0]?.folio) || "";
+      const fB = (b.libros_folios && b.libros_folios[0]?.folio) || "";
+      return fA.localeCompare(fB, undefined, { numeric: true });
+    });
 
   // --- Render Componente ---
   return (
@@ -213,7 +218,7 @@ const RegistroAlumnosLibroMatriz = ({ goBack, goHome }) => {
           </div>
 
           {/* Tabla */}
-          <div className="contenido-submenu" style={{ width: '98%', overflowX: 'auto' }}>
+          <div className="contenido-submenu" style={{ width: '98%', maxWidth: '98%', padding: '15px', overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', fontSize: '12px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#333', color: 'white' }}>
