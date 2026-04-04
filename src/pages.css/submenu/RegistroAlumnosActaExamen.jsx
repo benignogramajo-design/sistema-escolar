@@ -187,6 +187,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
                 margin: 0 !important;
                 padding: 0 !important;
                 display: block !important; 
+                overflow: hidden !important;
               }
               
               .print-page { 
