@@ -96,7 +96,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
               </div>
 
               {/* Título Central */}
-              <h1 style={{ textAlign: 'center', fontSize: '20pt', fontWeight: 'bold', margin: '30px 0 20px 0', textDecoration: 'none', color: 'black' }}>
+              <h1 style={{ textAlign: 'center', fontSize: '20pt', fontWeight: 'bold', margin: '20px 0 15px 0', textDecoration: 'none', color: 'black' }}>
                 ACTA VOLANTE DE EXAMEN
               </h1>
 
@@ -169,13 +169,36 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
 
           <style>{`
             @media print {
-              .no-print { display: none !important; }
+              /* Ocultar barra de navegación, fondos y elementos de la interfaz de la web */
+              .navbar, .no-print, h2, .contenido-submenu { display: none !important; }
+              .pagina-submenu { background-image: none !important; padding: 0 !important; margin: 0 !important; }
+
+              /* Ocultar todo el contenido del body por seguridad y mostrar solo el overlay */
               body * { visibility: hidden; }
               .print-overlay, .print-overlay * { visibility: visible; }
-              .print-overlay { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; display: block !important; }
-              .print-page { box-shadow: none !important; margin: 0 !important; width: 100% !important; padding: 0 !important; }
-              html, body { height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; }
-              @page { margin: 1cm; size: A4 portrait; }
+              
+              .print-overlay { 
+                position: absolute !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                width: 100% !important; 
+                height: 100% !important;
+                background: white !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important; 
+              }
+              
+              .print-page { 
+                box-shadow: none !important; 
+                margin: 0 auto !important; 
+                width: 210mm !important; 
+                padding: 1cm 1.5cm !important; 
+                box-sizing: border-box !important;
+              }
+              
+              html, body { height: 100% !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; background: white !important; }
+              @page { margin: 0; size: A4 portrait; }
             }
           `}</style>
         </div>
