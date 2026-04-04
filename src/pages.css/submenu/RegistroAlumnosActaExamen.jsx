@@ -102,11 +102,11 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
 
               {/* Líneas de Información */}
               <div style={{ fontSize: '11pt', marginBottom: '15px', lineHeight: '1.8' }}>
-                <div style={{ marginBottom: '5px' }}>Exámenes de Alumnos: ......................................................................................................................................</div>
+                <div style={{ marginBottom: '5px' }}>Exámenes de Alumnos: .................................................................................................................................</div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
-                  <div style={{ flex: 2 }}>Asignatura: ..................................................................</div>
-                  <div style={{ flex: 0.6 }}>Año: ....................</div>
-                  <div style={{ flex: 0.6 }}>Div.: ....................</div>
+                  <div style={{ flex: 2 }}>Asignatura: .............................................................</div>
+                  <div style={{ flex: 0.6 }}>Año: ...............</div>
+                  <div style={{ flex: 0.6 }}>Div.: ...............</div>
                   <div style={{ flex: 1 }}>Turno: .........................</div>
                 </div>
               </div>
@@ -153,7 +153,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
 
               {/* Fecha Final */}
               <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '11pt' }}>
-                ...................................................... de ...................................................... de 20 ......
+                Gobernador Garmendia, ______ de __________________ de 20 ______
               </div>
 
             </div>
