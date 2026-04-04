@@ -440,3 +440,5 @@ const RegistroAlumnosLibroMatriz = ({ goBack, goHome }) => {
     </div>
   );
 };
+
+export default RegistroAlumnosLibroMatriz;
