@@ -96,7 +96,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
               </div>
 
               {/* Título Central */}
-              <h1 style={{ textAlign: 'center', fontSize: '20pt', fontWeight: 'bold', margin: '30px 0 20px 0', textDecoration: 'none' }}>
+              <h1 style={{ textAlign: 'center', fontSize: '20pt', fontWeight: 'bold', margin: '30px 0 20px 0', textDecoration: 'none', color: 'black' }}>
                 ACTA VOLANTE DE EXAMEN
               </h1>
 
@@ -104,7 +104,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
               <div style={{ fontSize: '11pt', marginBottom: '15px', lineHeight: '1.8' }}>
                 <div style={{ marginBottom: '5px' }}>Exámenes de Alumnos: .................................................................................................................................</div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
-                  <div style={{ flex: 2 }}>Asignatura: .............................................................</div>
+                  <div style={{ flex: 2 }}>Asignatura: ......................................................</div>
                   <div style={{ flex: 0.6 }}>Año: ...............</div>
                   <div style={{ flex: 0.6 }}>Div.: ...............</div>
                   <div style={{ flex: 1 }}>Turno: .........................</div>
