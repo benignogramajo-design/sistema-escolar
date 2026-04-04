@@ -184,5 +184,3 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
 };
 
 export default RegistroAlumnosActaExamen;
-
-export default RegistroAlumnosActaExamen;
