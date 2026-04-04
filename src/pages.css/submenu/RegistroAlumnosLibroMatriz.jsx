@@ -139,6 +139,16 @@ const RegistroAlumnosLibroMatriz = ({ goBack, goHome }) => {
     e.preventDefault();
     try {
       const { id, created_at, ...payload } = formData;
+
+      // Sanitización de fechas: PostgreSQL no acepta "" en columnas DATE, debe ser null
+      if (payload.fecha_nacimiento === "") payload.fecha_nacimiento = null;
+      if (payload.fecha_egreso === "") payload.fecha_egreso = null;
+      
+      // También sanitizamos dentro del objeto anidado titulo_data si existe
+      if (payload.titulo_data && payload.titulo_data.fecha_retiro === "") {
+        payload.titulo_data.fecha_retiro = null;
+      }
+
       if (modalMode === "create") {
         const { error } = await supabase.from('registro_alumnos_libro_matriz').insert([payload]);
         if (error) throw error;
