@@ -105,7 +105,7 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
                 <div style={{ marginBottom: '5px' }}>Exámenes de Alumnos: .................................................................................................................................</div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
                   <div style={{ flex: 2 }}>Asignatura: ......................................................</div>
-                  <div style={{ flex: 0.6 }}>Año: ...............</div>
+                  <div style={{ flex: 0.6 }}>Año: ............</div>
                   <div style={{ flex: 0.6 }}>Div.: ...............</div>
                   <div style={{ flex: 1 }}>Turno: .........................</div>
                 </div>
