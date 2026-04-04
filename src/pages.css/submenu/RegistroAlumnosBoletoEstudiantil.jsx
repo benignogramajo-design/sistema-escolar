@@ -344,5 +344,3 @@ const RegistroAlumnosBoletoEstudiantil = ({ goBack, goHome }) => {
 };
 
 export default RegistroAlumnosBoletoEstudiantil;
-
-export default RegistroAlumnosBoletoEstudiantil;
