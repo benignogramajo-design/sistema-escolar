@@ -93,6 +93,13 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
     fetchData();
   }, []);
 
+  // Trigger autocomplete when checkbox is enabled and DNI is present
+  useEffect(() => {
+    if (autoFill && formData.dni_alumno && formData.dni_alumno.length >= 7) {
+      performAutocomplete(formData.dni_alumno);
+    }
+  }, [autoFill]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -565,6 +572,12 @@ const RegistroAlumnosCertificados = ({ goBack, goHome }) => {
 
                     <h4 style={{ gridColumn: '1 / -1', margin: '0', borderBottom: '1px solid #eee' }}>Datos del Alumno</h4>
                     <label>DNI DEL ALUMNO: <input name="dni_alumno" value={formData.dni_alumno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
+                    <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '15px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: 'blue', fontWeight: 'bold' }}>
+                            <input type="checkbox" checked={autoFill} onChange={(e) => setAutoFill(e.target.checked)} />
+                            AUTOCOMPLETAR
+                        </label>
+                    </div>
                     <label>APELLIDO DEL ALUMNO: <input name="apellido_alumno" value={formData.apellido_alumno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
                     <label>NOMBRE DEL ALUMNO: <input name="nombre_alumno" value={formData.nombre_alumno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
                     <label>FECHA DE NACIMIENTO DEL ALUMNO: <input type="date" name="fecha_nacimiento_alumno" value={formData.fecha_nacimiento_alumno} onChange={handleInputChange} style={{ width: '100%', padding: '5px' }} /></label>
