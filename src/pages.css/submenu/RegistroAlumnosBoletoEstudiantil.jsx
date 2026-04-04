@@ -292,17 +292,17 @@ const RegistroAlumnosBoletoEstudiantil = ({ goBack, goHome }) => {
               ) : (
                 <div style={{ color: 'black', fontFamily: 'Arial', position: 'relative', height: '100%' }}>
                   <div style={{ textAlign: 'right', marginBottom: '20px' }}><img src={logoMinisterio} alt="Ministerio" style={{ width: '6cm', height: '3cm', objectFit: 'contain' }} /></div>
-                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '40px 0', textTransform: 'uppercase' }}>CERTIFICADO DE ESTUDIOS EN CURSO PARA BOLETO ESTUDIANTIL GRATUITO</h1>
+                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '40px 0', textTransform: 'uppercase', color: 'black' }}>CERTIFICADO DE ESTUDIOS EN CURSO PARA BOLETO ESTUDIANTIL GRATUITO</h1>
                   
                   <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15', marginBottom: '20px' }}>
                     <p style={{ textIndent: '1.5cm' }}>
-                      Por medio de la presente, en mi calidad de <strong>{formData.emitido_por_cargo.toUpperCase()}</strong>, certifico que <strong>{formData.apellido_alumno.toUpperCase()} {formData.nombre_alumno.toUpperCase()}</strong>, DNI N° <strong>{formData.dni_alumno}</strong>, de <strong>{formData.edad_alumno}</strong> años de edad, domiciliado en <strong>{formData.domicilio_alumno}</strong>, de la localidad de <strong>{formData.localidad_alumno}</strong> es alumno regular de la ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, ubicada en AV. DE LA SOJA S/N º de la localidad de GOBERNADOR GARMENDIA, CUE: 9001717/00.
+                      Por medio de la presente, en mi calidad de <strong>{formData.emitido_por_cargo.toUpperCase()}</strong>, certifico que <strong>{formData.apellido_alumno.toUpperCase()} {formData.nombre_alumno.toUpperCase()}</strong>, DNI N° <strong>{formData.dni_alumno}</strong>, de <strong>{formData.edad_alumno}</strong> años de edad, domiciliado en <strong>{(formData.domicilio_alumno || "").toUpperCase()}</strong>, de la localidad de <strong>{(formData.localidad_alumno || "").toUpperCase()}</strong> es alumno regular de la <strong>ESCUELA SECUNDARIA GOBERNADOR GARMENDIA</strong>, ubicada en <strong>AV. DE LA SOJA S/N º</strong> de la localidad de <strong>GOBERNADOR GARMENDIA</strong>, CUE: <strong>9001717/00</strong>.
                     </p>
                     <p style={{ textIndent: '1.5cm' }}>
-                      El mismo, inicia su recorrido en <strong>{formData.inicio_recorrido}</strong>, de la localidad de <strong>{formData.localidad_inicio_recorrido}</strong>, con destino a la correspondiente institución.
+                      El mismo, inicia su recorrido en <strong>{(formData.inicio_recorrido || "").toUpperCase()}</strong>, de la localidad de <strong>{(formData.localidad_inicio_recorrido || "").toUpperCase()}</strong>, con destino a la correspondiente institución.
                     </p>
                     <p style={{ textIndent: '1.5cm' }}>
-                      Para realizar el recorrido el alumno utiliza la línea de colectivo <strong>{formData.linea_colectivo}</strong>.
+                      Para realizar el recorrido el alumno utiliza la línea de colectivo <strong>{(formData.linea_colectivo || "").toUpperCase()}</strong>.
                     </p>
                   </div>
 
