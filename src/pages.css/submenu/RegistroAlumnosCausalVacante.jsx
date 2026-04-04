@@ -277,15 +277,15 @@ const RegistroAlumnosCausalVacante = ({ goBack, goHome }) => {
                 <div style={{ color: 'black', fontFamily: 'Arial', position: 'relative', height: '100%' }}>
                   {/* Logos Superiores */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
-                    <img src={logoMinisterio} alt="Ministerio" style={{ height: '2.5cm' }} />
-                    <img src={logoEscuela} alt="Escuela" style={{ height: '2.5cm' }} />
+                    <img src={logoMinisterio} alt="Ministerio" style={{ width: '6cm', height: '3cm', objectFit: 'contain' }} />
+                    <img src={logoEscuela} alt="Escuela" style={{ width: '8cm', height: '2.5cm', objectFit: 'contain' }} />
                   </div>
 
                   {/* Título */}
-                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '0 0 1.5cm 0' }}>CONSTANCIA DE VACANTE</h1>
+                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '0 0 1.5cm 0', color: 'black', fontFamily: 'Arial' }}>CONSTANCIA DE VACANTE</h1>
 
                   {/* Fecha */}
-                  <div style={{ marginBottom: '1.5cm', textAlign: 'left' }}>
+                  <div style={{ marginBottom: '1.5cm', textAlign: 'left', fontSize: '12pt' }}>
                     {(() => {
                       const [year, month, day] = formData.fecha_emision.split('-');
                       return `Gobernador Garmendia, ${day} del mes de ${getMonthName(month)} del año ${year}`;
@@ -293,17 +293,26 @@ const RegistroAlumnosCausalVacante = ({ goBack, goHome }) => {
                   </div>
 
                   {/* Destinatario */}
-                  <div style={{ marginBottom: '1.5cm', textAlign: 'left', lineHeight: '1.2' }}>
-                    <p style={{ margin: 0 }}>AL DIRECTOR/A DE</p>
-                    <p style={{ margin: 0, fontWeight: 'bold', textTransform: 'uppercase' }}>{formData.institucion}</p>
-                    <p style={{ margin: 0 }}>S      /      D</p>
+                  <div style={{ marginBottom: '1.5cm', textAlign: 'left', lineHeight: '1.2', fontSize: '12pt' }}>
+                    <p style={{ margin: '0 0 5px 0' }}>AL DIRECTOR/A DE</p>
+                    <div style={{ display: 'inline-block', textAlign: 'left' }}>
+                        <p style={{ margin: 0, fontWeight: 'bold', textTransform: 'uppercase' }}>{formData.institucion}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', textDecoration: 'underline', width: '100%', fontWeight: 'bold' }}>
+                            <span>S</span>
+                            <span>/</span>
+                            <span>D</span>
+                        </div>
+                    </div>
                   </div>
 
                   {/* Cuerpo */}
-                  <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15', textIndent: '1.5cm', marginBottom: '4cm' }}>
-                    La dirección de la Escuela Secundaria Gobernador Garmendia informa que el/la joven <strong>{formData.apellido_alumno} {formData.nombre_alumno}</strong>, D.N.I. N° <strong>{formData.dni_alumno}</strong>, cuenta con vacante en nuestra institución, por este motivo solicitamos fotocopia del ANALÍTICO/LIBRO MATRIZ, PASE, INFORME PEDAGÓGICO de la alumno/a, pase de seguro escolar. -
-                    <br /><br />
-                    Sin otro particular saludo cordialmente. -
+                  <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15', marginBottom: '4cm', fontFamily: 'Arial' }}>
+                    <p style={{ textIndent: '1.5cm', margin: '0 0 1.2em 0' }}>
+                        La dirección de la Escuela Secundaria Gobernador Garmendia informa que el/la joven <strong>{formData.apellido_alumno} {formData.nombre_alumno}</strong>, D.N.I. N° <strong>{formData.dni_alumno}</strong>, cuenta con vacante en nuestra institución, por este motivo solicitamos fotocopia del ANALÍTICO/LIBRO MATRIZ, PASE, INFORME PEDAGÓGICO de la alumno/a, pase de seguro escolar. -
+                    </p>
+                    <p style={{ textIndent: '1.5cm', margin: 0 }}>
+                        Sin otro particular saludo cordialmente. -
+                    </p>
                   </div>
 
                   {/* Footer Firmas */}
