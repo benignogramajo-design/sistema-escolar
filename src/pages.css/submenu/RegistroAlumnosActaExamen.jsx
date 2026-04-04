@@ -170,10 +170,11 @@ const RegistroAlumnosActaExamen = ({ goBack, goHome }) => {
           <style>{`
             @media print {
               .no-print { display: none !important; }
-              body { background: white !important; margin: 0; padding: 0; }
-              .pagina-submenu { background-image: none !important; padding: 0 !important; }
-              .print-overlay { position: static !important; background: white !important; overflow: visible !important; width: 100% !important; height: auto !important; }
+              body * { visibility: hidden; }
+              .print-overlay, .print-overlay * { visibility: visible; }
+              .print-overlay { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; display: block !important; }
               .print-page { box-shadow: none !important; margin: 0 !important; width: 100% !important; padding: 0 !important; }
+              html, body { height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; }
               @page { margin: 1cm; size: A4 portrait; }
             }
           `}</style>
