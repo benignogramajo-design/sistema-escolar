@@ -185,7 +185,7 @@ const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
             <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', fontSize: '12px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#333', color: 'white' }}>
-                  <th>DNI</th><th>APELLIDO Y NOMBRE DEL DOCENTE</th><th>AFECTACIÓN</th><th>FECHA DE EVENTO</th><th>VISTA</th>
+                  <th>DNI DEL DOCENTE</th><th>APELLIDO Y NOMBRE DEL DOCENTE</th><th>AFECTACIÓN</th><th>FECHA DE EVENTO</th><th>DESTINO A PRESENTAR</th><th>VISTA</th>
                 </tr>
               </thead>
               <tbody>
@@ -195,6 +195,7 @@ const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
                     <td>{d.apellido_docente}, {d.nombre_docente}</td>
                     <td>{d.afectacion}</td>
                     <td style={{textAlign: 'center'}}>{d.fecha_inicio === d.fecha_fin ? d.fecha_inicio : `${d.fecha_inicio} al ${d.fecha_fin}`}</td>
+                    <td>{d.destino}</td>
                     <td>
                       <button onClick={() => { setFormData(d); setModalMode("view"); setShowModal(true); }} style={{ backgroundColor: 'skyblue', border: 'none', padding: '3px 8px', marginRight: '5px', cursor: 'pointer' }}>VER</button>
                       <button onClick={() => { setFormData(d); setPrintMode("single"); setShowPrint(true); }} style={{ backgroundColor: 'yellow', border: 'none', padding: '3px 8px', cursor: 'pointer' }}>IMPRIMIR</button>
