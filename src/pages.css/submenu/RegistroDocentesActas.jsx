@@ -18,7 +18,7 @@ const RegistroDocentesActas = ({ goBack, goHome }) => {
 
   // --- Filtros ---
   const [filters, setFilters] = useState({
-    libro: "", folio: "", acta: "", causal: "", nombre: "", asignatura: "", anio: ""
+    libro: "", folio: "", acta: "", causal: "", nombre: "", asignatura: "", año: ""
   });
 
   // --- Formulario ---
