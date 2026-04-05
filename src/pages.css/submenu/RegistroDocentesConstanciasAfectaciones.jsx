@@ -296,7 +296,7 @@ const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
                     <img src={logoEscuela} alt="Esc" style={{ width: '8cm', height: '4cm', objectFit: 'contain' }} />
                   </div>
 
-                  <div style={{ textAlign: 'left', marginBottom: '1cm', fontSize: '12pt' }}>
+                  <div style={{ textAlign: 'right', marginBottom: '1cm', fontSize: '12pt' }}>
                     {(() => {
                       const [y, m, d] = formData.fecha_emision.split('-');
                       return `GOBERNADOR GARMENDIA, ${d} de ${getMonthName(m)} de ${y}`;
