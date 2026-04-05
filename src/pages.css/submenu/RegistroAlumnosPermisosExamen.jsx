@@ -29,7 +29,6 @@ const RegistroAlumnosPermisosExamen = ({ goBack, goHome }) => {
     <div style={{ 
       width: '13.5cm', 
       height: '19cm', 
-      border: '1px solid #000', 
       padding: '0.5cm', 
       boxSizing: 'border-box',
       display: 'flex',
@@ -39,12 +38,12 @@ const RegistroAlumnosPermisosExamen = ({ goBack, goHome }) => {
       backgroundColor: 'white'
     }}>
       {/* Encabezado */}
-      <h1 style={{ fontSize: '16pt', fontWeight: 'bold', textAlign: 'center', margin: '0', textTransform: 'uppercase' }}>PERMISO DE EXAMEN</h1>
-      <h2 style={{ fontSize: '12pt', fontWeight: 'bold', textAlign: 'center', margin: '5px 0 15px 0' }}>Escuela Secundaria Gobernador Garmendia</h2>
+      <div style={{ fontSize: '16pt', fontWeight: 'bold', textAlign: 'center', margin: '0', textTransform: 'uppercase', color: 'black' }}>PERMISO DE EXAMEN</div>
+      <div style={{ fontSize: '12pt', fontWeight: 'bold', textAlign: 'center', margin: '5px 0 15px 0', color: 'black' }}>Escuela Secundaria Gobernador Garmendia</div>
 
       {/* Info Personal */}
       <div style={{ marginBottom: '10px', fontSize: '10pt' }}>
-        <p style={{ margin: '8px 0' }}>Alumno/A: .....................................................................................................</p>
+        <p style={{ margin: '8px 0' }}>Alumno/A: .........................................................................................................</p>
         <p style={{ textAlign: 'center', margin: '8px 0' }}>Permiso De Examen N°: ...........................................</p>
       </div>
 
