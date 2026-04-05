@@ -43,7 +43,7 @@ const RegistroAlumnosPermisosExamen = ({ goBack, goHome }) => {
 
       {/* Info Personal */}
       <div style={{ marginBottom: '10px', fontSize: '10pt' }}>
-        <p style={{ margin: '8px 0' }}>Alumno/A: .........................................................................................................</p>
+        <p style={{ margin: '8px 0' }}>Alumno/A: ...............................................................................................</p>
         <p style={{ textAlign: 'center', margin: '8px 0' }}>Permiso De Examen N°: ...........................................</p>
       </div>
 
