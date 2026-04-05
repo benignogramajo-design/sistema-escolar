@@ -302,15 +302,16 @@ const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
                     })()}
                   </div>
 
-                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '1cm 0' }}>CONSTANCIA DE AFECTACIÓN</h1>
+                  <h1 style={{ textAlign: 'center', fontSize: '18pt', fontWeight: 'bold', margin: '1cm 0', color: 'black', display: 'block' }}>CONSTANCIA DE AFECTACIÓN</h1>
 
                   <div style={{ fontSize: '12pt', textAlign: 'justify', lineHeight: '1.15' }}>
                     <p style={{ textIndent: '1.5cm', marginBottom: '1.2em' }}>
                       Por la presente, la DIRECCION DE LA ESCUELA SECUNDARIA GOBERNADOR GARMENDIA, deja constancia que el/la profesor/a <strong>{(formData.apellido_docente + ' ' + formData.nombre_docente).toUpperCase()}</strong>, DNI N° <strong>{formData.dni_docente}</strong>, se encuentra afectado/a a <strong>{formData.afectacion.toUpperCase()}</strong> que se realizará 
-                      {formData.fecha_inicio === formData.fecha_fin 
-                        ? ` el día <strong>${getLongDate(formData.fecha_inicio)}</strong>`
-                        : ` del <strong>${getLongDate(formData.fecha_inicio)}</strong> al <strong>${getLongDate(formData.fecha_fin)}</strong>`
-                      }, en sede <strong>{formData.sede?.toUpperCase()}</strong>, sita <strong>{formData.sita?.toUpperCase()}</strong>, Localidad <strong>{formData.localidad?.toUpperCase()}</strong>, Departamento <strong>{formData.departamento?.toUpperCase()}</strong>, Provincia <strong>{formData.provincia?.toUpperCase()}</strong>, de <strong>{formData.horario_inicio}</strong> a <strong>{formData.horario_fin}</strong> hs.
+                      {formData.fecha_inicio === formData.fecha_fin ? (
+                        <> el día <strong>{getLongDate(formData.fecha_inicio)}</strong></>
+                      ) : (
+                        <> del <strong>{getLongDate(formData.fecha_inicio)}</strong> al <strong>{getLongDate(formData.fecha_fin)}</strong></>
+                      )}, en sede <strong>{formData.sede?.toUpperCase()}</strong>, sita <strong>{formData.sita?.toUpperCase()}</strong>, Localidad <strong>{formData.localidad?.toUpperCase()}</strong>, Departamento <strong>{formData.departamento?.toUpperCase()}</strong>, Provincia <strong>{formData.provincia?.toUpperCase()}</strong>, de <strong>{formData.horario_inicio}</strong> a <strong>{formData.horario_fin}</strong> hs.
                     </p>
 
                     <p style={{ textIndent: '1.5cm' }}>
@@ -344,11 +345,37 @@ const RegistroDocentesConstanciasAfectaciones = ({ goBack, goHome }) => {
 
           <style>{`
             @media print {
-              .no-print { display: none !important; }
-              body { background: white !important; padding: 0 !important; }
-              .print-overlay { position: static; background: white; }
-              .print-page { box-shadow: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-              @page { margin: 1cm; size: ${printMode === 'table' ? 'A4 landscape' : 'A4 portrait'}; }
+              /* Ocultar barra de navegación, fondos y elementos de la interfaz de la web */
+              .navbar, .no-print, h2, .contenido-submenu { display: none !important; }
+              .pagina-submenu { background-image: none !important; padding: 0 !important; margin: 0 !important; }
+
+              /* Ocultar todo el contenido del body y mostrar solo el overlay */
+              body * { visibility: hidden; }
+              .print-overlay, .print-overlay * { visibility: visible; }
+              
+              .print-overlay { 
+                position: absolute !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                width: 100% !important; 
+                height: 100% !important;
+                background: white !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important; 
+                overflow: hidden !important;
+              }
+              
+              .print-page { 
+                box-shadow: none !important; 
+                margin: 0 auto !important; 
+                width: 210mm !important; 
+                padding: 1cm 1.5cm !important; 
+                box-sizing: border-box !important;
+              }
+              
+              html, body { height: 100% !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; background: white !important; }
+              @page { margin: 0; size: ${printMode === 'table' ? 'A4 landscape' : 'A4 portrait'}; }
             }
           `}</style>
         </div>
