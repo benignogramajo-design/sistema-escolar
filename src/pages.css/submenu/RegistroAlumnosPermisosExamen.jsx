@@ -69,13 +69,13 @@ const RegistroAlumnosPermisosExamen = ({ goBack, goHome }) => {
         <thead>
           <tr style={{ height: '1.2cm' }}>
             <th style={{ border: '1px solid black', width: '0.8cm', position: 'relative' }}>
-              <div style={{ transform: 'rotate(-90deg)', whiteSpace: 'nowrap', fontWeight: 'bold' }}>N° DE ORD.</div>
+              <div style={{ transform: 'rotate(-90deg)', whiteSpace: 'nowrap', fontWeight: 'bold' }}>N° ORD.</div>
             </th>
-            <th style={{ border: '1px solid black', width: '1.2cm', fontWeight: 'bold' }}>AÑO</th>
+            <th style={{ border: '1px solid black', width: '1.0cm', fontWeight: 'bold' }}>AÑO</th>
             <th style={{ border: '1px solid black', fontWeight: 'bold' }}>ASIGNATURA</th>
-            <th style={{ border: '1px solid black', width: '2.2cm', fontWeight: 'bold' }}>FECHA</th>
+            <th style={{ border: '1px solid black', width: '2.0cm', fontWeight: 'bold' }}>FECHA</th>
             <th style={{ border: '1px solid black', width: '1.8cm', fontWeight: 'bold' }}>Calificación</th>
-            <th style={{ border: '1px solid black', width: '2.5cm', fontWeight: 'bold' }}>FIRMA DEL PDT.E DE LA MESA EXAM.</th>
+            <th style={{ border: '1px solid black', width: '2.3cm', fontWeight: 'bold' }}>FIRMA DEL PDT.E DE LA MESA EXAM.</th>
           </tr>
         </thead>
         <tbody>
